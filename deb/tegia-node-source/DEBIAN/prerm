@@ -1,0 +1,76 @@
+#!/bin/bash
+
+set -e
+. /usr/share/debconf/confmodule
+
+RED=`tput setaf 1`
+GREEN=`tput setaf 2`
+RESET=`tput sgr0`
+
+echo "${RED}prerm $1${RESET}"
+
+#==================================================================================
+mysql_password() 
+#==================================================================================
+{
+    # Получаем пароль от MySQL
+    string=$(sudo cat /etc/mysql/debian.cnf)
+    regsubstring="password"
+    passwd="${string#*password}"
+    passwd="${passwd%%socket*}"
+    len="$((${#passwd}-4))"
+    passwd="${passwd:3:$len}"
+    echo $passwd
+}
+export -f mysql_password
+
+
+case "$1" in
+#==================================================================================
+remove)
+#==================================================================================
+    # Удаляем учетную запись пользователя
+    export MYSQL_PWD=$(mysql_password)
+    db_get tegia/mysql-username 
+    MYSQL_USERNAME="$RET"
+    mysql -u  debian-sys-maint -e "DROP DATABASE tegia_core;"
+    mysql -u  debian-sys-maint -e "DROP USER IF EXISTS '$MYSQL_USERNAME'@'localhost';"
+    # Удаляем файлы репозитория
+    rm /usr/include/tegia
+    if [ -d "/var/tegia/platform" ]
+    then
+       rm -rf /var/tegia/platform
+    fi
+;;
+#==================================================================================
+purge)
+#==================================================================================
+
+    
+
+;;
+#==================================================================================
+upgrade)
+#==================================================================================
+
+    
+
+;;
+#==================================================================================
+abort-upgrade|abort-remove|abort-deconfigure)
+#==================================================================================
+
+
+
+;;
+#==================================================================================
+*)
+#==================================================================================
+    echo "prerm called with unknown argument \`$1'" >&2
+    exit 0
+;;
+esac
+
+
+exit 0
+

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -e
+
+. /usr/share/debconf/confmodule
+
+
+db_unregister tegia/setup-mode 
+db_unregister tegia/mysql-username
+
+exit 0

@@ -1,0 +1,16 @@
+
+Template: tegia-test/setup-mode
+Type: select
+Choices: develop, production
+Default: develop
+Description: Режим установки:
+
+Template: tegia-test/mysql-username
+Type: string
+Default: tegia_user
+Description: MySQL Username
+
+Template: tegia-test/mysql-password
+Type: password
+Default: gtcymKmlf
+Description: MySQL password. Если оставить поле пустым, то будет установлен пароль по-умолчанию 

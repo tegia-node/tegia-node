@@ -1,0 +1,7 @@
+Package: tegia-node-source
+Version: 1.1.0
+Architecture: all
+Maintainer: Tegia LLC <contact@tegia.ru>
+Depends: tegia-devtools, screen, uuid-dev, mysql-server-5.7, unzip, libssl-dev, libgd-dev, doxygen, graphviz
+Origin: http://tegia.ru
+Description: Tegia Platform Node (Source code)

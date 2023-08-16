@@ -1,0 +1,38 @@
+"pipeline":
+{
+	"start": "zakupki/pipeline/full",
+	"zakupki/pipeline/full":
+	{
+		"load": "files/http/load",
+	    "isload": "zakupki/pipeline/full",
+	    "empty": "end"
+	},
+    "files/http/load":
+    {
+        "succes": "files/unzip",
+    },
+    "files/unzip":
+    {
+   		"success": "pipeline/file"
+    },
+	"zakupki/pipeline/file":
+	{
+	   "empty": "zakupki/pipeline/full",
+	   ".xml": "files/xml2json",
+	   ".sig": "zakupki/transform/sig",
+	   "unknown": "zakupki/pipeline/file" 
+	},
+	"zakupki/transform/sig":
+	{
+	   "succes": "zakupki/pipeline/file" 
+	},
+	"files/xml2json":
+	{
+	   "succes": "zakupki/transform/json" 
+	},
+	"zakupki/transform/json":
+	{
+	   "succes": "zakupki/pipeline/file" 
+	}
+
+}

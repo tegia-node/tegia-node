@@ -1,0 +1,103 @@
+#!/bin/bash
+
+set -e
+. /usr/share/debconf/confmodule
+
+RED=`tput setaf 1`
+GREEN=`tput setaf 2`
+RESET=`tput sgr0`
+
+mysql_password() 
+{
+    # Получаем пароль от MySQL
+    string=$(sudo cat /etc/mysql/debian.cnf)
+    regsubstring="password"
+    passwd="${string#*password}"
+    passwd="${passwd%%socket*}"
+    len="$((${#passwd}-4))"
+    passwd="${passwd:3:$len}"
+    echo $passwd
+}
+export -f mysql_password
+
+git_clone()
+{
+    param=true
+    while [ param ]
+    do
+        RESULT=$(git clone "$1" "$2" 2>&1 || true)
+    
+        echo " "
+        echo $RESULT
+
+        if [ -d "$2" ]
+           then
+              break
+           else
+              echo "${RED}[!] Репозиторий не выгружен. Повторите ввод логина и пароля${RESET}"   
+              echo " "
+        fi
+
+    done 
+    chown $SUDO_USER:$SUDO_USER -R $2
+    echo "${GREEN}[!] Репозиторий выгружен${RESET}" 
+}
+
+echo "${RED}postinst [$1] [$2] [$3]${RESET}"
+
+case "$1" in
+#==================================================================================
+configure)
+#==================================================================================
+if [[ $2 == "" ]]
+then
+	echo "install deb [$1] [$2] [$3]"
+else
+    echo "postinst-[1.0.4]-[$2].sh"
+fi
+
+#prerm [upgrade] [1.0.3] []
+#preinst [upgrade] [1.0.2] [1.0.3]
+#postrm [upgrade] [1.0.3] []
+#postinst [configure] [1.0.2] [] - вызывается новый postinst файл который говорит от какой версии делать upgrade
+
+
+
+#    /etc/tegia/test/configure.sh
+
+#    TEST=$(mysql_password)
+
+#    git_clone "https://gitlab.com/tegia-acm/tegia-node.git" "/var/tegia/test_repo"
+
+    echo "${GREEN}success install${RESET}" 
+;;
+#==================================================================================
+install)
+#==================================================================================
+
+    
+
+;;
+#==================================================================================
+upgrade)
+#==================================================================================
+
+    
+
+;;
+#==================================================================================
+abort-upgrade|abort-remove|abort-deconfigure)
+#==================================================================================
+
+
+;;
+#==================================================================================
+*)
+#==================================================================================
+    echo "postinst called with unknown argument \`$1'" >&2
+    exit 0
+;;
+esac
+
+
+exit 0

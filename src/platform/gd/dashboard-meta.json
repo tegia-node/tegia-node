@@ -1,0 +1,21 @@
+{
+	"size":
+	{
+       "height": 100,
+       "width": 300
+	},
+	"legend":
+	{
+	   "x": 20,
+	   "y": 80,
+	   "font_size": 16,
+	   "font": "/var/platform2/build/Roboto/Roboto-Light.ttf"
+	},
+	"value":
+	{
+	   "x": 20,
+	   "y": 50,
+	   "font_size": 26,
+	   "font": "/var/platform2/build/Roboto/Roboto-Light.ttf"
+	}
+}

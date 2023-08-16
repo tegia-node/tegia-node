@@ -1,0 +1,9 @@
+Package: tegia-node-bin
+Version: 2.0.1
+Provides: tegia-node
+Architecture: all
+Maintainer: Tegia LLC <contact@tegia.ru>
+Depends: git, mc, screen, uuid-dev, mysql-server-5.7, default-libmysqlclient-dev, libcurl4-openssl-dev, unzip
+Conflicts: tegia-node-source
+Origin: http://tegia.ru
+Description: Tegia Platform Node

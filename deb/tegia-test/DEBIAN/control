@@ -1,0 +1,7 @@
+Package: tegia-test
+Version: 1.0.4
+Architecture: all
+Maintainer: Tegia LLC <contact@tegia.ru>
+Depends: 
+Origin: http://tegia.ru
+Description: Tegia Test

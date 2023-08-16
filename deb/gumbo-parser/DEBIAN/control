@@ -1,0 +1,7 @@
+Package: gumbo-parser
+Version: 1.0.0
+Architecture: all
+Maintainer: Tegia LLC <contact@tegia.ru>
+Depends: 
+Origin: https://github.com/google/gumbo-parser
+Description: deb-пакет для gumbo parser

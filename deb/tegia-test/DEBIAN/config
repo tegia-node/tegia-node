@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -e
+
+. /usr/share/debconf/confmodule
+
+
+db_version 2.0
+
+db_input high tegia-test/setup-mode || true
+db_input high tegia-test/mysql-username || true
+db_input high tegia-test/mysql-password || true
+
+db_go || true

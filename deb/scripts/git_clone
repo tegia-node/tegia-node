@@ -1,0 +1,23 @@
+
+git_clone()
+{
+    param=true
+    while [ param ]
+    do
+        RESULT=$(git clone "$1" "$2" 2>&1 || true)
+    
+        echo " "
+        echo $RESULT
+
+        if [ -d "$2" ]
+           then
+              break
+           else
+              echo "${RED}[!] Репозиторий не выгружен. Повторите ввод логина и пароля${RESET}"   
+              echo " "
+        fi
+
+    done 
+    chown $SUDO_USER:$SUDO_USER -R $2
+    echo "${GREEN}[!] Репозиторий выгружен${RESET}" 
+}
