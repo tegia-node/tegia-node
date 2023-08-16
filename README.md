@@ -1,1 +1,0 @@
-# tegia-node

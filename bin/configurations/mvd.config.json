@@ -1,0 +1,45 @@
+{
+	"name": "mvd",
+	"path": "/home/igor/tegia/configurations/mvd",
+	"loads":
+	{
+		"MVD::INVALID": "bin/libINVALID.so",
+		"MVD::DATA": "bin/libMVDDATA.so"
+	},
+	"actors":
+	[
+		{
+			"type": "MVD::INVALID",
+			"name": "parsers/mvd/passports/invalid",
+			"isload": true,
+			"share": true
+		},
+		{
+			"type": "MVD::DATA",
+			"name": "mvd/data",
+			"isload": true,
+			"share": true
+		}		
+	],
+	"db":
+	{
+		"government":
+		{
+			"type": "mysql",
+			"dbname" : "government_data",
+			"host": "localhost",
+			"password": "P@$$w0rd--2",
+			"port": 3306,
+			"user": "tegia_user"			
+		},
+		"sources":
+		{
+			"type": "mysql",
+			"dbname" : "data_mvd",
+			"host": "localhost",
+			"password": "P@$$w0rd",
+			"port": 3306,
+			"user": "tegia_user"
+		}
+	}
+}

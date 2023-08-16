@@ -1,8 +1,8 @@
-#include "../../include/core/json.h"
+#include <tegia2/core/json.h>
 #include <xml2json/include/xml2json.hpp>
 
 
-namespace core {
+namespace tegia {
 namespace json {
 
 
@@ -51,7 +51,7 @@ namespace json {
 	};
 
 
-	nlohmann::json file(const std::string &filename, core::json::error *error)
+	nlohmann::json file(const std::string &filename, tegia::json::error *error)
 	{
 		// -----------------------------------------------
 		//
@@ -99,6 +99,34 @@ namespace json {
 
 
 
+	std::tuple<int, std::string, nlohmann::json> _file(const std::string &filename)
+	{
+		if(!std::filesystem::exists(filename))
+		{
+			return std::make_tuple(JSON_FILE_NOT_FOUND, "file '" + filename + "' not found", nlohmann::json::object());
+		}
+
+		try
+		{
+			std::ifstream ifs(filename);
+			nlohmann::json data = nlohmann::json::parse(ifs);  
+			ifs.close();
+			return std::make_tuple(0, "ok", data);
+		}
+
+		catch (nlohmann::json::parse_error& e)
+		{
+			return std::make_tuple(JSON_FILE_PARSE_ERROR, e.what(), nlohmann::json::object());
+		}
+
+		catch (nlohmann::json::out_of_range& e)
+		{
+			return std::make_tuple(JSON_FILE_OUT_OF_RANGE, e.what(), nlohmann::json::object());
+		}
+	};
+
+
+
 
 
 	bool save(const std::string &filename, const nlohmann::json &data, const int indent, const char indent_char)
@@ -139,7 +167,7 @@ namespace json {
 
 
 } // END namespace json
-} // END namespace core
+} // END namespace tegia
 
 
 

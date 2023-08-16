@@ -1,0 +1,57 @@
+{
+	"name": "base",
+	"path": "/home/igor/tegia/configurations/base",
+	"loads": 
+	{
+		"BASE::MAILER": "bin/libA2Mailer.so",
+		"BASE::FILES": "bin/libA2Files.so",
+		"BASE::SPHINX": "bin/libA2Sphinx.so"
+	},
+	"actors": 
+	[
+		{
+			"name": "files",
+			"type": "BASE::FILES",
+			"isload": true,
+			"share": false
+		},
+		{
+			"name": "base/mail",
+			"type": "BASE::MAILER",
+			"isload": true,
+			"share": false,
+			"data":
+			{
+				"service_name": "app.sendgrid.com",
+				"api_key": "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"
+			}
+		},
+		{
+			"type": "BASE::SPHINX",
+			"name": "base/sphinx",
+			"isload": true,
+			"share": false
+		}		
+	],
+	"db":
+	{
+		"core":
+		{
+			"type": "mysql",
+			"dbname": "tegia_core",
+			"host": "localhost",
+			"password": "P@$$w0rd",
+			"port": 3306,
+			"user": "tegia_user"
+		},
+		"sphinx":
+		{
+			"type" : "sphinx",
+			"dbname" : "",
+			"host" : "127.0.0.1",
+			"password" : "",
+			"port" : 9306,
+			"user" : ""			
+		}
+	}
+}

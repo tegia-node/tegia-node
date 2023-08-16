@@ -1,5 +1,5 @@
-#ifndef _H_CORE_CRYPT_
-#define _H_CORE_CRYPT_
+#ifndef H_TEGIA_CORE_CRYPT
+#define H_TEGIA_CORE_CRYPT
 
 /////////////////////////////////////////////////////////////////////////////////
 //
@@ -27,9 +27,6 @@
 	#include <openssl/bio.h>
 	#include <openssl/buffer.h>
 	#include <openssl/err.h>
-
-//	TEGIA
-	#include <tegia/core/string.h>
 
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -232,34 +229,6 @@ class rsa
 			return this->decrypted_len;
 		}
 
-
-
-		/*int public_encrypt(unsigned char * data,int data_len,unsigned char * key, unsigned char *encrypted)
-		{
-			RSA * rsa = createRSA(key,1);
-			int result = RSA_public_encrypt(data_len,data,encrypted,rsa,RSA_PKCS1_PADDING);
-			return result;
-		}
-		int private_decrypt(unsigned char * enc_data,int data_len,unsigned char * key, unsigned char *decrypted)
-		{
-			RSA * rsa = createRSA(key,0);
-			int  result = RSA_private_decrypt(data_len,enc_data,decrypted,rsa,RSA_PKCS1_PADDING);
-			return result;
-		}
-
-		int private_encrypt(unsigned char * data,int data_len,unsigned char * key, unsigned char *encrypted)
-		{
-			RSA * rsa = createRSA(key,0);
-			int result = RSA_private_encrypt(data_len,data,encrypted,rsa,RSA_PKCS1_PADDING);
-			return result;
-		}
-		int public_decrypt(unsigned char * enc_data,int data_len,unsigned char * key, unsigned char *decrypted)
-		{
-			RSA * rsa = createRSA(key,1);
-			int  result = RSA_public_decrypt(data_len,enc_data,decrypted,rsa,RSA_PKCS1_PADDING);
-			return result;
-		}*/
-
 		std::string get_encrypt()
 		{
 			return std::string( (char*)this->encrypted,this->encrypted_len);
@@ -276,94 +245,4 @@ class rsa
 }	// END namespace tegia
 
 
-
-
-
-
-namespace core {
-
-
-
-[[deprecated]]
-class crypt
-{
-  protected:    
-      
-    
-  public: 
-     
-    crypt() {   }; 
-    ~crypt() {  };
-
-	[[deprecated("use tegia::random::string()")]]
-    static std::string genStr(int lenght)
-    {
-      int l2 = lenght * 2;
-      unsigned char buf[l2];
-      if(RAND_bytes(buf, l2-1))
-      {
-        char res[l2];
-        for(int i=0; i<lenght; i++)
-        {
-          sprintf(res+i*2, "%02x", buf[i]);
-        }
-        return res;
-      }
-
-      return "";       
-    };
-
-
-
-	[[deprecated("use tegia::random::password()")]]
-	static std::string password_gen(int lenght)
-	{
-		srand( std::time(nullptr)); //инициализируем генератор случайных чисел
-		char *pass = new char[lenght + 1]; //выделяем память для строки пароля
-		for (int i = 0; i < lenght; ++ i) 
-		{
-			switch(rand() % 3) //генерируем случайное число от 0 до 2
-			{
-				case 0: //если ноль
-					pass[i] = rand() % 10 + '0'; //вставляем в пароль случайную цифру
-					break;
-				case 1: //если единица
-					pass[i] = rand() % 26 + 'A'; //вставляем случайную большую букву
-					break;
-				case 2: //если двойка
-					pass[i] = rand() % 26 + 'a'; //вставляем случайную маленькую букву
-			}
-		}  
-		pass[lenght+1] = '\0';    
-		std::string password(pass);
-		delete[] pass;
-
-		return password;
-	};
-
-
-	[[deprecated]]
-	static std::string MD5(const std::string &str)
-	{
-		unsigned char digest[16];
-		const char* string = str.c_str();
-		MD5_CTX context;
-		MD5_Init(&context);
-		MD5_Update(&context, string, strlen(string));
-		MD5_Final(digest, &context);
-
-		char md5string[33];
-		for(int i = 0; i < 16; ++i)
-			sprintf(&md5string[i*2], "%02x", (unsigned int)digest[i]);
-
-		return (const char*) md5string;
-	};
-
-
-
-};
-
-
-} // end namespace core
-
-#endif  // _H_CORE_CRYPT_
+#endif

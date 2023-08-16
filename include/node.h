@@ -5,40 +5,29 @@
 #include <iostream>
 #include <tegia2/core/json.h>
 
-#include "config.h"
-
-
 namespace tegia {
 namespace threads {
 	class pool;
 }
 }
 
-namespace tegia {
-namespace node {
-
-class node
+namespace TEGIA{
+class NODE
 {
 	public:
-
-		static node * _self;
-		static node * instance();
-		const nlohmann::json * const config(const std::string &name);
-
-		node();
-		~node();
+		NODE();
+		~NODE();
 		bool run();
 		bool action();
 
 		const nlohmann::json * const config();
 
 	private:
-		tegia::threads::pool * _threads;
-		tegia::node::config  * _config;
+		tegia::threads::pool * threads;
 
-};	// END class node
+		nlohmann::json conf = nlohmann::json::object();
 
-}	// END namespace node
+};	// END class NODE
 }	// EMD namespace TEGIA
 
 

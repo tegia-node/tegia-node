@@ -1,5 +1,5 @@
-#ifndef _H_CORE_JSON_
-#define _H_CORE_JSON_
+#ifndef H_TEGIA_CORE_JSON
+#define H_TEGIA_CORE_JSON
 // --------------------------------------------------------------------
 
 //	C++ STL
@@ -16,7 +16,7 @@
 	#define JSON_FILE_PARSE_ERROR	11
 	#define JSON_FILE_OUT_OF_RANGE	12
 
-namespace core {
+namespace tegia {
 namespace json {
 
 	class error
@@ -36,14 +36,19 @@ namespace json {
 			~error(){};
 	};
 
-   nlohmann::json file(const std::string &filename, bool is_null = true);
-   nlohmann::json file(const std::string &filename, core::json::error *error);
+	[[deprecated("use tegia::json::_file()")]]
+	nlohmann::json file(const std::string &filename, bool is_null = true);
+	
+	[[deprecated("use tegia::json::_file()")]]
+	nlohmann::json file(const std::string &filename, tegia::json::error *error);
+
+	std::tuple<int, std::string, nlohmann::json> _file(const std::string &filename);
    
-   bool save(const std::string &filename, const nlohmann::json &data,const int  indent = -1, const char  indent_char = ' ');
-   nlohmann::json convert_xml(const std::string &xml_string);
+	bool save(const std::string &filename, const nlohmann::json &data, const int  indent = -1, const char  indent_char = ' ');
+	nlohmann::json convert_xml(const std::string &xml_string);
 
 } // END namespace json
-} // END namespace core
+} // END namespace tegia
 
 
 #endif

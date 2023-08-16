@@ -1,0 +1,64 @@
+{
+	"name": "models",
+	"path": "/home/igor/tegia/configurations/models",
+	"loads":
+	{
+		"Organizations": "bin/libOrganizations.so",
+		"Organization": "bin/libOrganization.so",
+		"Events": "bin/libEvents.so",
+		"MPersons": "bin/libMPersons.so",
+		"MPerson": "bin/libMPerson.so",
+		"Doc_creator": "bin/libDoc_creator.so",
+		"Edges": "bin/libEdges.so"
+	},
+	"actors":
+	[
+		{
+			"type": "Organizations",
+			"name": "models/organizations",
+			"isload": true
+		},
+		{
+			"type": "MPerson",
+			"name": "models/persons",
+			"isload": true,
+			"share": true
+		},
+		{
+			"type": "Events",
+			"name": "models/events",
+			"isload": true
+		},
+		{
+			"type": "Doc_creator",
+			"name": "models/document",
+			"isload": true
+		},
+		{
+			"type": "Edges",
+			"name": "models/edges",
+			"isload": true
+		}
+	],
+	"db":
+	{
+		"models":
+		{
+			"type": "mysql",
+			"dbname" : "government_models",
+			"host" : "localhost",
+			"password" : "P@$$w0rd",
+			"port" : 3306,
+			"user" : "tegia_user"
+		},
+		"models2":
+		{
+			"type": "mysql",
+			"dbname" : "models",
+			"host" : "localhost",
+			"password" : "P@$$w0rd",
+			"port" : 3306,
+			"user" : "tegia_user"
+		}
+	}
+}

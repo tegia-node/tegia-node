@@ -16,23 +16,23 @@ logger* logger::_self = NULL;
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-logger* logger::instance(const std::string &filename, int log_level)
+logger* logger::instance(const std::string &logdir, int log_level)
 {  // LOG_TRACE
 	if(!_self)
 	{
-		_self = new logger(filename, log_level);
+		_self = new logger(logdir, log_level);
 	}
 	return _self;
 };
 
 
-logger::logger(const std::string &filename, int log_level)
+logger::logger(const std::string &logdir, int log_level)
 { 
 	try
 	{
 		//std::cout << filename + "main.log" << std::endl;
 		this->flog_all.exceptions(std::fstream::failbit | std::fstream::badbit);
-		this->flog_all.open(filename + "main.log", std::ios::in | std::ios::app | std::ios::binary);
+		this->flog_all.open(logdir + "main.log", std::ios::in | std::ios::app | std::ios::binary);
 		if (!this->flog_all.is_open()) // если файл не открыт
 		{
 			std::cout << "Файл main.log не может быть открыт!\n"; // сообщить об этом

@@ -7,51 +7,17 @@
 #include <signal.h>
 #include <execinfo.h>
 #include <typeinfo> 
+#include <filesystem>
 
-// #include "platform/Node2.h" 
-#include "node/node.h" 
-#include <tegia/core/cast.h>
-
-
-#pragma GCC visibility push(hidden)
-
-
-void reportTrouble()
-{
-	void *callstack[128];
-	int frames = backtrace(callstack, 128);
-	char **strs=backtrace_symbols(callstack, frames);
-	// тут выводим бэктрейс в файлик crash_report.txt
-	// можно так же вывести и иную полезную инфу - версию ОС, программы, etc
-	FILE *f = fopen("crash_report.txt", "w");
-	if (f)
-	{
-		for(int i = 0; i < frames; ++i)
-		{
-			fprintf(f, "%s\n", strs[i]);
-		}
-		fclose(f);
-	}
-	free(strs);
-};
-
-
-
-void catchCrash(int signum)
-{
-	reportTrouble(); // отправляем краш-репорт
-	signal(signum, SIG_DFL); // перепосылаем сигнал
-	exit(3); //выходим из программы
-};
+#include <tegia/const.h>
+#include "node/node.h"
 
 
 int main(int argc, char* argv[])
 {
+	
 	std::string command;
 	std::string path;
-
-	std::string config_path = "/etc/tegia/config.json";
-	std::string mode = "default";
 
 	if(argc == 1)
 	{
@@ -73,8 +39,8 @@ int main(int argc, char* argv[])
 		std::cout << _GRAY_TEXT_ << "tegia llc @copyright 2018-2022" << _BASE_TEXT_ << std::endl;
 		std::cout << "Запуск платформы: tegia-node [КЛЮЧ] [АРГУМЕНТ]" << std::endl;
 		std::cout << " " << std::endl;
-		std::cout << "  --local                 Указывает, что в текущей директории располагается" << std::endl;
-		std::cout << "                          конфигурация роли tegia-node" << std::endl;
+		std::cout << "  --local                 Указывает, что конфигурация роли tegia-node" << std::endl;
+		std::cout << "                          располагается в текущей директории" << std::endl;
 		std::cout << "  --config [directory]    Указывает [directory] где располагается конфигурация" << std::endl;
 		std::cout << "                          роли tegia-node" << std::endl;
 		exit(0);
@@ -114,27 +80,17 @@ int main(int argc, char* argv[])
 	//
 
 	std::filesystem::path file("./config.json");
-	if(std::filesystem::is_regular_file(file))
-	{
-		config_path = "./config.json";
-		mode = "custom";
-	}
-	else
+	if(!std::filesystem::is_regular_file(file))
 	{
 		std::cout << _RED_TEXT_ << "config file [" << file.string() << "] not found" << _BASE_TEXT_ << std::endl;
 		exit(0);
 	}
 
-	//
-	// Запуск Платформы
-	//
 
-	signal(SIGSEGV, catchCrash);
-	signal(SIGINT, tegia::node::stop_node);
-	
 	try
 	{
-		auto node = tegia::node::instance();
+		auto node = tegia::node::node::instance();
+		node->run();
 
 		//
 		// TODO: эффективное использование главного потока приложения
