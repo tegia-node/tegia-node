@@ -166,7 +166,7 @@ echo "${_OK_}file '$tegia_folder/tegia.cnf' is saved"
 # ----------------------------------------------------------------------------------------
 
 sudo apt install -y git mc screen jq
-sudo apt install -y python build-essential default-libmysqlclient-dev libtool m4 automake uuid-dev libxml2-dev
+sudo apt install -y python3 build-essential default-libmysqlclient-dev libtool m4 automake uuid-dev libxml2-dev
 sudo apt install -y libcurl4-openssl-dev libssl-dev
 sudo apt install -y cmake zlibc
 sudo apt install -y libbz2-dev libzip-dev unzip
