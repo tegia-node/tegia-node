@@ -392,14 +392,14 @@ namespace tegia::sockets
         
         if (rc == -1)
         {
-            auto const str = fmt::format("Error happened while waiting data on the socket with id = {}: {}.", socket_id_, ::strerror(errno));
+            auto const str = fmt::format("Error happened while waiting data on the socket with id = {}: {}.", socket_id_.load(), ::strerror(errno));
             LERROR(str)
             EOUT(str)
         }
 #if defined (DEVELOPER_VERSION)        
         else if (rc == 0)
         {
-            NOUT(fmt::format("Timeout happened while waiting data on the socket with id = {}.", socket_id_));
+            NOUT(fmt::format("Timeout happened while waiting data on the socket with id = {}.", socket_id_.load()));
         }
 #endif        
         
