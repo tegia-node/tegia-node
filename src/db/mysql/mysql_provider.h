@@ -26,6 +26,7 @@ class provider
 	private:
 		static provider* _self;
 		std::map < std::string , tegia::mysql::pool * > _pools;
+		std::map < std::string , std::string > _aliases;
 		tegia::mysql::pool * get_pool(const std::string &name);
 		tegia::mysql::pool * add_pool(int threads_count, nlohmann::json config);
 		provider();

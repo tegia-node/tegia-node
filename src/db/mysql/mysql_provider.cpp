@@ -40,17 +40,30 @@ provider::provider()
 /////////////////////////////////////////////////////////////////////////////////////////////
 tegia::mysql::pool * provider::get_pool(const std::string &name)
 {
-	auto search = this->_pools.find(name);
+	//
+	// Ищем в таблице _aliases
+	//
+
+	std::string _name = name;
+
+	auto search_alias = this->_aliases.find(name);
+	if( search_alias  != this->_aliases.end() )
+	{
+		_name = search_alias->second;
+	}
+
+	auto search = this->_pools.find(_name);
 	if( search  != this->_pools.end() )
 	{
 		return search->second;
 	}
 
-	std::cout << _ERR_TEXT_ << "MYSQL POOL [" << name << "] NOT FOUND" << std::endl;
+	std::cout << _ERR_TEXT_ << "(get_pool) MYSQL POOL [" << name << "] NOT FOUND" << std::endl;
 	LERROR("MYSQL POOL [" << name << "] NOT FOUND");
 
 	return nullptr;
 };
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 tegia::mysql::pool * provider::add_pool(int threads_count, nlohmann::json config)
@@ -62,6 +75,34 @@ tegia::mysql::pool * provider::add_pool(int threads_count, nlohmann::json config
 		// Пул с таким именем уже существует!!!
 		return search->second;
 	}
+
+	//
+	// Проверяем, подключение это или alias
+	//
+
+	if(config.contains("alias") == true)
+	{
+		std::string alias = config["alias"].get<std::string>();
+
+		auto search = this->_pools.find(alias);
+		if( search  == this->_pools.end() )
+		{
+			std::cout << _ERR_TEXT_ << "(add_pool) MYSQL POOL [" << alias << "] NOT FOUND" << std::endl;
+			LERROR("MYSQL POOL [" << alias << "] NOT FOUND");
+			return nullptr;
+		}
+
+		//
+		// Добавляем alias в таблицу _aliases 
+		//
+
+		this->_aliases.insert({name,alias});
+		return search->second;
+	}
+
+	//
+	// Устанавливаем соединения
+	//
 
 	std::string type = "mysql";
 	if(config["type"].is_null() == false)
@@ -86,8 +127,6 @@ tegia::mysql::pool * provider::add_pool(int threads_count, nlohmann::json config
 	
 	return this->_pools[name]; 
 };
-
-
 
 
 }   // end namespace mysql
