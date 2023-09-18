@@ -17,6 +17,7 @@ install:
 	@echo "------------------------------------------------------------"
 	@echo " "
 
+	bash ./sphinx-install.sh
 	bash ./install.sh
 	make tegia-node
 	sudo ln -fs $(realpath .)/tegia-node /usr/bin/tegia-node
