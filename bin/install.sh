@@ -175,7 +175,6 @@ mkdir -p $tegia_folder/ui
 # ----------------------------------------------------------------------------------------
 
 cd $tegia_folder
-bash ./sphinx-install.sh
 cp -avr $tegia_folder/platform/bin/configs/sphinxdata $tegia_folder/sphinxdata
 
 sed -e "s/{TEGIA_FOLDER}/$(echo $tegia_folder | sed -E 's/(\W)/\\\1/g')/" \
@@ -193,16 +192,17 @@ sed -e "s/{TEGIA_FOLDER}/$(echo $tegia_folder | sed -E 's/(\W)/\\\1/g')/" \
 
 git clone https://github.com/Microsoft/vcpkg.git
 cd vcpkg
-./bootstrap-vcpkg.bat -disableMetrics
-./vcpkg install nlohmann-json json-schema-validator gumbo fmt vincentlaucsb-csv-parser xpack xlnt cpp-jwt duckx
+
+sudo ./bootstrap-vcpkg.bat -disableMetrics
+sudo ./vcpkg install nlohmann-json json-schema-validator gumbo fmt vincentlaucsb-csv-parser xpack xlnt cpp-jwt duckx
 
 #
 # xml2json
 #
 
-cd $tegia_folder/vendors
-git clone https://github.com/Cheedoong/xml2json
-sudo ln -fs $tegia_folder/vendors/xml2json /usr/include/xml2json
+# cd $tegia_folder/vendors
+# git clone https://github.com/Cheedoong/xml2json
+# sudo ln -fs $tegia_folder/vendors/xml2json /usr/include/xml2json
 
 #
 # tegia include files
