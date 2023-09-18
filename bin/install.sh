@@ -145,7 +145,7 @@ echo "${_OK_}file '$tegia_folder/tegia.cnf' is saved"
 #
 # ----------------------------------------------------------------------------------------
 
-sudo apt install -y git mc screen jq
+sudo apt install -y git mc screen jq zip
 sudo apt install -y python build-essential default-libmysqlclient-dev libtool m4 automake uuid-dev libxml2-dev
 sudo apt install -y libcurl4-openssl-dev libssl-dev
 sudo apt install -y cmake zlibc
@@ -193,7 +193,7 @@ sed -e "s/{TEGIA_FOLDER}/$(echo $tegia_folder | sed -E 's/(\W)/\\\1/g')/" \
 git clone https://github.com/Microsoft/vcpkg.git
 cd vcpkg
 
-sudo ./bootstrap-vcpkg.bat -disableMetrics
+sudo ./bootstrap-vcpkg.sh -disableMetrics
 sudo ./vcpkg install nlohmann-json json-schema-validator gumbo fmt vincentlaucsb-csv-parser xpack xlnt cpp-jwt duckx
 
 #
