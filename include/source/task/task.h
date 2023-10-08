@@ -68,7 +68,7 @@ class TASK
 
 			this->source = new DAO::SOURCE::LIST();
 
-			auto source_res = tegia::mysql::read("sources",this->source," _id = " + std::to_string(id_source));
+			auto source_res = tegia::mysql::read("osint_sources",this->source," _id = " + std::to_string(id_source));
 			switch(source_res.code)
 			{
 				case 200:
@@ -103,7 +103,7 @@ class TASK
 			this->task->_t_start = core::time::current();
 			this->task->_data = this->source->_job_data;
 
-			auto task_res = tegia::mysql::create("sources",this->task);
+			auto task_res = tegia::mysql::create("osint_sources",this->task);
 
 			(*responcedata) = nlohmann::json();
 			(*responcedata)["status"] = 200;
@@ -123,10 +123,10 @@ class TASK
 		{
 			this->task->_status = status;
 			this->task->_data = data;
-			auto task_res = tegia::mysql::update("sources",this->task);
+			auto task_res = tegia::mysql::update("osint_sources",this->task);
 
 			this->source->_job_data = data;
-			auto source_res = tegia::mysql::update("sources",this->source);
+			auto source_res = tegia::mysql::update("osint_sources",this->source);
 
 			return 0;
 		};
@@ -161,12 +161,12 @@ class TASK
 			this->task->_t_end = core::time::current();
 			this->task->_status = status;
 			this->task->_data = data;
-			auto task_res = tegia::mysql::update("sources",this->task);
+			auto task_res = tegia::mysql::update("osint_sources",this->task);
 			delete this->task;
 			this->task = nullptr;
 			
 			this->source->_job_data = data;
-			auto source_res = tegia::mysql::update("sources",this->source);
+			auto source_res = tegia::mysql::update("osint_sources",this->source);
 			delete this->source;
 			this->source = nullptr;
 
