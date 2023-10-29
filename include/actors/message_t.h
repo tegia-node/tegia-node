@@ -75,6 +75,8 @@ class message_t
 		void* request = nullptr;
 		bool is_local_ = true;
 
+		int priority = 2;
+
 	public:
 		
 		nlohmann::json data = nlohmann::json::object();
@@ -138,7 +140,22 @@ class message_t
 
 		nlohmann::json serialize() noexcept;
 		void deserialize(nlohmann::json& json_data) noexcept;
-		bool is_local() const noexcept { return is_local_; }
+		bool is_local() const noexcept { return is_local_; };
+
+		void set_priority(int _priority)
+		{
+			this->priority = _priority;
+		};
+
+		void priority_up()
+		{
+			this->priority = this->priority + 1;
+		};
+
+		int get_priority()
+		{
+			return this->priority;
+		};
 
 };
 

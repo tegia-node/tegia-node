@@ -301,7 +301,7 @@ bool client::set_sslp12(const std::string &ssl_sert_path,const std::string &ssl_
 
 bool client::set_proxy(const std::string &_addr,const std::string &_port)
 {
-	std::string proxy = "http://" + _addr + ":" + _port;
+	std::string proxy = _addr + ":" + _port;
 
 	std::cout << "[" << proxy << "]" << std::endl;
 

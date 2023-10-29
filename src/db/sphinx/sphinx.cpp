@@ -79,7 +79,14 @@ namespace sphinx {
 						index++;
 						break;
 					}
-					
+
+					if(str[index] == '@')
+					{
+						_str = _str + R"(\\\@)";
+						index++;
+						break;
+					}
+
 					_str = _str + str[index];
 					index++;
 
