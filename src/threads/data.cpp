@@ -37,11 +37,19 @@ void _data::init(const nlohmann::json &config)
 	// Соединение с БД
 	//
 	
-	if(config.contains("db") == true)
+	if(config.contains("connections") == true)
 	{
-		for (auto it = config["db"].begin(); it != config["db"].end(); ++it)
+		for (auto it = config["connections"].begin(); it != config["connections"].end(); ++it)
 		{
-			this->mysql_provider->add(it.key(),it.value());
+			this->mysql_provider->add_connection(it.key(),it.value());
+		}
+	}
+
+	if(config.contains("contexts") == true)
+	{
+		for (auto it = config["contexts"].begin(); it != config["contexts"].end(); ++it)
+		{
+			this->mysql_provider->add_context(it.key(),it.value());
 		}
 	}
 
@@ -51,9 +59,9 @@ void _data::init(const nlohmann::json &config)
 };
 
 
-tegia::mysql::records * _data::query(const std::string &name,const std::string &query, bool trace)
+tegia::mysql::records * _data::query(const std::string &context,const std::string &query, bool trace)
 {
-	return this->mysql_provider->query(name,query,trace);
+	return this->mysql_provider->query(context,query,trace);
 };
 
 

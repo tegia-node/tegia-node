@@ -4,12 +4,43 @@
 
 #include <string>
 #include <tegia2/context/context.h>
+#include <tegia2/actors/message_t.h>
+#include <tegia2/actors/actor_base_t.h>
 
 // LOGGER
 #include "node/logger.h"
 #define _LOG_LEVEL_ _LOG_NOTICE_
 #include "node/log.h"
 // LOGGER
+
+
+
+
+
+std::string fn1(int i)
+{
+	std::cout << "fn1 [" << i << "]" << std::endl;
+	//std::this_thread::sleep_for(1s);
+	return "ok";
+};
+
+
+std::string fn2(int i)
+{
+	std::cout << "fn2 [" << i << "]" << std::endl;
+	//std::this_thread::sleep_for(1s);
+	return "ok";
+};
+
+
+std::string fn3(int i)
+{
+	std::cout << "fn3 [" << i << "]" << std::endl;
+	//std::this_thread::sleep_for(1s);
+	return "ok";
+};
+
+
 
 std::string fn(int i)
 {
@@ -19,7 +50,7 @@ std::string fn(int i)
 	std::cout << "entities count = " << res->get("::count(*)",0) << std::endl;
 	delete res;
 
-	auto res2 = tegia::mysql::query("models","SELECT count(*) FROM `events_model`;");
+	auto res2 = tegia::mysql::query("models","SELECT count(*) FROM `persons_npd`;");
 	std::cout << "events_model count = " << res->get("::count(*)",0) << std::endl;
 	delete res2;
 

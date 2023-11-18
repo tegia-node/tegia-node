@@ -46,8 +46,9 @@ class connection
 		int port;
 		std::string user;
 		std::string password;
-		std::string dbname;
 		MYSQL *hConnect;
+
+		std::string dbname;
 		
 	public:
 		connection(
@@ -56,14 +57,13 @@ class connection
 			const std::string &_host, 
 			const int _port, 
 			const std::string &_user, 
-			const std::string &_password, 
-			const std::string &_dbname);
+			const std::string &_password);
 		virtual ~connection();
 
 		std::tuple<int, std::string> connect(void);
 		void close(void);
 
-		records * query(const std::string &query, bool trace = false);
+		records * query(const std::string &dbname, const std::string &query, bool trace = false);
 		records * requery(const std::string &query);
 };
 

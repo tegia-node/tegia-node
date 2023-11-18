@@ -30,7 +30,7 @@ logger::logger(const std::string &logdir, int log_level)
 { 
 	try
 	{
-		//std::cout << filename + "main.log" << std::endl;
+		std::cout << logdir + "main.log" << std::endl;
 		this->flog_all.exceptions(std::fstream::failbit | std::fstream::badbit);
 		this->flog_all.open(logdir + "main.log", std::ios::in | std::ios::app | std::ios::binary);
 		if (!this->flog_all.is_open()) // если файл не открыт

@@ -1,15 +1,12 @@
 #ifndef H_TEGIA_THREAD_WORKER
 #define H_TEGIA_THREAD_WORKER
-// --------------------------------------------------------------------
 
-#include "data.h" 
 #include "queue.h" 
-//#include "pool.h"
 
-#include <tegia/core/cast.h>
-#include <tegia2/core/json.h>
 
-#include "../node/config.h"
+namespace tegia {
+class context2;
+}	// END namespace tegia
 
 
 namespace tegia {
@@ -21,14 +18,17 @@ class worker
 		std::thread		thread;
 		tegia::threads::queue * _queue;
 		std::function<void(const std::string &)> _init_callback;
+		bool is_work = true;
 
 	public:
 
 		std::string tid;
 
-		worker(tegia::threads::queue * _queue, const nlohmann::json &config, std::function<void(const std::string &)> _init_callback): thread(&worker::thread_fn, this, config)                                    
+
+		worker(
+			tegia::threads::queue * _queue, 
+			std::function<::tegia::context2 const * (const std::string &)> _thread_init): thread(&worker::thread_fn, this, _thread_init)                                    
 		{  
-			this->_init_callback = _init_callback;
 			this->_queue = _queue;
 			this->tid = core::cast<std::string>(this->thread.get_id());
 		};
@@ -40,20 +40,19 @@ class worker
 		};
 
 
-		void thread_fn(const nlohmann::json config)
+		void thread_fn(std::function<::tegia::context2 const * (const std::string &)> _thread_init)
 		{
 			//
 			// INIT THREAD DATA
 			//
 
-			::tegia::threads::data->init(config);
-			this->_init_callback(this->tid);
+			::tegia::context2 const * context = _thread_init(this->tid);
 
 			//
-			// YHREAD LOOP
+			// THREAD LOOP
 			//
 
-			while(true)
+			while(this->is_work)
 			{
 
 				std::unique_lock<std::mutex> locker(this->_queue->mutex);
@@ -76,8 +75,7 @@ class worker
 					}
 
 					locker.unlock();
-					// thread_data->context = _task->_context;
-					_task->fn();
+					_task->fn(context);
 					delete _task;
 
 					locker.lock();   

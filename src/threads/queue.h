@@ -8,15 +8,22 @@
 #include <queue>
 #include <mutex>
 #include <condition_variable>
+#include <chrono>
 
+using namespace std::chrono_literals;
+
+
+namespace tegia {
+	class context2;
+}	// END namespace tegia
 
 namespace tegia {
 namespace threads {
 
 // Приоритет выполнения обработчика  
-   #define _PHIGHT_     0 
-   #define _PMEDIUM_    1 
-   #define _PLOW_       2 
+   // #define _PHIGHT_     0 
+   // #define _PMEDIUM_    1 
+   // #define _PLOW_       2 
 
 class worker;
 
@@ -24,7 +31,7 @@ class worker;
 struct task
 {
 	std::string uuid;
-	std::function<void()> fn;
+	std::function<void(::tegia::context2 const * context)> fn;
 
 	task(const std::string &_uuid): uuid(_uuid)
 	{
@@ -43,6 +50,18 @@ class queue
 	friend class tegia::threads::worker;
 
 	protected:
+
+		std::vector<std::queue<task*>> tasks 
+		{
+			{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},
+			{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},
+			{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},
+			{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}
+		};
+
+		std::bitset<64> tasks_bitset {0};
+
+		
 		// Очереди задач на исполнение
 		std::queue<task*>		hight_fqueue;
 		std::queue<task*>		medium_fqueue;
@@ -57,21 +76,35 @@ class queue
 	public:
 
 		queue()
-		{  	};
+		{	};
 
 		~queue()
 		{  	};
 
 
+
 		int add(tegia::threads::task * _task, int priority = _PHIGHT_)
 		{  
+			if(priority > 63 || priority < 0)
+			{
+				// TODO: GENERATE ERROR
+				return 0;
+			}
+
 			std::unique_lock<std::mutex> locker(this->mutex);
+			
+			/*
 			switch(priority)
 			{
 				case _PHIGHT_:	this->hight_fqueue.push(_task); break;
 				case _PMEDIUM_: this->medium_fqueue.push(_task); break;
 				case _PLOW_: this->low_fqueue.push(_task); break;
 			}
+			*/
+
+			this->tasks[priority].push(_task);
+			this->tasks_bitset.set(priority);
+
 			this->cv.notify_one();
 			return 0;
 		};
@@ -80,26 +113,28 @@ class queue
 		tegia::threads::task * get()
 		{
 			tegia::threads::task * _task = nullptr;
-				
-			if(!this->hight_fqueue.empty())
+
+			//
+			// TODO: Возможно, тут нужен мьютекс
+			// this->mutex.lock();
+			//
+
+			long long int x = this->tasks_bitset.to_ullong();
+			int s = ffsll(x);
+
+			if(s == 0)
 			{
-				_task = this->hight_fqueue.front();
-				this->hight_fqueue.pop();
+				std::cout << "not found tasks" << std::endl;
+				// exit(0);
 				return _task;
 			}
 
-			if(!this->medium_fqueue.empty())
-			{
-				_task = this->medium_fqueue.front();
-				this->medium_fqueue.pop();
-				return _task;
-			}
+			_task = this->tasks[s-1].front();
+			this->tasks[s-1].pop();
 
-			if(!this->low_fqueue.empty())
+			if(this->tasks[s-1].size() == 0)
 			{
-				_task = this->low_fqueue.front();
-				this->low_fqueue.pop();
-				return _task;
+				this->tasks_bitset.reset(s-1);
 			}
 
 			return _task;

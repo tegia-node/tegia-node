@@ -31,17 +31,22 @@ platform:
 	g++ -c -o context.o                  ../src/context/context.cpp       $(Flag)
 	g++ -c -o user.o                     ../src/context/user.cpp          $(Flag)
 
+#	ACTORS
+	g++ -c -o actors_types.o             ../src/actors/types.cpp          $(Flag)
+
 #	NODE
 	g++ -c -o node.o                     ../src/node/node.cpp             $(Flag)
 	g++ -c -o node.config.o              ../src/node/config.cpp           $(Flag)
 	g++ -c -o node.logger.o              ../src/node/logger.cpp           $(Flag)
+	g++ -c -o tegia.o                    ../src/tegia.cpp                 $(Flag)
 	g++ -c -o main.o                     ../src/main.cpp                  $(Flag)
  
-	g++ -o tegia-node main.o \
+	g++ -o tegia-node main.o tegia.o \
 		core_crypt.o core.json.o \
 		thread_pool.o thread_data.o \
 		mysql_records.o mysql_connection.o mysql_provider.o	mysql.o \
 		context.o user.o \
+		actors_types.o \
 		node.o node.config.o node.logger.o \
 		-pthread -ldl -lz -lcurl -lcrypto -lmysqlclient -luuid -lstdc++fs -lxml2 \
 		-lnlohmann_json_schema_validator -lfmt `pkg-config --cflags --libs gumbo` \

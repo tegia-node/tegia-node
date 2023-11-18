@@ -3,14 +3,17 @@
 // --------------------------------------------------------------------
 
 #include <tegia/core/crypt.h>
+#include <tegia/const.h>
+#include <tegia/core/cast.h>
 #include <tegia2/context/context.h>
 
-#include "../node/config.h"
 
 #include "queue.h" 
-#include "data.h"
 #include "worker.h"
 
+namespace tegia {
+class context2;
+}	// END namespace tegia
 
 namespace tegia {
 namespace threads {
@@ -32,9 +35,10 @@ class pool
 		pool();
 		~pool();
 
-		int init(int threads_count, const nlohmann::json &db_config, std::function<void()> _callback);
+		int init(int threads_count, std::function<::tegia::context2 const * ()> _thread_init, std::function<void()> _callback);
+		::tegia::context2 const * thread_init(const std::string &tid, std::function<::tegia::context2 const * ()> _thread_init);
 		void signal(const std::string &tid);
-		int add_task(std::function<void()> _fn, int priority);
+		int add_task(std::function<void(::tegia::context2 const *)> _fn, int priority);
 
 }; // class pool
 

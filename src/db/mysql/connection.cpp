@@ -43,15 +43,13 @@ namespace mysql {
 		const std::string &_host,
 		const int _port,
 		const std::string &_user,
-		const std::string &_password,
-		const std::string &_dbname
+		const std::string &_password
 	):	name(_name),
 		type(_type),
 		host(_host),
 		port(_port),
 		user(_user),
 		password(_password),
-		dbname(_dbname),
 		hConnect(nullptr)
 	{ };
 
@@ -103,7 +101,8 @@ namespace mysql {
 				this->host.c_str(),
 				this->user.c_str(),
 				this->password.c_str(),
-				this->dbname.c_str(),
+				//this->dbname.c_str(),
+				NULL,
 				this->port, NULL, 0);
 			if (!res)
 			{
@@ -149,10 +148,10 @@ namespace mysql {
 	*/
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
-	tegia::mysql::records *connection::query(const std::string &query, bool trace)
+	tegia::mysql::records *connection::query(const std::string &dbname, const std::string &query, bool trace)
 	{
-		std::cout << "query = " << query << std::endl;
-		
+		// std::cout << "query = " << query << std::endl;
+
 		tegia::mysql::records * result = new tegia::mysql::records(query, 0);
 		
 		//
@@ -164,6 +163,12 @@ namespace mysql {
 			result->code = DB_ERROR;
 			result->info = "connection is null";
 			return result;
+		}
+
+		if(this->dbname != dbname)
+		{
+			this->dbname = dbname;
+			mysql_select_db(this->hConnect,this->dbname.c_str());
 		}
 
 		//
@@ -292,7 +297,7 @@ namespace mysql {
 			{
 				//LERROR("MYSQL ER_ERROR_ON_RENAME");
 				delete result;
-				return this->query(query,trace);
+				return this->query(this->dbname,query,trace);
 			}
 			break;
 
@@ -346,7 +351,7 @@ namespace mysql {
 		else
 		{
 			//LERROR("Restore connection [ok]");
-			return this->query(query);
+			return this->query(this->dbname,query);
 		}
 	};
 

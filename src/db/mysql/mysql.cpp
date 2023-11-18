@@ -14,9 +14,9 @@ namespace mysql {
 	/////////////////////////////////////////////////////////////////////////////////////////////
 
 
-	tegia::mysql::records * query(const std::string &connection_name, const std::string &query, bool trace)
+	tegia::mysql::records * query(const std::string &context, const std::string &query, bool trace)
 	{
-		return tegia::threads::data->query(connection_name,query,trace);
+		return tegia::threads::data->query(context,query,trace);
 	};
 
 

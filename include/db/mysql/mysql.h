@@ -33,7 +33,7 @@ namespace mysql{
 	 *	\details
 	 */
 
-	tegia::mysql::records *query(const std::string &connection_name, const std::string &query, bool trace = false);
+	tegia::mysql::records *query(const std::string &context, const std::string &query, bool trace = false);
 
 
 } // END namespace mysql

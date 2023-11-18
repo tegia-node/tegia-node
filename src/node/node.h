@@ -3,9 +3,21 @@
 // ---------------------------------------------------------------------------------------------------
 
 #include <iostream>
+#include <tuple>
+
 #include <tegia2/core/json.h>
+#include <tegia2/actors/types.h>
 
 #include "config.h"
+
+
+
+struct actor_t
+{
+	std::string name;
+	tegia::actors::actor_base * actor;
+	tegia::actors::type_base *type;
+};
 
 
 namespace tegia {
@@ -32,9 +44,19 @@ class node
 
 		const nlohmann::json * const config();
 
+		int send_message(const std::string &actor, const std::string &action, nlohmann::json data);
+
 	private:
 		tegia::threads::pool * _threads;
 		tegia::node::config  * _config;
+
+
+		tegia::actors::map actor_map;
+
+
+		::tegia::context2 const * init_thread(const nlohmann::json &config);
+
+
 
 };	// END class node
 

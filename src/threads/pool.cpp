@@ -1,22 +1,30 @@
 
 #include "pool.h"
 
-/*
-void init_context()
-{
-	std::cout << "init context" << std::endl;
-	std::cout << "[constructor] tid = " << tegia::context::tid() << std::endl;
-};
-*/
-
 
 namespace tegia {
 namespace threads {
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 pool::pool()
 {
 	this->queue = new tegia::threads::queue();
 };
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 pool::~pool()
 {
@@ -24,7 +32,14 @@ pool::~pool()
 };
 
 
-int pool::init(int threads_count, const nlohmann::json &db_config, std::function<void()> _callback)
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+int pool::init(int threads_count, std::function<::tegia::context2 const * ()> _thread_init, std::function<void()> _callback)
 {
 	this->threads_count = threads_count;
 	this->_callback = _callback;
@@ -32,9 +47,8 @@ int pool::init(int threads_count, const nlohmann::json &db_config, std::function
 	for(int i = 0; i < threads_count; i++)
 	{
 		auto pWorker = std::make_shared<tegia::threads::worker>(
-			this->queue,												// очередь задач
-			db_config, 													// конфиг подключения к БД
-			std::bind(&pool::signal,this, std::placeholders::_1)		// фунция, сигнализирующая, то поток инициализирован
+			this->queue,
+			std::bind(&pool::thread_init,this, std::placeholders::_1, _thread_init)
 		);
 
 		std::cout << _RED_TEXT_ << "tid = " << pWorker->tid << _BASE_TEXT_ << std::endl;
@@ -42,8 +56,29 @@ int pool::init(int threads_count, const nlohmann::json &db_config, std::function
 		this->_workers.emplace(pWorker->tid, pWorker);
 	}
 
-	return 0;
+	return 0;	
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+::tegia::context2 const * pool::thread_init(const std::string &tid, std::function<::tegia::context2 const * ()> _thread_init)
+{
+	::tegia::context2 const * context = _thread_init();
+	this->signal(tid);
+	return context;
 };
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 void pool::signal(const std::string &tid)
@@ -59,13 +94,21 @@ void pool::signal(const std::string &tid)
 };
 
 
-int pool::add_task(std::function<void()> _fn, int priority)
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+int pool::add_task(std::function<void(::tegia::context2 const *)> _fn, int priority)
 {
 	auto _task = new tegia::threads::task(tegia::random::uuid());
 	_task->fn = _fn;
 	this->queue->add(_task, priority);
 	return 0;
 };
+
 
 
 }  // namespace threads

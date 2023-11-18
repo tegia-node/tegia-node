@@ -32,15 +32,26 @@
 namespace tegia { 
 namespace mysql {
 
+
+struct context_t
+{
+	std::string dbname;
+	std::string connection_name;
+	tegia::mysql::connection * connection;
+};
+
+
 class provider
 {		
 	private:
 		std::unordered_map<std::string, tegia::mysql::connection *> _connections;
+		std::unordered_map<std::string, context_t> _contexts;
 		
 	public:
 		provider();
 		virtual ~provider();
-		bool add(const std::string &name, nlohmann::json config);
+		bool add_connection(const std::string &name, nlohmann::json config);
+		bool add_context(const std::string &name, nlohmann::json config);
 		tegia::mysql::records * query(const std::string &name, const std::string &query, bool trace = false);
 };
 

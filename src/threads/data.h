@@ -11,6 +11,15 @@
 
 #include "../db/mysql/provider.h"
 
+
+namespace tegia {
+namespace node {
+
+class node;
+
+}
+}
+
 namespace tegia 
 {
 	class context;
@@ -22,17 +31,27 @@ namespace threads {
 class pool;
 class worker;
 
+
+/*
+	DOCUMENTATION
+
+	Класс _data реализует инкапсуляцию данных в контексте потока 
+
+*/
+
+
 class _data
 {
 	friend class ::tegia::context;
 	friend class ::tegia::threads::pool;
 	friend class ::tegia::threads::worker;
+	friend class ::tegia::node::node;
 
 	public:
 		_data();
 		~_data();
 
-		tegia::mysql::records * query(const std::string &name,const std::string &query, bool trace = false);
+		tegia::mysql::records * query(const std::string &context, const std::string &query, bool trace = false);
 	
 	private:
 

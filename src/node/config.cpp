@@ -10,9 +10,11 @@ config::~config(){};
 
 bool config::load()
 {
+	///////////////////////////////////////////////////////////////////////////////////////
 	//
 	// NODE CONFIG
 	//
+	///////////////////////////////////////////////////////////////////////////////////////
 
 	nlohmann::json node_conf;
 
@@ -37,9 +39,11 @@ bool config::load()
 		}
 	}
 
+	///////////////////////////////////////////////////////////////////////////////////////
 	//
 	// VALIDATORS
 	//
+	///////////////////////////////////////////////////////////////////////////////////////
 
 	nlohmann::json_schema::json_validator validator_conf;
 	validator_conf.set_root_schema(nlohmann::json::parse(R"(
@@ -110,11 +114,17 @@ bool config::load()
 		"required": ["type","dbname","host","port","user","password"]
 	})"));
 
+
+	///////////////////////////////////////////////////////////////////////////////////////
 	//
 	// READ CONFIGURATONS
 	//
+	///////////////////////////////////////////////////////////////////////////////////////
+
 
 	nlohmann::json dbs = nlohmann::json::object();
+	dbs["connections"] = nlohmann::json::object();
+	dbs["contexts"]    = nlohmann::json::object();
 
 	for(auto config = node_conf["configurations"].begin(); config != node_conf["configurations"].end(); ++config)
 	{
@@ -132,6 +142,7 @@ bool config::load()
 			std::cout << "         \"name\": <string>," << std::endl;
 			std::cout << "         \"file\": <string: path to config file>" << std::endl;
 			std::cout << "      }" << std::endl;
+			std::cout << config->dump() << std::endl;
 			exit(0);
 		}
 
@@ -161,14 +172,15 @@ bool config::load()
 		this->_names.push_back(conf->name);
 
 		//
-		// Читаем секцию DB
+		// Читаем секцию db/connections
 		//
 
-		for(auto db = conf->data["db"].begin(); db != conf->data["db"].end(); ++db)
+		for(auto db = conf->data["db"]["connections"].begin(); db != conf->data["db"]["connections"].end(); ++db)
 		{
 			std::string name = db.key();
 			// std::cout << "name = " << db.key() << std::endl;
 
+			/*
 			try
 			{
 				validator_db.validate( db.value() );
@@ -179,17 +191,58 @@ bool config::load()
 				std::cout << _ERR_TEXT_ << "db '" << name << "' not valud \n" << e.what() << std::endl;
 				exit(0);
 			}
+			*/
 
-			if(dbs.contains(name) == false)
+			if(dbs["connections"].contains(name) == false)
 			{
-				dbs["db"][name] = db.value();
+				dbs["connections"][name] = db.value();
 			}
 			else
 			{
-				if(dbs["db"][name] != db.value())
+				if(dbs["connections"][name] != db.value())
 				{
 					std::cout << _ERR_TEXT_ << "not equal '" << name << "'" << std::endl;
-					std::cout << "old: \n" << _YELLOW_ << dbs["db"][name] << _BASE_TEXT_ << std::endl;
+					std::cout << "old: \n" << _YELLOW_ << dbs["connections"][name] << _BASE_TEXT_ << std::endl;
+					std::cout << "new: \n" << _YELLOW_ << db.value() << _BASE_TEXT_ << std::endl;
+					exit(0);
+				}
+			}
+			
+			// std::cout << "data = " << db.value() << std::endl;			
+		}
+
+		//
+		// Читаем секцию db/contexts
+		//
+
+		for(auto db = conf->data["db"]["contexts"].begin(); db != conf->data["db"]["contexts"].end(); ++db)
+		{
+			std::string name = db.key();
+			// std::cout << "name = " << db.key() << std::endl;
+
+			/*
+			try
+			{
+				validator_db.validate( db.value() );
+			}
+
+			catch(const std::exception& e)
+			{
+				std::cout << _ERR_TEXT_ << "db '" << name << "' not valud \n" << e.what() << std::endl;
+				exit(0);
+			}
+			*/
+
+			if(dbs["contexts"].contains(name) == false)
+			{
+				dbs["contexts"][name] = db.value();
+			}
+			else
+			{
+				if(dbs["contexts"][name] != db.value())
+				{
+					std::cout << _ERR_TEXT_ << "not equal '" << name << "'" << std::endl;
+					std::cout << "old: \n" << _YELLOW_ << dbs["contexts"][name] << _BASE_TEXT_ << std::endl;
 					std::cout << "new: \n" << _YELLOW_ << db.value() << _BASE_TEXT_ << std::endl;
 					exit(0);
 				}
@@ -213,9 +266,25 @@ bool config::load()
 		this->_map.insert({conf->name,conf});
 	}
 
+	//
+	// TEST
+	//
+
+	/*
+	for(auto it = this->_map.begin(); it != this->_map.end(); ++it)
+	{
+		std::cout << it->first << std::endl;
+	}
+
+	exit(0);
+	*/
+
 
 	return true;
 };
+
+
+
 
 
 const nlohmann::json * const config::get(const std::string &name)
