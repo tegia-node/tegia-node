@@ -190,24 +190,6 @@ mkdir -p $tegia_folder/ui
 
 # ----------------------------------------------------------------------------------------
 #
-# Install Sphinx Search
-#
-# ----------------------------------------------------------------------------------------
-
-cd $tegia_folder
-wget -N http://sphinxsearch.com/files/sphinx-3.1.1-612d99f-linux-amd64.tar.gz
-tar zxf sphinx-3.1.1-612d99f-linux-amd64.tar.gz
-cp -avr $tegia_folder/platform/bin/configs/sphinxdata $tegia_folder/sphinxdata
-
-sed -e "s/{TEGIA_FOLDER}/$(echo $tegia_folder | sed -E 's/(\W)/\\\1/g')/" \
-    -e "s/{MYSQL_HOST}/$(echo $mysql_host | sed -E 's/(\W)/\\\1/g')/" \
-    -e "s/{MYSQL_PORT}/$(echo $mysql_port | sed -E 's/(\W)/\\\1/g')/" \
-    -e "s/{MYSQL_USER}/$(echo $mysql_user | sed -E 's/(\W)/\\\1/g')/" \
-    -e "s/{MYSQL_PASSWORD}/$(echo $mysql_password | sed -E 's/(\W)/\\\1/g')/" \
-    $tegia_folder/platform/bin/configs/sphinx-example.conf > $tegia_folder/platform/bin/configs/sphinx.conf
-
-# ----------------------------------------------------------------------------------------
-#
 # Загружаем и настраиваем используемые библиотеки
 #
 # ----------------------------------------------------------------------------------------
@@ -279,11 +261,6 @@ make
 sudo make install
 sudo ldconfig
 
-#
-# libxml2 headers
-#
-
-#sudo ln -fs /usr/include/libxml2/libxml /usr/include/libxml
 
 #
 # vincentlaucsb / csv-parser
