@@ -1,4 +1,4 @@
-#include <tegia/core/crypt.h>
+#include <tegia2/core/crypt.h>
 #include <random>
 #include <chrono>
 
@@ -104,9 +104,31 @@ std::string uuid()
 
 /////////////////////////////////////////////////////////////////////////////////
 //
+// CRC32
+//
+/////////////////////////////////////////////////////////////////////////////////
+
+
+namespace tegia {
+namespace crypt {
+
+unsigned long int crc32(const std::string &data)
+{
+	unsigned long int crc = ::crc32(0L, Z_NULL, 0);
+	crc = ::crc32(crc, (const unsigned char*)data.c_str(), data.length());
+	return crc;
+};
+
+}	// END namespace crypt
+}	// END namespace tegia
+
+
+/////////////////////////////////////////////////////////////////////////////////
+//
 // MD5
 //
 /////////////////////////////////////////////////////////////////////////////////
+
 
 namespace tegia {
 namespace crypt {

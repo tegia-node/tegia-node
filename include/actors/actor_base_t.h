@@ -5,7 +5,7 @@
 #include <atomic>
 
 
-#define _action_func_bind_(_function_) std::bind(_function_, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+#define _action_func_bind_(_function_) std::bind(_function_, std::placeholders::_1, std::placeholders::_2)
 #define ADD_ACTION(_name_, _function_) actor_type->add_action( _name_, _action_func_bind_(_function_) )
 
 

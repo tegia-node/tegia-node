@@ -21,8 +21,8 @@ bool config::load()
 	{
 		int code;
 		std::string message;
-		std::tie(code,message,node_conf) = tegia::json::_file("./config.json");
-
+		std::tie(code, message, node_conf) = tegia::json::_file("./config.json");
+		
 		auto conf = new _conf();
 		conf->name = "node";
 		conf->file = "./config.json";
@@ -124,7 +124,7 @@ bool config::load()
 
 	nlohmann::json dbs = nlohmann::json::object();
 	dbs["connections"] = nlohmann::json::object();
-	dbs["contexts"]    = nlohmann::json::object();
+	dbs["databases"]   = nlohmann::json::object();
 
 	for(auto config = node_conf["configurations"].begin(); config != node_conf["configurations"].end(); ++config)
 	{
@@ -157,8 +157,8 @@ bool config::load()
 
 		int code;
 		std::string message;
-
 		std::tie(code,message,conf->data) = tegia::json::_file(conf->file);
+		
 		if(code != 0)
 		{
 			std::cout << _ERR_TEXT_ << "ADD CONFIG" << std::endl;			
@@ -172,13 +172,13 @@ bool config::load()
 		this->_names.push_back(conf->name);
 
 		//
-		// Читаем секцию db/connections
+		// CONNECTIONS
 		//
 
 		for(auto db = conf->data["db"]["connections"].begin(); db != conf->data["db"]["connections"].end(); ++db)
 		{
 			std::string name = db.key();
-			// std::cout << "name = " << db.key() << std::endl;
+			std::cout << "db connection name = " << name << std::endl;
 
 			/*
 			try
@@ -207,18 +207,16 @@ bool config::load()
 					exit(0);
 				}
 			}
-			
-			// std::cout << "data = " << db.value() << std::endl;			
 		}
 
 		//
-		// Читаем секцию db/contexts
+		// DATABASES
 		//
 
-		for(auto db = conf->data["db"]["contexts"].begin(); db != conf->data["db"]["contexts"].end(); ++db)
+		for(auto db = conf->data["db"]["databases"].begin(); db != conf->data["db"]["databases"].end(); ++db)
 		{
 			std::string name = db.key();
-			// std::cout << "name = " << db.key() << std::endl;
+			std::cout << "db name = " << name << std::endl;
 
 			/*
 			try
@@ -233,28 +231,25 @@ bool config::load()
 			}
 			*/
 
-			if(dbs["contexts"].contains(name) == false)
+			if(dbs["databases"].contains(name) == false)
 			{
-				dbs["contexts"][name] = db.value();
+				dbs["databases"][name] = db.value();
 			}
 			else
 			{
-				if(dbs["contexts"][name] != db.value())
+				if(dbs["databases"][name] != db.value())
 				{
 					std::cout << _ERR_TEXT_ << "not equal '" << name << "'" << std::endl;
-					std::cout << "old: \n" << _YELLOW_ << dbs["contexts"][name] << _BASE_TEXT_ << std::endl;
+					std::cout << "old: \n" << _YELLOW_ << dbs["databases"][name] << _BASE_TEXT_ << std::endl;
 					std::cout << "new: \n" << _YELLOW_ << db.value() << _BASE_TEXT_ << std::endl;
 					exit(0);
 				}
 			}
-			
-			// std::cout << "data = " << db.value() << std::endl;			
 		}
 
 		std::cout << _OK_TEXT_ << "ADD CONFIG" << std::endl;
 		std::cout << "      name = " << conf->name << std::endl;
 		std::cout << "      file = " << conf->file << std::endl;
-		// std::cout << _YELLOW_ << conf->data << _BASE_TEXT_ << std::endl;
 		std::cout << " " << std::endl;
 	}
 

@@ -1,5 +1,4 @@
 #include <tegia2/context/context.h>
-#include <tegia2/context/context2.h>
 #include <tegia2/db/mysql/mysql.h>
 
 #include <tegia2/core/json.h> 
@@ -53,28 +52,23 @@ node::~node()
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-::tegia::context2 const * node::init_thread(const nlohmann::json &config)
+void node::init_thread(const nlohmann::json &config)
 {
-	::tegia::context2 const * context = new ::tegia::context2();
 	::tegia::threads::data->init(config);
-	return context;
 };
 
 
-int node::send_message(const std::string &actor, const std::string &action, nlohmann::json data)
+int node::send_message(const std::string &actor, const std::string &action, const std::shared_ptr<message_t> &message, int priority)
 {
-	int result = 0;
-	std::function<void(::tegia::context2 const *)> _fn;
-
-	std::tie(result,_fn) = this->actor_map.send_message(
+	auto [result,_fn] = this->actor_map.send_message(
 		actor,
 		action,
-		data
+		message
 	);
 
 	if(result == 200)
 	{
-		this->_threads->add_task(_fn,10);
+		this->_threads->add_task(_fn,priority);
 	}
 
 	return 0;
@@ -143,6 +137,7 @@ bool node::action()
 	this->actor_map.add_domain("base","local");
 	this->actor_map.add_domain("http","local");
 	this->actor_map.add_domain("test","remote");
+	this->actor_map.add_domain("app","local");
 
 	std::cout << _YELLOW_ << "\n--------------------------------------------" << _BASE_TEXT_ << std::endl;
 	std::cout << _YELLOW_ << "NODE INIT" << _BASE_TEXT_ << std::endl;
@@ -154,10 +149,12 @@ bool node::action()
 	
 	for(auto message = messages.begin(); message != messages.end(); ++message)
 	{
+		auto msg = std::make_shared<message_t>((*message)["data"]);
 		this->send_message(
 			(*message)["actor"].get<std::string>(),
 			(*message)["action"].get<std::string>(),
-			(*message)["data"]
+			msg,
+			60
 		);
 	}
 

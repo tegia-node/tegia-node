@@ -322,7 +322,7 @@ std::tuple<bool,std::string,std::string,std::string> resolve_domain(const std::s
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-std::tuple<int,std::function<void(::tegia::context2 const *)>> map::send_message(const std::string &name, const std::string &action, nlohmann::json data)
+std::tuple<int,std::function<void()>> map::send_message(const std::string &name, const std::string &action, const std::shared_ptr<message_t> &message)
 {
 	//
 	//
@@ -334,12 +334,15 @@ std::tuple<int,std::function<void(::tegia::context2 const *)>> map::send_message
 		{
 			// TODO: add task
 
-			auto fn = pos->second.type->bind_action(pos->second.actor, action, std::make_shared<message_t>());
+			// auto message = std::make_shared<message_t>();
+			// message->data = data;
+
+			auto fn = pos->second.type->bind_action(pos->second.actor, action, message);
 			if(fn != nullptr)
 			{
-				auto _fn = [fn](::tegia::context2 const * context)
+				auto _fn = [fn]()
 				{
-					int result = fn(context);
+					int result = fn();
 					std::cout << "result = [" << result << "]" << std::endl;
 				};
 
@@ -358,12 +361,7 @@ std::tuple<int,std::function<void(::tegia::context2 const *)>> map::send_message
 	// Определяем к какому домену принадлежит актор
 	//
 
-	bool res = false;
-	std::string actor_name;
-	std::string actor_domain;
-	std::string domain_type;
-
-	std::tie(res,actor_name,actor_domain,domain_type) = resolve_domain(name, &this->_domains);
+	auto [res,actor_name,actor_domain,domain_type] = resolve_domain(name, &this->_domains);
 
 	//
 	// Обрабатываем ошибку
@@ -401,11 +399,7 @@ std::tuple<int,std::function<void(::tegia::context2 const *)>> map::send_message
 	//
 
 	{
-		bool res = false;
-		tegia::actors::type_base * actor_type;
-
-		std::tie(res,actor_type) = this->resolve(name);
-
+		auto [res,actor_type] = this->resolve(name);
 		if(res == true)
 		{
 			std::cout << _OK_TEXT_ << "200 | FOUND" << std::endl;
@@ -420,12 +414,15 @@ std::tuple<int,std::function<void(::tegia::context2 const *)>> map::send_message
 
 			// TODO: add task
 
-			auto fn = actor_type->bind_action(actor, action, std::make_shared<message_t>());
+			// auto message = std::make_shared<message_t>();
+			// message->data = data;
+
+			auto fn = actor_type->bind_action(actor, action, message);
 			if(fn != nullptr)
 			{
-				auto _fn = [fn](::tegia::context2 const * context)
+				auto _fn = [fn]()
 				{
-					int result = fn(context);
+					int result = fn();
 					std::cout << "result = [" << result << "]" << std::endl;
 				};
 
@@ -571,6 +568,7 @@ std::tuple<bool,tegia::actors::type_base *> map::resolve(const std::string &name
 
 				if(pos->second == nullptr)
 				{
+					curr_pattern = "*";
 					state = 1;
 					break;
 				}

@@ -44,7 +44,11 @@ class node
 
 		const nlohmann::json * const config();
 
-		int send_message(const std::string &actor, const std::string &action, nlohmann::json data);
+		int send_message(
+			const std::string &actor, 
+			const std::string &action, 
+			const std::shared_ptr<message_t> &message,
+			int priority);
 
 	private:
 		tegia::threads::pool * _threads;
@@ -54,7 +58,7 @@ class node
 		tegia::actors::map actor_map;
 
 
-		::tegia::context2 const * init_thread(const nlohmann::json &config);
+		void init_thread(const nlohmann::json &config);
 
 
 

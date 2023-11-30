@@ -102,12 +102,7 @@ std::string MD5(const std::string &str);
 namespace tegia {
 namespace crypt {
 
-inline unsigned long int crc32(const std::string &data)
-{
-	unsigned long int crc = ::crc32(0L, Z_NULL, 0);
-	crc = ::crc32(crc, (const unsigned char*)data.c_str(), data.length());
-	return crc;
-};
+unsigned long int crc32(const std::string &data);
 
 }	// END namespace crypt
 }	// END namespace tegia

@@ -45,15 +45,15 @@ void _data::init(const nlohmann::json &config)
 		}
 	}
 
-	if(config.contains("contexts") == true)
+	if(config.contains("databases") == true)
 	{
-		for (auto it = config["contexts"].begin(); it != config["contexts"].end(); ++it)
+		for (auto it = config["databases"].begin(); it != config["databases"].end(); ++it)
 		{
-			this->mysql_provider->add_context(it.key(),it.value());
+			std::cout << "db_name = " << it.key() << std::endl;
+			
+			this->mysql_provider->add_database(it.key(),it.value());
 		}
 	}
-
-	//std::cout << config << std::endl;
 
 	std::cout << "[init] tid = " << this->tid << std::endl;
 };

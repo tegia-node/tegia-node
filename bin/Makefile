@@ -14,8 +14,12 @@ platform:
 	@echo " "
 
 #	CORE	
-	g++ -c -o core_crypt.o               ../src/core/crypt.cpp            $(Flag)
+	g++ -c -o core.crypt.o               ../src/core/crypt.cpp            $(Flag)
+	g++ -c -o core.string.o              ../src/core/string.cpp           $(Flag)
 	g++ -c -o core.json.o                ../src/core/json.cpp             $(Flag)
+
+#	CONTACTS
+	g++ -c -o core.contacts.phone.o      ../src/core/contacts/phone.cpp   $(Flag)
 
 #	THREAD
 	g++ -c -o thread_pool.o              ../src/threads/pool.cpp          $(Flag)
@@ -26,6 +30,8 @@ platform:
 	g++ -c -o mysql_connection.o         ../src/db/mysql/connection.cpp   $(Flag)
 	g++ -c -o mysql_provider.o           ../src/db/mysql/provider.cpp     $(Flag)
 	g++ -c -o mysql.o                    ../src/db/mysql/mysql.cpp        $(Flag)
+
+	g++ -c -o sphinx.o                   ../src/db/sphinx/sphinx.cpp      $(Flag)
 
 #	CONTEXT	
 	g++ -c -o context.o                  ../src/context/context.cpp       $(Flag)
@@ -40,15 +46,20 @@ platform:
 	g++ -c -o node.logger.o              ../src/node/logger.cpp           $(Flag)
 	g++ -c -o tegia.o                    ../src/tegia.cpp                 $(Flag)
 	g++ -c -o main.o                     ../src/main.cpp                  $(Flag)
- 
+
+#	APP
+	g++ -c -o app_router.o               ../src/app/router.cpp            $(Flag)
+
 	g++ -o tegia-node main.o tegia.o \
-		core_crypt.o core.json.o \
+		core.crypt.o core.string.o core.json.o \
+		core.contacts.phone.o 	\
 		thread_pool.o thread_data.o \
 		mysql_records.o mysql_connection.o mysql_provider.o	mysql.o \
+		sphinx.o	\
 		context.o user.o \
 		actors_types.o \
 		node.o node.config.o node.logger.o \
+		app_router.o \
 		-pthread -ldl -lz -lcurl -lcrypto -lmysqlclient -luuid -lstdc++fs -lxml2 \
 		-lnlohmann_json_schema_validator -lfmt `pkg-config --cflags --libs gumbo` \
 		$(Flag)
-

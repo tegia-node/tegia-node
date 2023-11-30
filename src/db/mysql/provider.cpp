@@ -35,7 +35,7 @@ provider::~provider()
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-bool provider::add_context(const std::string &name, nlohmann::json config)
+bool provider::add_database(const std::string &name, nlohmann::json config)
 {
 	auto context = this->_contexts.find(name);
 	if(context != this->_contexts.end())
@@ -77,13 +77,14 @@ bool provider::add_connection(const std::string &name, nlohmann::json config)
 	// TODO: проверить корректность данных
 	//
 
+	/*
 	std::cout << "name     = " << name << std::endl;
 	std::cout << "type     = " << config["type"].get<std::string>() << std::endl;
-	// std::cout << "dbname   = " << config["dbname"].get<std::string>() << std::endl;
 	std::cout << "host     = " << config["host"].get<std::string>() << std::endl;
 	std::cout << "password = " << config["password"].get<std::string>() << std::endl;
 	std::cout << "port     = " << config["port"].get<int>() << std::endl;
 	std::cout << "user     = " << config["user"].get<std::string>() << std::endl;
+	*/
 
 	//
 	// Выполнить соединение с БД
@@ -105,16 +106,12 @@ bool provider::add_connection(const std::string &name, nlohmann::json config)
 			config["port"].get<int>(),
 			config["user"].get<std::string>(),
 			config["password"].get<std::string>()
-			//config["dbname"].get<std::string>()
 		);
 
-		int code;
-		std::string message;
-
-		std::tie(code,message) = connection->connect();
+		auto [code,message] = connection->connect();
 		if(code > 0)
 		{
-			std::cout << _ERR_TEXT_ << "connection " << name << " init error:" << message << std::endl;
+			std::cout << _ERR_TEXT_ << "connection " << name << " init error: " << message << std::endl;
 			LERROR("connection '" + name + "' init error: " + message);
 		}
 		else

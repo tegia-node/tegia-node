@@ -13,9 +13,7 @@
 using namespace std::chrono_literals;
 
 
-namespace tegia {
-	class context2;
-}	// END namespace tegia
+
 
 namespace tegia {
 namespace threads {
@@ -31,7 +29,7 @@ class worker;
 struct task
 {
 	std::string uuid;
-	std::function<void(::tegia::context2 const * context)> fn;
+	std::function<void()> fn;
 
 	task(const std::string &_uuid): uuid(_uuid)
 	{

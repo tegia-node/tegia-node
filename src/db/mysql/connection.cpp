@@ -80,12 +80,23 @@ namespace mysql {
 
 	std::tuple<int, std::string> connection::connect(void)
 	{
+		this->_mutex.lock();
+
+		std::cout << "name     = " << this->name << std::endl;
+		std::cout << "type     = " << this->type << std::endl;
+		std::cout << "host     = " << this->host << std::endl;
+		std::cout << "password = " << this->password << std::endl;
+		std::cout << "port     = " << this->port << std::endl;
+		std::cout << "user     = " << this->user << std::endl;
+
+
 		if (this->hConnect == nullptr)
 		{
 			this->hConnect = mysql_init(this->hConnect);
 			if (this->hConnect == nullptr)
 			{
-				return std::make_tuple<int, std::string>(DB_ERROR_INIT, "insufficient memory to allocate a new object");
+				this->_mutex.unlock();
+				return std::move(std::make_tuple<int, std::string>(DB_ERROR_INIT, "insufficient memory to allocate a new object"));
 			}
 
 			mysql_options(this->hConnect, MYSQL_READ_DEFAULT_GROUP, "tegia platform");
@@ -109,6 +120,8 @@ namespace mysql {
 				auto res_errno = mysql_errno(this->hConnect);
 				auto res_error = (const char *)mysql_error(this->hConnect);
 				this->close();
+
+				this->_mutex.unlock();
 				return std::make_tuple<int, std::string>(DB_ERROR + res_errno, res_error);
 			}
 			else
@@ -117,6 +130,7 @@ namespace mysql {
 			}
 		}
 
+		this->_mutex.unlock();
 		return std::make_tuple<int, std::string>(0, "ok");
 	};
 
@@ -165,7 +179,7 @@ namespace mysql {
 			return result;
 		}
 
-		if(this->dbname != dbname)
+		if(this->dbname != dbname && this->type == "mysql")
 		{
 			this->dbname = dbname;
 			mysql_select_db(this->hConnect,this->dbname.c_str());
@@ -337,11 +351,7 @@ namespace mysql {
 		mysql_close(this->hConnect);
 		this->hConnect = nullptr;
 
-		int code;
-		std::string info;
-
-		std::tie(code,info) = this->connect();
-
+		auto [code,info] = this->connect();
 		if (code != 0)
 		{
 			//LERROR("Restore connection [error]");

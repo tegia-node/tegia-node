@@ -51,7 +51,7 @@ class provider
 		provider();
 		virtual ~provider();
 		bool add_connection(const std::string &name, nlohmann::json config);
-		bool add_context(const std::string &name, nlohmann::json config);
+		bool add_database(const std::string &name, nlohmann::json config);
 		tegia::mysql::records * query(const std::string &name, const std::string &query, bool trace = false);
 };
 

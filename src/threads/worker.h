@@ -5,11 +5,6 @@
 
 
 namespace tegia {
-class context2;
-}	// END namespace tegia
-
-
-namespace tegia {
 namespace threads {
 
 class worker
@@ -27,7 +22,7 @@ class worker
 
 		worker(
 			tegia::threads::queue * _queue, 
-			std::function<::tegia::context2 const * (const std::string &)> _thread_init): thread(&worker::thread_fn, this, _thread_init)                                    
+			std::function<void(const std::string &)> _thread_init): thread(&worker::thread_fn, this, _thread_init)                                    
 		{  
 			this->_queue = _queue;
 			this->tid = core::cast<std::string>(this->thread.get_id());
@@ -40,13 +35,13 @@ class worker
 		};
 
 
-		void thread_fn(std::function<::tegia::context2 const * (const std::string &)> _thread_init)
+		void thread_fn(std::function<void(const std::string &)> _thread_init)
 		{
 			//
 			// INIT THREAD DATA
 			//
 
-			::tegia::context2 const * context = _thread_init(this->tid);
+			_thread_init(this->tid);
 
 			//
 			// THREAD LOOP
@@ -75,7 +70,7 @@ class worker
 					}
 
 					locker.unlock();
-					_task->fn(context);
+					_task->fn();
 					delete _task;
 
 					locker.lock();   

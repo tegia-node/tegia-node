@@ -7,7 +7,6 @@
 #include <tegia2/actors/actor_base_t.h>
 #include <tegia2/actors/message_t.h>
 
-#include <tegia2/context/context2.h>
 
 namespace tegia {
 namespace actors {
@@ -38,7 +37,7 @@ class type_base
 			return this->name;
 		};
 
-		virtual std::function<int(::tegia::context2 const *)> bind_action(
+		virtual std::function<int()> bind_action(
 			tegia::actors::actor_base * _actor,
 			const std::string &action_name, 
 			const std::shared_ptr<message_t> &message
@@ -91,7 +90,7 @@ class actor_t
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-#define   action_fn    std::function<int(T *,const std::shared_ptr<message_t> &, ::tegia::context2 const * context)>
+#define   action_fn    std::function<int(T *,const std::shared_ptr<message_t> &)>
 
 template<class T>
 using actions_map = std::unordered_map<std::string, action_fn>;
@@ -127,7 +126,7 @@ class type: public type_base
 		};
 
 
-		std::function<int(::tegia::context2 const *)> bind_action(
+		std::function<int()> bind_action(
 			tegia::actors::actor_base * _actor,
 			const std::string &action_name, 
 			const std::shared_ptr<message_t> &message)
@@ -138,7 +137,7 @@ class type: public type_base
 				return nullptr;
 			}
 
-			return std::bind(pos->second, static_cast<T*>(_actor), message, std::placeholders::_1);
+			return std::bind(pos->second, static_cast<T*>(_actor), message);
 		};
 };
 
@@ -212,7 +211,7 @@ class map
 
 		bool load_type(const std::string &type_name, const std::string &base_path, const nlohmann::json &type_config);
 		bool add_domain(const std::string &domain, const std::string &type);
-		std::tuple<int,std::function<void(::tegia::context2 const *)>> send_message(const std::string &name, const std::string &action, nlohmann::json data);
+		std::tuple<int,std::function<void()>> send_message(const std::string &name, const std::string &action, const std::shared_ptr<message_t> &message);
 
 };
 

@@ -34,7 +34,7 @@ class config
 		std::unordered_map<std::string, _conf *> _map;
 		std::vector<std::string> _names;
 
-		int thread_count = 4;
+		int thread_count = 5;
 
 };	// END class config
 

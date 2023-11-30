@@ -39,7 +39,7 @@ pool::~pool()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-int pool::init(int threads_count, std::function<::tegia::context2 const * ()> _thread_init, std::function<void()> _callback)
+int pool::init(int threads_count, std::function<void(void)> _thread_init, std::function<void()> _callback)
 {
 	this->threads_count = threads_count;
 	this->_callback = _callback;
@@ -66,11 +66,10 @@ int pool::init(int threads_count, std::function<::tegia::context2 const * ()> _t
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-::tegia::context2 const * pool::thread_init(const std::string &tid, std::function<::tegia::context2 const * ()> _thread_init)
+void pool::thread_init(const std::string &tid, std::function<void(void)> _thread_init)
 {
-	::tegia::context2 const * context = _thread_init();
+	_thread_init();
 	this->signal(tid);
-	return context;
 };
 
 
@@ -101,7 +100,7 @@ void pool::signal(const std::string &tid)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-int pool::add_task(std::function<void(::tegia::context2 const *)> _fn, int priority)
+int pool::add_task(std::function<void(void)> _fn, int priority)
 {
 	auto _task = new tegia::threads::task(tegia::random::uuid());
 	_task->fn = _fn;
