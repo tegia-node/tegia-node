@@ -338,7 +338,7 @@ int list::send_message(const std::string &actor_name, const std::string &action_
 				tegia::sockets::send_message_to_server(std::move(actor), std::move(action), message, priority);
 			};
 				
-			return tegia::threads::add_task(fn, priority);
+			return tegia::threads::add_task(fn, message->get_priority());
 		}
 		//
 		//	Nowhere to send message any more!

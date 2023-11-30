@@ -170,22 +170,6 @@ mkdir -p $tegia_folder/ui
 
 # ----------------------------------------------------------------------------------------
 #
-# Install Sphinx Search
-#
-# ----------------------------------------------------------------------------------------
-
-cd $tegia_folder
-cp -avr $tegia_folder/platform/bin/configs/sphinxdata $tegia_folder/sphinxdata
-
-sed -e "s/{TEGIA_FOLDER}/$(echo $tegia_folder | sed -E 's/(\W)/\\\1/g')/" \
-    -e "s/{MYSQL_HOST}/$(echo $mysql_host | sed -E 's/(\W)/\\\1/g')/" \
-    -e "s/{MYSQL_PORT}/$(echo $mysql_port | sed -E 's/(\W)/\\\1/g')/" \
-    -e "s/{MYSQL_USER}/$(echo $mysql_user | sed -E 's/(\W)/\\\1/g')/" \
-    -e "s/{MYSQL_PASSWORD}/$(echo $mysql_password | sed -E 's/(\W)/\\\1/g')/" \
-    $tegia_folder/platform/bin/configs/sphinx-example.conf > $tegia_folder/platform/bin/configs/sphinx.conf
-
-# ----------------------------------------------------------------------------------------
-#
 # Загружаем и настраиваем используемые библиотеки
 #
 # ----------------------------------------------------------------------------------------
@@ -200,9 +184,75 @@ sudo ./vcpkg install nlohmann-json json-schema-validator gumbo fmt vincentlaucsb
 # xml2json
 #
 
-# cd $tegia_folder/vendors
-# git clone https://github.com/Cheedoong/xml2json
-# sudo ln -fs $tegia_folder/vendors/xml2json /usr/include/xml2json
+cd $tegia_folder/vendors
+git clone https://github.com/Cheedoong/xml2json
+sudo ln -fs $tegia_folder/vendors/xml2json /usr/include/xml2json
+
+
+#
+# fmt
+#
+
+cd $tegia_folder/vendors
+git clone https://github.com/fmtlib/fmt.git
+cd fmt
+mkdir -p build
+cd build
+cmake -DBUILD_SHARED_LIBS=TRUE ..
+make
+sudo make install
+sudo ldconfig
+
+
+#
+# vincentlaucsb / csv-parser
+#
+
+cd $tegia_folder/vendors
+git clone https://github.com/vincentlaucsb/csv-parser.git
+
+#
+# tfussell / xlnt
+#
+
+cd $tegia_folder/vendors
+git clone https://github.com/tfussell/xlnt.git
+cd xlnt/third-party && rm -rf libstudxml
+git clone https://git.codesynthesis.com/libstudxml/libstudxml.git
+cd ../
+cmake .
+make -j 2
+sudo make install
+sudo ldconfig
+
+#
+# jwt
+#
+
+cd $tegia_folder/vendors
+git clone https://github.com/arun11299/cpp-jwt.git
+
+#
+# DuckX - ms word .docx generator
+#
+
+sudo apt install -y libpugixml-dev
+
+cd $tegia_folder/vendors
+git clone https://github.com/amiremohamadi/DuckX.git
+cd DuckX
+mkdir -p build
+cd build
+cmake .. -DBUILD_SHARED_LIBS=TRUE ..
+cmake --build .
+sudo make install
+sudo ln -fs /usr/local/lib/libduckx.so /usr/lib/libduckx.so
+
+#
+# graphviz-dev
+#
+
+sudo apt install -y graphviz-dev
 
 #
 # tegia include files
