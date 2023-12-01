@@ -113,6 +113,7 @@ bool provider::add_connection(const std::string &name, nlohmann::json config)
 		{
 			std::cout << _ERR_TEXT_ << "connection " << name << " init error: " << message << std::endl;
 			LERROR("connection '" + name + "' init error: " + message);
+			exit(0);
 		}
 		else
 		{
@@ -135,7 +136,8 @@ tegia::mysql::records * provider::query(const std::string &name, const std::stri
 	if(conn == this->_contexts.end())
 	{
 		std::cout << _ERR_TEXT_ << "connection '" << name << "' not found" << std::endl;
-		return nullptr;
+		exit(0);
+		// return nullptr;
 	}
 
 	return conn->second.connection->query(conn->second.dbname, query);

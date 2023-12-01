@@ -80,7 +80,7 @@ namespace mysql {
 	class records
 	{     
 		friend class connection;
-		friend class pool;
+		friend class provider;
 
 		protected:
 
