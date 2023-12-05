@@ -122,7 +122,7 @@ class queue
 
 			if(s == 0)
 			{
-				std::cout << "not found tasks" << std::endl;
+				// std::cout << "not found tasks" << std::endl;
 				// exit(0);
 				return _task;
 			}

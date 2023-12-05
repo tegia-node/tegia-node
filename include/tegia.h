@@ -36,10 +36,12 @@ int send(
 	int priority = 0);
 
 
+/*
 bool init()
 {
 	return false;
 };
+*/
 
 
 } // namespace message

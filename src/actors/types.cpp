@@ -4,6 +4,7 @@
 #include <utility>
 
 #include <tegia2/core/const.h>
+#include <tegia2/tegia.h>
 
 namespace tegia {
 namespace actors {
@@ -322,6 +323,55 @@ std::tuple<bool,std::string,std::string,std::string> resolve_domain(const std::s
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+std::tuple<int,std::function<void()>> add_task(
+	tegia::actors::actor_base * actor,
+	tegia::actors::type_base * type,
+	const std::string &name, 
+	const std::string &action, 
+	const std::shared_ptr<message_t> &message)
+{
+	auto fn = type->bind_action(actor, action, message);
+	if(fn != nullptr)
+	{
+		auto _fn = [=]()
+		{
+			auto start_time = std::chrono::high_resolution_clock::now();
+			
+			try
+			{
+				int result = fn();
+
+				auto callback = message->callback.get();
+				if(callback.is_addr == true)
+				{
+					tegia::message::send(callback.actor, callback.action, message);
+				}	
+			}
+			catch(const std::exception& e)
+			{
+				std::cout << _ERR_TEXT_ << "[" << name << action << "] " << e.what() << std::endl;
+				exit(0);
+			}
+
+			auto end_time = std::chrono::high_resolution_clock::now();
+		};
+
+		return std::move(std::make_tuple(200,std::move(_fn)));
+	}
+
+	std::cout << _ERR_TEXT_ << "send message \n" 
+				<< "      [403] not found action\n" 
+				<< "      actor  = '" << name << "'\n" 
+				<< "      action = '" << action << "'" << std::endl; 
+	return std::move(std::make_tuple(403,nullptr));	
+};
+
+
+
+
+
+
+
 std::tuple<int,std::function<void()>> map::send_message(const std::string &name, const std::string &action, const std::shared_ptr<message_t> &message)
 {
 	//
@@ -332,28 +382,14 @@ std::tuple<int,std::function<void()>> map::send_message(const std::string &name,
 		auto pos = this->actor_list.find(name);
 		if(pos != this->actor_list.end())
 		{
+			return add_task(pos->second.actor,pos->second.type,name,action,message);
 			// TODO: add task
 
 			// auto message = std::make_shared<message_t>();
 			// message->data = data;
 
-			auto fn = pos->second.type->bind_action(pos->second.actor, action, message);
-			if(fn != nullptr)
-			{
-				auto _fn = [fn]()
-				{
-					int result = fn();
-					std::cout << "result = [" << result << "]" << std::endl;
-				};
+			// auto fn = pos->second.type->bind_action(pos->second.actor, action, message);
 
-				return std::make_tuple(200,std::move(_fn));
-			}
-
-			std::cout << _ERR_TEXT_ << "send message \n" 
-			          << "      [403] not found action\n" 
-					  << "      actor  = '" << name << "'\n" 
-					  << "      action = '" << action << "'" << std::endl; 
-			return std::make_tuple(403,nullptr);
 		}
 	}
 
@@ -412,18 +448,21 @@ std::tuple<int,std::function<void()>> map::send_message(const std::string &name,
 
 			auto actor = this->create_actor(name,actor_type);
 
+			return add_task(actor,actor_type,name,action,message);
+
 			// TODO: add task
 
 			// auto message = std::make_shared<message_t>();
 			// message->data = data;
 
+			/*
 			auto fn = actor_type->bind_action(actor, action, message);
 			if(fn != nullptr)
 			{
 				auto _fn = [fn]()
 				{
 					int result = fn();
-					std::cout << "result = [" << result << "]" << std::endl;
+					// std::cout << "result = [" << result << "]" << std::endl;
 				};
 
 				return std::make_tuple(200,std::move(_fn));
@@ -434,6 +473,7 @@ std::tuple<int,std::function<void()>> map::send_message(const std::string &name,
 					  << "      actor  = '" << name << "'\n" 
 					  << "      action = '" << action << "'" << std::endl; 
 			return std::make_tuple(403,nullptr);
+			*/
 		}
 		else
 		{
