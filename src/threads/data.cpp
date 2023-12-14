@@ -65,6 +65,12 @@ tegia::mysql::records * _data::query(const std::string &context,const std::strin
 };
 
 
+std::string _data::mysql_strip(const std::string &input)
+{
+	return this->mysql_provider->strip(input);
+};
+
+
 thread_local tegia::threads::_data * const data = new tegia::threads::_data();
 
 }  // namespace threads

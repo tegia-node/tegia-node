@@ -81,7 +81,7 @@ class queue
 
 
 
-		int add(tegia::threads::task * _task, int priority = _PHIGHT_)
+		int add(tegia::threads::task * _task, int priority = 0)
 		{  
 			if(priority > 63 || priority < 0)
 			{
@@ -91,15 +91,6 @@ class queue
 
 			std::unique_lock<std::mutex> locker(this->mutex);
 			
-			/*
-			switch(priority)
-			{
-				case _PHIGHT_:	this->hight_fqueue.push(_task); break;
-				case _PMEDIUM_: this->medium_fqueue.push(_task); break;
-				case _PLOW_: this->low_fqueue.push(_task); break;
-			}
-			*/
-
 			this->tasks[priority].push(_task);
 			this->tasks_bitset.set(priority);
 

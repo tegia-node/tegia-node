@@ -1,4 +1,4 @@
-#include <tegia/core/string.h>
+#include <tegia2/core/string.h>
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -436,6 +436,39 @@ namespace string {
 	};
 
 
+
+
+	std::vector<std::string> explode(std::string source, std::string separator, bool empty)
+	{
+		std::vector<std::string> out;
+
+		std::string::size_type pos = 0;
+		std::string::size_type find_pos;
+
+		find_pos = source.find(separator, pos);
+
+		while(find_pos != source.npos)
+		{
+			if(pos != find_pos)
+			{
+				out.push_back(source.substr(pos, find_pos - pos));
+			}
+			else
+			{
+				if(empty == true)
+				{
+						out.push_back(""); 
+				}
+			}
+			pos = find_pos + separator.length();
+			find_pos = source.find(separator, pos);
+		}
+
+		std::string tmp = source.substr(pos);
+		out.push_back(source.substr(pos));
+
+		return out;
+	};  
 
 }	// END string NAMESPACE
 }	// END tegia  NAMESPACE

@@ -6,7 +6,7 @@
 #include <iostream>
 #include <thread>
 
-#include <tegia/core/cast.h>
+#include <tegia2/core/cast.h>
 #include <tegia2/context/user.h>
 
 #include "../db/mysql/provider.h"
@@ -52,6 +52,7 @@ class _data
 		~_data();
 
 		tegia::mysql::records * query(const std::string &context, const std::string &query, bool trace = false);
+		std::string mysql_strip(const std::string &input);
 	
 	private:
 

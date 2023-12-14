@@ -17,9 +17,14 @@ platform:
 	g++ -c -o core.crypt.o               ../src/core/crypt.cpp            $(Flag)
 	g++ -c -o core.string.o              ../src/core/string.cpp           $(Flag)
 	g++ -c -o core.json.o                ../src/core/json.cpp             $(Flag)
+	g++ -c -o core.http.o                ../src/core/http.cpp             $(Flag)
+	g++ -c -o core.cast.o                ../src/core/cast.cpp             $(Flag)
 
 #	CONTACTS
 	g++ -c -o core.contacts.phone.o      ../src/core/contacts/phone.cpp   $(Flag)
+	g++ -c -o core.contacts.email.o      ../src/core/contacts/email.cpp   $(Flag)
+	g++ -c -o core.contacts.vk.o         ../src/core/contacts/vk.cpp      $(Flag)
+	g++ -c -o core.contacts.person.o     ../src/core/contacts/person.cpp  $(Flag)
 
 #	THREAD
 	g++ -c -o thread_pool.o              ../src/threads/pool.cpp          $(Flag)
@@ -51,8 +56,8 @@ platform:
 	g++ -c -o app_router.o               ../src/app/router.cpp            $(Flag)
 
 	g++ -o tegia-node main.o tegia.o \
-		core.crypt.o core.string.o core.json.o \
-		core.contacts.phone.o 	\
+		core.crypt.o core.string.o core.json.o core.http.o core.cast.o \
+		core.contacts.phone.o 	core.contacts.email.o  core.contacts.vk.o core.contacts.person.o \
 		thread_pool.o thread_data.o \
 		mysql_records.o mysql_connection.o mysql_provider.o	mysql.o \
 		sphinx.o	\

@@ -3,8 +3,8 @@
 // --------------------------------------------------------------------
 
 #include <tegia2/core/crypt.h>
-#include <tegia/const.h>
-#include <tegia/core/cast.h>
+#include <tegia2/core/const.h>
+#include <tegia2/core/cast.h>
 #include <tegia2/context/context.h>
 
 

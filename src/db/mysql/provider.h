@@ -19,7 +19,7 @@
 	#include "connection.h"
 
 //	TEGIA
-	#include <tegia/const.h>
+	#include <tegia2/core/const.h>
 	#include <tegia2/core/json.h>
 
 
@@ -53,6 +53,7 @@ class provider
 		bool add_connection(const std::string &name, nlohmann::json config);
 		bool add_database(const std::string &name, nlohmann::json config);
 		tegia::mysql::records * query(const std::string &name, const std::string &query, bool trace = false);
+		std::string strip(const std::string &input);
 };
 
 

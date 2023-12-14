@@ -1,4 +1,4 @@
-#include <tegia/const.h>
+#include <tegia2/core/const.h>
 #include "config.h"
 
 

@@ -69,6 +69,8 @@ namespace string {
 
 	std::string iconv(const std::string &_source, const std::string &_from_encode, const std::string &_to_encode);
 
+	std::vector<std::string> explode(std::string source, std::string separator, bool empty = true);
+
 }	// END string NAMESPACE
 }	// END tegia  NAMESPACE
 

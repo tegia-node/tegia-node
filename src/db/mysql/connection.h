@@ -15,7 +15,7 @@
 	#include <mysql/errmsg.h>
 
 //	TEGIA
-	#include <tegia/core/string.h>
+	#include <tegia2/core/string.h>
 
 	#include <tegia2/db/mysql/const.h>
 	#include <tegia2/db/mysql/records.h>
@@ -65,6 +65,7 @@ class connection
 
 		records * query(const std::string &dbname, const std::string &query, bool trace = false);
 		records * requery(const std::string &query);
+		std::string strip(const std::string &input);
 };
 
 

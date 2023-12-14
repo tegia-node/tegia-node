@@ -144,6 +144,14 @@ tegia::mysql::records * provider::query(const std::string &name, const std::stri
 };
 
 
+std::string provider::strip(const std::string &input)
+{
+	auto conn = this->_contexts.begin();
+	return conn->second.connection->strip(input);
+};
+
+
+
 }   // end namespace mysql
 }   // end namespace tegia
 

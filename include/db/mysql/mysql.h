@@ -7,7 +7,7 @@
 //                                                                                        //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-#include <tegia/dao/entity.h>
+// #include <tegia/dao/entity.h>
 
 #include "const.h"
 //#include "mysql_result.h"
@@ -35,6 +35,13 @@ namespace mysql{
 
 	tegia::mysql::records *query(const std::string &context, const std::string &query, bool trace = false);
 
+	/**
+	 *	\brief		Выполняет экранирование строки для SQL-запроса
+	 *	\authors	Горячев Игорь 
+	 *	\details
+	 */
+
+	std::string strip(const std::string &query);
 
 } // END namespace mysql
 } // END namespace tegia

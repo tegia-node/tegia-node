@@ -342,6 +342,7 @@ namespace mysql {
 	*/
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
+
 	tegia::mysql::records * connection::requery(const std::string &query)
 	{
 		//
@@ -364,6 +365,37 @@ namespace mysql {
 			return this->query(this->dbname,query);
 		}
 	};
+
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+	/** 
+		\brief   Функция пытается восстановить соединение и повторить запрос
+	
+	*/
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	std::string connection::strip(const std::string &input)
+	{
+		char* from = new char[strlen(input.c_str()) * 3 + 1];
+		mysql_real_escape_string(this->hConnect, from, input.c_str(), input.length());
+		std::string retStr(from);
+		delete [] from;
+		return retStr;
+		
+		/*
+		for(auto it = this->_connections.begin(); it != this->_connections.end();++it)
+		{
+			if( (*it)->hConnect != nullptr)
+			{
+
+			}
+		}
+		LERROR("Пул " << this->name << ". Нет соединений в пуле");
+		return "";
+		*/
+	};
+
 
 }	// end namespace mysql
 }	// end namespace tegia

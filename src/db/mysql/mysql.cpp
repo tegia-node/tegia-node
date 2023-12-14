@@ -21,6 +21,10 @@ namespace mysql {
 
 
 
+	std::string strip(const std::string &input)
+	{
+		return tegia::threads::data->mysql_strip(input);
+	};
 
 
 }	// END namespace mysql
