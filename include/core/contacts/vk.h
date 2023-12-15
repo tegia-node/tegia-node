@@ -16,7 +16,7 @@ class vk_t: public tegia::contacts::contact_t
 	protected:
 		bool is_format = false;
 		std::string _link;
-		std::string _id;
+		std::string _id = "0";
 
 	public:
 		vk_t();
