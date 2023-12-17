@@ -27,6 +27,7 @@ class contact_t
 	protected:
 		// std::string _value;
 		std::string _type;
+		bool _is_valid = false;
 
 	public:
 
@@ -50,6 +51,12 @@ class contact_t
 		{
 			return this->_type;
 		};
+
+		virtual bool is_valid() final
+		{
+			return this->_is_valid;
+		};
+
 };
 
 

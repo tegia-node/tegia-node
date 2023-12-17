@@ -2,6 +2,7 @@
 #include <regex>
 
 #include <tegia2/core/contacts/vk.h>
+#include <tegia2/core/cast.h>
 
 
 
@@ -31,7 +32,7 @@ vk_t::vk_t():contact_t("vk")
 
 std::string vk_t::value() const
 {
-	return this->_id;
+	return core::cast<std::string>(this->_id);
 };
 
 
@@ -44,24 +45,36 @@ std::string vk_t::value() const
 
 bool vk_t::set_link(const std::string &link)
 {
-	this->_link = link;
+	if(link == "")
+	{
+		this->_id = 0;
+		this->_is_valid = false;
+		return false;		
+	}
 
 	//
 	// Проверяем,что это прямая ссылка на ID
 	//
 
+	// this->_link = link;
 	std::regex  _regex(R"(id[0-9]{1,})");
 	std::smatch _match;
-	if(std::regex_search(this->_link, _match, _regex))
+	if(std::regex_search(link, _match, _regex))
 	{
-		this->_id = _match[0].str().substr(2);
+		this->_link = link;
+		this->_id = core::cast<long long int>(_match[0].str().substr(2));
+		this->_is_valid = true;
 		return true;
 	}
 	else
 	{
+		this->_link = "";
+		this->_id = 0;
+		
 		std::cout << _ERR_TEXT_ <<  std::endl;
 		std::cout << this->_link << std::endl;
 		std::cout << "not found pattern '" << R"(id([0-9]+)$)" << "'" << std::endl;
+		this->_is_valid = false;
 		return false;
 	}
 };
@@ -74,10 +87,20 @@ bool vk_t::set_link(const std::string &link)
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 
-bool vk_t::set_id(const std::string &id)
+bool vk_t::set_id(long long int id)
 {
-	this->_id = id;
-	return true;
+	if(id > 0)
+	{
+		this->_id = id;
+		this->_is_valid = true;
+		return true;
+	}
+	else
+	{
+		this->_id = 0;
+		this->_is_valid = false;
+		return false;
+	}
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////

@@ -14,9 +14,9 @@ namespace contacts {
 class vk_t: public tegia::contacts::contact_t
 {
 	protected:
-		bool is_format = false;
+		// bool is_format = false;
 		std::string _link;
-		std::string _id = "0";
+		long long int _id = 0;
 
 	public:
 		vk_t();
@@ -24,8 +24,8 @@ class vk_t: public tegia::contacts::contact_t
 
 		std::string value() const override final;
 
-		bool set_link(const std::string &_value);
-		bool set_id(const std::string &_value);
+		bool set_link(const std::string &link);
+		bool set_id(long long int id);
 };
 
 
