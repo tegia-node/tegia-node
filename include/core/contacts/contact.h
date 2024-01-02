@@ -6,17 +6,26 @@
 
 
 namespace tegia {
+
+
+enum class TYPES: long long int { 
+	OTHER = 3646436640,			// crc32("other")
+	PHONE = 1146066909			// crc32("phone")
+};
+
+
 namespace contacts {
 
 
-#define OTHER          3646436640      // crc32("other")
-#define EMAIL          3885137012      // crc32("email")
-#define PHONE          1146066909      // crc32("phone")
 
-#define FACEBOOK_ID    2615737752      // crc32("facebook_id")
+#define _OTHER_          3646436640      // crc32("other")
+#define _EMAIL_          3885137012      // crc32("email")
+#define _PHONE_          1146066909      // crc32("phone")
 
-#define VK_ID          3315043922      // crc32("vk_id")
-#define VK_LINK        3712801537      // crc32("vk_link")
+#define _FACEBOOK_ID_    2615737752      // crc32("facebook_id")
+
+#define _VK_ID_          3315043922      // crc32("vk_id")
+#define _VK_LINK_        3712801537      // crc32("vk_link")
 
 
 
