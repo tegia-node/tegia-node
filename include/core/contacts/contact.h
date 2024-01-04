@@ -9,8 +9,9 @@ namespace tegia {
 
 
 enum class TYPES: long long int { 
-	OTHER = 3646436640,			// crc32("other")
-	PHONE = 1146066909			// crc32("phone")
+	OTHER = 3646436640,         // crc32("other")
+	PHONE = 1146066909,         // crc32("phone")
+	VK_LINK =  3712801537       // crc32("vk_link")
 };
 
 
