@@ -53,6 +53,13 @@ bool phone_t::parse(const std::string &value)
 	// Выделяем только цифры
 	//
 
+	if(value == "")
+	{
+		this->_phone = value;
+		this->is_format = false;
+		return false;
+	}
+
 	std::string _phone = "";
 
 	{

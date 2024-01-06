@@ -9,15 +9,17 @@ namespace tegia {
 
 
 enum class TYPES: long long int { 
-	OTHER = 3646436640,         // crc32("other")
-	PHONE = 1146066909,         // crc32("phone")
-	VK_LINK =  3712801537       // crc32("vk_link")
+	OTHER        = 3646436640,    // crc32("other")
+	EMAIL        = 3885137012,    // crc32("email")
+	PHONE        = 1146066909,    // crc32("phone")
+
+	FACEBOOK_ID  = 2615737752,    // crc32("facebook_id")
+	VK_ID        = 3315043922,    // crc32("vk_id")
+	VK_LINK      = 3712801537     // crc32("vk_link")
 };
 
 
 namespace contacts {
-
-
 
 #define _OTHER_          3646436640      // crc32("other")
 #define _EMAIL_          3885137012      // crc32("email")
