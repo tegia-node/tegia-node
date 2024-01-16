@@ -251,7 +251,7 @@ namespace mysql {
 			{
 				//LERROR("MYSQL CR_CONNECTION_ERROR Attempt to restore connection");
 				delete result;
-				return this->requery(query);
+				return this->requery(dbname,query);
 			}
 			break;
 
@@ -263,7 +263,7 @@ namespace mysql {
 			{
 				//LERROR("MYSQL CR_CONN_HOST_ERROR Attempt to restore connection");
 				delete result;
-				return this->requery(query);
+				return this->requery(dbname,query);
 			}
 			break;
 
@@ -275,7 +275,7 @@ namespace mysql {
 			{
 				//LERROR("MYSQL CR_SERVER_GONE_ERROR Attempt to restore connection");
 				delete result;
-				return this->requery(query);
+				return this->requery(dbname,query);
 			}
 			break;
 
@@ -287,7 +287,7 @@ namespace mysql {
 			{
 				//LERROR("MYSQL CR_SERVER_LOST Attempt to restore connection");
 				delete result;
-				return this->requery(query);
+				return this->requery(dbname,query);
 			}
 			break;
 
@@ -299,7 +299,7 @@ namespace mysql {
 			{
 				//LERROR("MYSQL ER_CLIENT_INTERACTION_TIMEOUT Attempt to restore connection");
 				delete result;
-				return this->requery(query);
+				return this->requery(dbname,query);
 			}
 			break;
 
@@ -343,7 +343,7 @@ namespace mysql {
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-	tegia::mysql::records * connection::requery(const std::string &query)
+	tegia::mysql::records * connection::requery(const std::string &dbname, const std::string &query)
 	{
 		//
 		// Пытаемся восстановить соединение
@@ -362,6 +362,13 @@ namespace mysql {
 		else
 		{
 			//LERROR("Restore connection [ok]");
+
+			if(this->dbname != dbname && this->type == "mysql")
+			{
+				this->dbname = dbname;
+				mysql_select_db(this->hConnect,this->dbname.c_str());
+			}
+
 			return this->query(this->dbname,query);
 		}
 	};

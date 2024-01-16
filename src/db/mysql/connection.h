@@ -64,7 +64,7 @@ class connection
 		void close(void);
 
 		records * query(const std::string &dbname, const std::string &query, bool trace = false);
-		records * requery(const std::string &query);
+		records * requery(const std::string &dbname, const std::string &query);
 		std::string strip(const std::string &input);
 };
 
