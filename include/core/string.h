@@ -20,6 +20,7 @@
 
 #include "fmt/core.h"
 
+#include <tegia2/core/facet.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 /**
@@ -44,8 +45,17 @@ std::string decode(const std::string& input, std::string& out);
 */
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-char32_t _low(char32_t ch);
-char32_t _up(char32_t ch);
+namespace tegia {
+namespace string {
+
+	// Заменяет английские буквы похожими русскими для исправления ошибок ввода
+	char32_t _eng_to_rus(char32_t ch);
+	char32_t _low(char32_t ch);
+	char32_t _up(char32_t ch);
+
+}	// END string NAMESPACE
+}	// END tegia  NAMESPACE
+
 
 namespace tegia {
 namespace string {

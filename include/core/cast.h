@@ -11,15 +11,8 @@
 #include <locale>
 
 #include <tegia2/core/json.h>
+#include <tegia2/core/facet.h>
 
-
-template<class Facet>
-struct deletable_facet : Facet
-{
-	template<class ...Args>
-	deletable_facet(Args&& ...args) : Facet(std::forward<Args>(args)...) {}
-	~deletable_facet() {}
-};
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //

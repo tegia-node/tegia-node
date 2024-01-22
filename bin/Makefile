@@ -20,11 +20,13 @@ platform:
 	g++ -c -o core.http.o                ../src/core/http.cpp             $(Flag)
 	g++ -c -o core.cast.o                ../src/core/cast.cpp             $(Flag)
 
-#	CONTACTS
-	g++ -c -o core.contacts.phone.o      ../src/core/contacts/phone.cpp   $(Flag)
-	g++ -c -o core.contacts.email.o      ../src/core/contacts/email.cpp   $(Flag)
-	g++ -c -o core.contacts.vk.o         ../src/core/contacts/vk.cpp      $(Flag)
-	g++ -c -o core.contacts.person.o     ../src/core/contacts/person.cpp  $(Flag)
+#	TYPES
+	g++ -c -o tegia.types.gender.o       ../src/types/gender.cpp          $(Flag)
+	g++ -c -o tegia.types.phone.o        ../src/types/phone.cpp           $(Flag)
+	g++ -c -o tegia.types.email.o        ../src/types/email.cpp           $(Flag)
+	g++ -c -o tegia.types.fio.o          ../src/types/fio.cpp             $(Flag)
+	g++ -c -o tegia.types.vk.o           ../src/types/vk.cpp              $(Flag)
+	g++ -c -o tegia.types.date.o         ../src/types/date.cpp            $(Flag)
 
 #	THREAD
 	g++ -c -o thread_pool.o              ../src/threads/pool.cpp          $(Flag)
@@ -57,7 +59,7 @@ platform:
 
 	g++ -o tegia-node main.o tegia.o \
 		core.crypt.o core.string.o core.json.o core.http.o core.cast.o \
-		core.contacts.phone.o 	core.contacts.email.o  core.contacts.vk.o core.contacts.person.o \
+		tegia.types.gender.o tegia.types.phone.o tegia.types.email.o tegia.types.fio.o tegia.types.vk.o tegia.types.date.o\
 		thread_pool.o thread_data.o \
 		mysql_records.o mysql_connection.o mysql_provider.o	mysql.o \
 		sphinx.o	\

@@ -115,16 +115,65 @@ std::string decode(const std::string& input, std::string& out)
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 
-// https://en.cppreference.com/w/cpp/locale/codecvt
 
-// utility wrapper to adapt locale-bound facets for wstring/wbuffer convert
-template<class Facet>
-struct deletable_facet : Facet
+////////////////////////////////////////////////////////////////////////////////////////////
+/** 
+
+*/   
+////////////////////////////////////////////////////////////////////////////////////////////
+
+
+namespace tegia {
+namespace string {
+
+// Заменяет английские буквы похожими русскими для исправления ошибок ввода
+char32_t _eng_to_rus(char32_t ch)
 {
-		template<class ...Args>
-		deletable_facet(Args&& ...args) : Facet(std::forward<Args>(args)...) {}
-		~deletable_facet() {}
+	if(ch == U'6') 
+	{
+		return U'б';
+	}
+
+	if(ch == U'P') 
+	{
+		return U'Р';
+	}
+	if(ch == U'p') 
+	{
+		return U'р';
+	}
+
+	if(ch == U'E') 
+	{
+		return U'Е';
+	}
+	if(ch == U'e') 
+	{
+		return U'е';
+	}
+
+	if(ch == U'C') 
+	{
+		return U'С';
+	}
+	if(ch == U'c') 
+	{
+		return U'с';
+	}
+
+	if(ch == U'A') 
+	{
+		return U'А';
+	}
+	if(ch == U'a') 
+	{
+		return U'а';
+	}
+
+	return ch;
 };
+
+
 
 
 char32_t _low(char32_t ch)
@@ -311,6 +360,8 @@ char32_t _up(char32_t ch)
 	}
 };
 
+}	// END string NAMESPACE
+}	// END tegia  NAMESPACE
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 /** 
@@ -358,7 +409,7 @@ namespace string {
 
 		for(size_t i = 0; i < u32str.size(); ++i)		
 		{
-			u32str[i] = _up(u32str[i]);
+			u32str[i] = tegia::string::_up(u32str[i]);
 		}
 
 		return u32str;
@@ -376,7 +427,7 @@ namespace string {
 
 		for(size_t i = 0; i < u32str.size(); ++i)		
 		{
-			u32str[i] = _low(u32str[i]);
+			u32str[i] = tegia::string::_low(u32str[i]);
 		}
 
 		return conv32.to_bytes(u32str);
@@ -391,7 +442,7 @@ namespace string {
 
 		for(size_t i = 0; i < u32str.size(); ++i)		
 		{
-			u32str[i] = _low(u32str[i]);
+			u32str[i] = tegia::string::_low(u32str[i]);
 		}
 
 		return u32str;
@@ -498,63 +549,6 @@ namespace string {
 
 
 
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////////
-/** 
-
-*/   
-////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-// Заменяет английские буквы похожими русскими для исправления ошибок ввода
-char32_t _eng_to_rus(char32_t ch)
-{
-	if(ch == U'6') 
-	{
-		return U'б';
-	}
-
-	if(ch == U'P') 
-	{
-		return U'Р';
-	}
-	if(ch == U'p') 
-	{
-		return U'р';
-	}
-
-	if(ch == U'E') 
-	{
-		return U'Е';
-	}
-	if(ch == U'e') 
-	{
-		return U'е';
-	}
-
-	if(ch == U'C') 
-	{
-		return U'С';
-	}
-	if(ch == U'c') 
-	{
-		return U'с';
-	}
-
-	if(ch == U'A') 
-	{
-		return U'А';
-	}
-	if(ch == U'a') 
-	{
-		return U'а';
-	}
-
-	return ch;
-};
 
 
 
@@ -693,8 +687,8 @@ namespace string {
 				case 1:
 				{
 					// В написании имен встречаются варианты, когда русская юуква заменена (ошибочно или специально) на похожую английскую
-					u32str[i] = _eng_to_rus(u32str[i]);
-					u32str[i] = _up(u32str[i]);
+					u32str[i] = tegia::string::_eng_to_rus(u32str[i]);
+					u32str[i] = tegia::string::_up(u32str[i]);
 					i++;
 					state = 2;
 				}
@@ -709,8 +703,8 @@ namespace string {
 					}
 					else
 					{
-						u32str[i] = _eng_to_rus(u32str[i]);
-						u32str[i] = _low(u32str[i]);
+						u32str[i] = tegia::string::_eng_to_rus(u32str[i]);
+						u32str[i] = tegia::string::_low(u32str[i]);
 						i++;
 					}
 				}
@@ -764,7 +758,7 @@ namespace string {
 
 		for(size_t i = 0; i < u32str.size(); ++i)		
 		{
-			u32str[i] = _up(u32str[i]);
+			u32str[i] = tegia::string::_up(u32str[i]);
 		}
 
 		return conv32.to_bytes(u32str);
@@ -780,7 +774,7 @@ namespace string {
 
 		for(size_t i = 0; i < u32str.size(); ++i)		
 		{
-			u32str[i] = _up(u32str[i]);
+			u32str[i] = tegia::string::_up(u32str[i]);
 		}
 
 		return u32str;
@@ -798,7 +792,7 @@ namespace string {
 
 		for(size_t i = 0; i < u32str.size(); ++i)		
 		{
-			u32str[i] = _low(u32str[i]);
+			u32str[i] = tegia::string::_low(u32str[i]);
 		}
 
 		return conv32.to_bytes(u32str);
