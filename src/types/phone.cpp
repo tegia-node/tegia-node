@@ -74,14 +74,25 @@ nlohmann::json phone_t::json() const
 int phone_t::parse(const std::string & value, const nlohmann::json &validate)
 {
 	this->_category = 0;
+	std::string _value = value;
+
+	//
+	//
+	//
+
+	nlohmann::json::json_pointer ptr("/replace/" + _value);
+	if(validate.contains(ptr) == true)
+	{
+		_value = validate[ptr].get<std::string>();
+	}
 
 	//
 	// Выделяем только цифры
 	//
 
-	if(value == "")
+	if(_value == "")
 	{
-		this->_phone = value;
+		this->_phone = _value;
 		this->_is_valid = false;
 		return 0;
 	}
@@ -91,7 +102,7 @@ int phone_t::parse(const std::string & value, const nlohmann::json &validate)
 	{
 		std::regex r(R"([0-9])");
 
-		for(std::sregex_iterator i = std::sregex_iterator(value.begin(), value.end(), r);
+		for(std::sregex_iterator i = std::sregex_iterator(_value.begin(), _value.end(), r);
 								i != std::sregex_iterator();
 								++i)
 		{
@@ -136,7 +147,7 @@ int phone_t::parse(const std::string & value, const nlohmann::json &validate)
 
 	this->_phone = _phone;
 	this->_is_valid = false;
-	return 2;
+	return 1;
 };
 
 
