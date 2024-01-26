@@ -80,6 +80,14 @@ int gender_t::parse(const std::string & value, const nlohmann::json &validate)
 		//
 
 		case 0:          // ''
+		{
+			this->_gender = "0";
+			this->_is_valid = false;
+			return 1;
+		}
+		break;
+		
+
 		case 4108050209: // '0'
 		case 808273962:  // '-1'
 		case 2837715344: // '-2'
@@ -94,8 +102,10 @@ int gender_t::parse(const std::string & value, const nlohmann::json &validate)
 		// MALE
 		//
 
+		case 2724537472: // 'Мужчина'
 		case 3236906023: // 'Мужской'
 		case 2212294583: // '1'
+		case 3664761504: // 'M'
 		{
 			this->_gender = "1";
 			this->_is_valid = true;
@@ -107,8 +117,10 @@ int gender_t::parse(const std::string & value, const nlohmann::json &validate)
 		// FEMALE
 		//
 
-		case 655494494: // 'Женский'
-		case 450215437: // '2'
+		case 287992342:  // 'Женщина'
+		case 655494494:  // 'Женский'
+		case 450215437:  // '2'
+		case 1304234792: // 'F'
 		{
 			this->_gender = "2";
 			this->_is_valid = true;

@@ -124,6 +124,7 @@ int date_t::parse(const std::string &value, const nlohmann::json &validate)
 	switch(format)
 	{
 		case 1995152703: // [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}
+		case 970670383:  // [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}
 		{
 			this->_date = value.substr(0,10);
 			this->_is_valid = true;
@@ -133,7 +134,15 @@ int date_t::parse(const std::string &value, const nlohmann::json &validate)
 
 		case 295637175: // [0-9]{4}-[0-9]{2}-[0-9]{2}
 		{
-			this->_date = _value.substr(0,10);
+			this->_date = _value;
+			this->_is_valid = true;
+			return 1;
+		}
+		break;
+
+		case 284019523: // [0-9]{2}.[0-9]{2}.[0-9]{4}
+		{
+			this->_date = _value.substr(6,4) + "-" + _value.substr(3,2) + "-" + _value.substr(0,2);
 			this->_is_valid = true;
 			return 1;
 		}
