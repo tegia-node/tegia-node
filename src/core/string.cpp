@@ -521,6 +521,51 @@ namespace string {
 		return out;
 	};  
 
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/*
+		RFC 4180
+	*/
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	std::string quote(const std::string &data)
+	{
+		std::string result = "\"";
+		result.reserve( data.length() * 2 );
+
+		if(data.length() == 0)
+		{
+			return "";
+		}
+
+		for(size_t index = 0; index < data.length(); ++index)
+		{
+			if(data[index] == '"')
+			{
+				result.append(1,'"');
+			}
+			result.append(1,data[index]);
+		}
+
+		result.append(1,'"');
+		return std::move(result);
+	};
+
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/*
+		RFC 4180
+	*/
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	std::string dequote(const std::string &data)
+	{
+		return "";
+	};
+
+
 }	// END string NAMESPACE
 }	// END tegia  NAMESPACE
 
