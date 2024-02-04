@@ -82,7 +82,7 @@ namespace string {
 	std::vector<std::string> explode(std::string source, std::string separator, bool empty = true);
 
 	std::string quote(const std::string &data);
-	std::string dequote(const std::string &data);
+	std::tuple<int,std::string> dequote(const std::string &data);
 
 }	// END string NAMESPACE
 }	// END tegia  NAMESPACE

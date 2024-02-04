@@ -531,13 +531,13 @@ namespace string {
 
 	std::string quote(const std::string &data)
 	{
-		std::string result = "\"";
-		result.reserve( data.length() * 2 );
-
 		if(data.length() == 0)
 		{
 			return "";
 		}
+
+		std::string result = "\"";
+		result.reserve( data.length() * 2 );
 
 		for(size_t index = 0; index < data.length(); ++index)
 		{
@@ -560,9 +560,73 @@ namespace string {
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-	std::string dequote(const std::string &data)
+	std::tuple<int,std::string> dequote(const std::string &data)
 	{
-		return "";
+		if(data.length() == 0)
+		{
+			return std::make_tuple(0,"");
+		}
+
+		std::string result = "";
+		result.reserve( data.length() );
+		size_t index = 0;
+		int state = 0;
+
+		while(index < data.length())
+		{
+			switch(state)
+			{
+				case 0:
+				{
+					if( data[index] != '"' )
+					{
+						// ERROR
+						return std::make_tuple(1,"");
+					}
+					
+					index++;
+					state = 1;
+				}
+				break;
+
+			
+				case 1:
+				{
+					if( data[index] == '"' )
+					{
+						index++;	
+						state = 2;					
+					}
+					else
+					{
+						result.append( 1, data[index] );
+						index++;						
+					}
+				}
+				break;
+
+
+				case 2:
+				{
+					if( data[index] == '"' )
+					{
+						result.append( 1, data[index] );
+						index++;	
+						state = 1;					
+					}
+					else
+					{
+						// ERROR
+						return std::make_tuple(2,"");
+					}
+				}
+				break;
+		
+			}
+		}
+		// END while(index < data.length())
+				
+		return std::make_tuple(0,result);
 	};
 
 

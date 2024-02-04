@@ -3,6 +3,7 @@
 #include <tegia2/types/date.h>
 
 #include <tegia2/core/cast.h>
+#include <tegia2/core/string.h>
 
 namespace tegia {
 namespace types {
@@ -191,7 +192,24 @@ std::string person_t::normal(const std::string &name)
 
 int person_t::parse(const std::string &value, const nlohmann::json &validate)
 {
-	nlohmann::json data = nlohmann::json::parse(value);
+	return this->parse(nlohmann::json::parse(value),validate);
+};
+
+
+////////////////////////////////////////////////////////////////////////////////////////////
+/**
+
+	0 - empty
+	1 - ok
+	2 - not valid
+
+*/   
+////////////////////////////////////////////////////////////////////////////////////////////
+
+
+int person_t::parse(const nlohmann::json &data, const nlohmann::json &validate)
+{
+	// nlohmann::json data = nlohmann::json::parse(value);
 
 	int flag = 0;
 
@@ -201,8 +219,8 @@ int person_t::parse(const std::string &value, const nlohmann::json &validate)
 
 	if(data.contains("surname") == true)
 	{
-		// this->_surname = tegia::types::person_t::normal(data["surname"].get<std::string>());
-		this->_surname = data["surname"].get<std::string>();
+		this->_surname = tegia::types::person_t::normal(data["surname"].get<std::string>());
+		// this->_surname = data["surname"].get<std::string>();
 		flag = flag + 1;
 	}
 	else
@@ -216,8 +234,8 @@ int person_t::parse(const std::string &value, const nlohmann::json &validate)
 
 	if(data.contains("name") == true)
 	{
-		// this->_name = tegia::types::person_t::normal(data["name"].get<std::string>());
-		this->_name = data["name"].get<std::string>();
+		this->_name = tegia::types::person_t::normal(data["name"].get<std::string>());
+		// this->_name = data["name"].get<std::string>();
 		flag = flag + 10;
 	}
 	else
@@ -231,8 +249,8 @@ int person_t::parse(const std::string &value, const nlohmann::json &validate)
 
 	if(data.contains("patronymic") == true)
 	{
-		// this->_patronymic = tegia::types::person_t::normal(data["patronymic"].get<std::string>());
-		this->_patronymic = data["patronymic"].get<std::string>();
+		this->_patronymic = tegia::types::person_t::normal(data["patronymic"].get<std::string>());
+		// this->_patronymic = data["patronymic"].get<std::string>();
 		flag = flag + 100;
 	}
 	else
@@ -265,10 +283,32 @@ int person_t::parse(const std::string &value, const nlohmann::json &validate)
 		tegia::types::gender_t gender;
 		gender.parse(data["gender"].get<std::string>());
 		this->_gender = core::cast<int>(gender.value());
-		flag = flag + 10000;
+		// flag = flag + 10000;
+	}
+
+	switch(flag)
+	{
+		case 1111:
+		{
+			return 1;
+		}
+		break;
+
+		default:
+		{
+			std::cout << _ERR_TEXT_ << "flag = " << flag << std::endl;
+			std::cout << "surname    = " << this->_surname << std::endl;
+			std::cout << "name       = " << this->_name << std::endl;
+			std::cout << "patronymic = " << this->_patronymic << std::endl;
+			std::cout << "t_birth    = " << this->_t_birth << std::endl;
+
+			exit(0);
+		}
+		break;
 	}
 
 
+	return 2;
 };
 
 

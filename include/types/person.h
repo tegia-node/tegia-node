@@ -33,6 +33,7 @@ class person_t: public tegia::types::base_t
 		//
 
 		int parse(const std::string &value, const nlohmann::json &validate = nlohmann::json::object());
+		int parse(const nlohmann::json &data, const nlohmann::json &validate = nlohmann::json::object());
 };
 
 
