@@ -1,4 +1,4 @@
-#include <tegia2/context/context.h>
+#include <tegia/context/context.h>
 
 #include "../threads/data.h"
 #include "../threads/worker.h"

@@ -1,5 +1,5 @@
 
-#include <tegia2/db/sphinx/sphinx.h>
+#include <tegia/db/sphinx/sphinx.h>
 
 namespace tegia {
 namespace sphinx {

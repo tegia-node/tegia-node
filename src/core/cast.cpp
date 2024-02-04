@@ -1,4 +1,4 @@
-#include <tegia2/core/cast.h>
+#include <tegia/core/cast.h>
 
 // https://en.cppreference.com/w/cpp/locale/codecvt
 

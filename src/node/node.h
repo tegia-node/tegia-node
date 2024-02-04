@@ -5,8 +5,8 @@
 #include <iostream>
 #include <tuple>
 
-#include <tegia2/core/json.h>
-#include <tegia2/actors/types.h>
+#include <tegia/core/json.h>
+#include <tegia/actors/types.h>
 
 #include "config.h"
 

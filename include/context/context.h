@@ -3,8 +3,8 @@
 // --------------------------------------------------------------------
 
 
-#include <tegia2/context/user.h>
-#include <tegia2/core/json.h>
+#include <tegia/context/user.h>
+#include <tegia/core/json.h>
 
 #define _LOG_DEBUG_     0  // Отладочные сообщения
 #define _LOG_NOTICE_    1  // Уведомления о возможных проблемах

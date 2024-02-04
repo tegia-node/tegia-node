@@ -1,5 +1,5 @@
-#include <tegia2/types/vk.h>
-#include <tegia2/core/cast.h>
+#include <tegia/types/vk.h>
+#include <tegia/core/cast.h>
 #include <regex>
 
 namespace tegia {

@@ -1,10 +1,10 @@
-#include <tegia2/actors/types.h>
+#include <tegia/actors/types.h>
 
 #include <dlfcn.h>
 #include <utility>
 
-#include <tegia2/core/const.h>
-#include <tegia2/tegia.h>
+#include <tegia/core/const.h>
+#include <tegia/tegia.h>
 
 namespace tegia {
 namespace actors {

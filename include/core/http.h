@@ -20,8 +20,8 @@
 #include <algorithm>
 
 
-#include <tegia2/core/cast.h>
-#include <tegia2/core/string.h>
+#include <tegia/core/cast.h>
+#include <tegia/core/string.h>
 
 struct FILE_DATA
 {

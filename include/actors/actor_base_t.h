@@ -1,7 +1,7 @@
 #ifndef H_TEGIA_ACTORS_BASE
 #define H_TEGIA_ACTORS_BASE
 
-#include <tegia2/core/json.h>
+#include <tegia/core/json.h>
 #include <atomic>
 
 

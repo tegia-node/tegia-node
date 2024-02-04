@@ -9,7 +9,7 @@
 
 //	MySQL
 	#include <mysql/mysql.h>
-	#include <tegia2/db/mysql/const.h>
+	#include <tegia/db/mysql/const.h>
 
 //	STL 
 	#include <string>
@@ -19,7 +19,7 @@
 	#include <unordered_map>
 	#include <vector>
 
-	#include <tegia2/core/json.h>
+	#include <tegia/core/json.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                        //

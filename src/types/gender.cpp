@@ -1,4 +1,4 @@
-#include <tegia2/types/gender.h>
+#include <tegia/types/gender.h>
 
 namespace tegia {
 namespace types {

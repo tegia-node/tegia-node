@@ -4,7 +4,7 @@
 
 #include <tuple>
 #include <iostream>
-#include <tegia2/core/json.h>
+#include <tegia/core/json.h>
 
 
 namespace tegia {

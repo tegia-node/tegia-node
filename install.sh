@@ -2,10 +2,31 @@
 
 RED=`tput setaf 1`
 GREEN=`tput setaf 2`
+YELLOW=`tput setaf 3`
+BLUE=`tput setaf 4`
 RESET=`tput sgr0`
+
 
 _OK_="${GREEN}[OK]  ${RESET}"
 _ERR_="${RED}[ERR] ${RESET}"
+
+
+
+
+tegia_folder=$(realpath ../)
+
+clear
+echo "";
+echo "${GREEN}Установка tegia-node${RESET}"
+echo "";
+
+
+# ----------------------------------------------------------------------------------------
+#
+# Настраиваем подключение к MySQL
+#
+# ----------------------------------------------------------------------------------------
+
 
 
 mysql_debian_password()
@@ -20,43 +41,42 @@ mysql_debian_password()
     echo $passwd
 }
 
-tegia_folder=$(realpath ../)
 
-# ----------------------------------------------------------------------------------------
-#
-# Настраиваем подключение к MySQL
-#
-# ----------------------------------------------------------------------------------------
+mysql_install()
+{
+	echo "MYSQL INSTALL"
 
-#
-# HOST
-#
+	#
+	# MYSQL CONNECTION
+	#
 
-mysql_host=$(echo $MYSQL_HOST)
+	#echo "Укажите mysql host"
+	read -rp "${YELLOW}Укажите mysql host:${RESET} [localhost]: " mysql_host
+	if [[ -z "$mysql_host" ]]; then
+		mysql_host="localhost"
+	fi
 
-#
-# PORT
-#
+	#echo "Укажите mysql port"
+	read -rp "${YELLOW}Укажите mysql port:${RESET} [3306]: " mysql_port
+	if [[ -z "$mysql_port" ]]; then
+		mysql_port='3306'
+	fi
 
-mysql_port=$(echo $MYSQL_PORT)
-echo -e "${_OK_}set port = '$mysql_port'"
+	#echo "Укажите mysql user"
+	read -rp "${YELLOW}Укажите mysql user:${RESET} [tegia_user]: " mysql_user
+	if [[ -z "$mysql_user" ]]; then
+		mysql_user="tegia_user"
+	fi
 
-#
-# TEGIA USER & PASSWORD
-#
-
-mysql_user='tegia_user'
-mysql_password=$(echo $MYSQL_PASSWORD)
-echo -e "\n${_OK_}tegia user = '$mysql_user'"
-echo -e "${_OK_}mysql password is set"
-
-#
-# CONFIGURE MYSQL
-#
-
-echo -e "Configure MySQL"
-
-if [[ "$mysql_host" == "localhost" || "$mysql_host" == "127.0.0.1" ]]; then
+	while [[ -z "$mysql_password" ]]; do
+		read -srp "${YELLOW}Укажите пароль для подключения к MySQL:${RESET} " mysql_password
+		if [[ -z "$mysql_password" ]]; then
+			echo -e "\n${_ERR_}Пароль не может быть пустым"
+		else
+			break
+		fi
+	done
+	echo " "
 
     #
     # install mysql local
@@ -103,31 +123,11 @@ EOF
 
     echo -e "${_OK_}tegia_user is created on MySQL"
 
-else
-    echo -e "removed"
-    mysql_remote_host=$(ip route get 1.1.1.1 | awk -- '{printf $7}')
+	#
+	# SAVE tegia.cnf FILE
+	#
 
-    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-client
-
-    #
-    # TODO
-    #
-
-#    mysql --defaults-extra-file=../../mysql.cnf <<EOF
-#    CREATE USER 'tegia_user'@'$mysql_remote_host' IDENTIFIED BY '$mysql_password';
-#    GRANT ALL PRIVILEGES ON *.* TO 'tegia_user'@'$mysql_remote_host';"
-#    FLUSH PRIVILEGES;
-#EOF
-
-    rm -f $tegia_folder/mysql.cnf
-
-fi
-
-#
-# SAVE tegia.cnf FILE
-#
-
-tee ../tegia.cnf << EOF > /dev/null
+	tee ../tegia.cnf << EOF > /dev/null
 [mysql]
 host=$mysql_host
 port=$mysql_port
@@ -135,6 +135,107 @@ user=$mysql_user
 password=$mysql_password
 EOF
 
-echo "${_OK_}file '$tegia_folder/tegia.cnf' is saved"
+	echo "${_OK_}file '$tegia_folder/tegia.cnf' is saved"
+
+}
+
+
+# ----------------------------------------------------------------------------------------
+#
+# ----------------------------------------------------------------------------------------
+
+title="Установка MySQL"
+prompt="${YELLOW}Выберите вариант установки:${RESET}"
+options=("Локальная становка MySQL" "Не устанавливать MySQL")
+
+echo "$title"
+PS3="$prompt "
+select opt in "${options[@]}"; do 
+    case "$REPLY" in
+    1) mysql_install; break;;
+    2) echo "${_OK_}MySQL не будет устанавливаться"; break;;
+    *) echo "Invalid option. Try another one.";continue;;
+    esac
+done
+
+# ----------------------------------------------------------------------------------------
+#
+# Устанавливаем зависимости
+#
+# ----------------------------------------------------------------------------------------
+
+sudo apt install -y mc screen jq zip
+sudo apt install -y python build-essential default-libmysqlclient-dev libtool m4 automake uuid-dev libxml2-dev
+sudo apt install -y libcurl4-openssl-dev libssl-dev
+sudo apt install -y cmake zlibc
+sudo apt install -y libbz2-dev libzip-dev unzip
+sudo apt install -y pkg-config
+
+sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+sudo apt install -y g++-11 gcc-11
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 60 --slave /usr/bin/g++ g++ /usr/bin/g++-11
+
+# ----------------------------------------------------------------------------------------
+#
+# Настраиваем директории
+#
+# ----------------------------------------------------------------------------------------
+
+mkdir -p $tegia_folder/vendors
+mkdir -p $tegia_folder/configurations
+mkdir -p $tegia_folder/applications
+mkdir -p $tegia_folder/ui
+
+cd $tegia_folder
+ln -s $tegia_folder/tegia-node/include $tegia_folder/tegia-node/tegia
+
+# ----------------------------------------------------------------------------------------
+#
+# Загружаем и настраиваем используемые библиотеки
+#
+# ----------------------------------------------------------------------------------------
+
+cd $tegia_folder/vendors
+git clone https://github.com/Microsoft/vcpkg.git
+cd vcpkg
+
+sudo ./bootstrap-vcpkg.sh -disableMetrics
+sudo ./vcpkg install nlohmann-json json-schema-validator fmt vincentlaucsb-csv-parser xpack cpp-jwt
+
+#
+# xml2json
+#
+
+cd $tegia_folder/vendors
+git clone https://github.com/Cheedoong/xml2json
+sudo ln -fs $tegia_folder/vendors/xml2json /usr/include/xml2json
+
+#
+# tegia include files
+#
+
+if [ -d /usr/include/tegia2/ ]; then
+	sudo rm -R /usr/include/tegia2
+fi
+
+sudo ln -fs $tegia_folder/tegia-node/include /usr/include/tegia2
+
+# ----------------------------------------------------------------------------------------
+#
+# Файл с флагами компиляции
+#
+# ----------------------------------------------------------------------------------------
+
+tee $tegia_folder/Makefile.variable << EOF > /dev/null
+ProdFlag			= -rdynamic -I${tegia_folder}/tegia-node -std=c++2a -march=native -m64 -O2
+DevFlag				= -rdynamic -I${tegia_folder}/tegia-node -std=c++2a -march=native -m64 -Og -g -Wpedantic -Wshadow=compatible-local -Wl,--no-as-needed 
+Flag = \$(DevFlag)
+EOF
+
+
+exit 0
+
+
+
 
 

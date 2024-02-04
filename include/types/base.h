@@ -3,9 +3,9 @@
 
 #include <string>
 
-#include <tegia2/core/const.h>
-#include <tegia2/core/json.h>
-#include <tegia2/core/crypt.h>
+#include <tegia/core/const.h>
+#include <tegia/core/json.h>
+#include <tegia/core/crypt.h>
 
 namespace tegia {
 namespace types {

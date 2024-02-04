@@ -19,8 +19,8 @@
 	#include "connection.h"
 
 //	TEGIA
-	#include <tegia2/core/const.h>
-	#include <tegia2/core/json.h>
+	#include <tegia/core/const.h>
+	#include <tegia/core/json.h>
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////

@@ -2,10 +2,10 @@
 #define H_TEGIA_ACTORS_TYPES
 
 #include <iostream>
-#include <tegia2/core/json.h>
-#include <tegia2/core/const.h>
-#include <tegia2/actors/actor_base_t.h>
-#include <tegia2/actors/message_t.h>
+#include <tegia/core/json.h>
+#include <tegia/core/const.h>
+#include <tegia/actors/actor_base_t.h>
+#include <tegia/actors/message_t.h>
 
 
 namespace tegia {

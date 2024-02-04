@@ -1,4 +1,4 @@
-#include <tegia2/types/phone.h>
+#include <tegia/types/phone.h>
 #include <regex>
 
 namespace tegia {

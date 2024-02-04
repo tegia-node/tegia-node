@@ -1,6 +1,6 @@
 #include <regex>
-#include <tegia2/core/crypt.h>
-#include <tegia2/types/date.h>
+#include <tegia/core/crypt.h>
+#include <tegia/types/date.h>
 
 namespace tegia {
 namespace types {

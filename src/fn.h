@@ -3,9 +3,9 @@
 // ---------------------------------------------------------------------------------------------------
 
 #include <string>
-#include <tegia2/context/context.h>
-#include <tegia2/actors/message_t.h>
-#include <tegia2/actors/actor_base_t.h>
+#include <tegia/context/context.h>
+#include <tegia/actors/message_t.h>
+#include <tegia/actors/actor_base_t.h>
 
 // LOGGER
 #include "node/logger.h"

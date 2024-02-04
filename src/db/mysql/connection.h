@@ -15,10 +15,10 @@
 	#include <mysql/errmsg.h>
 
 //	TEGIA
-	#include <tegia2/core/string.h>
+	#include <tegia/core/string.h>
 
-	#include <tegia2/db/mysql/const.h>
-	#include <tegia2/db/mysql/records.h>
+	#include <tegia/db/mysql/const.h>
+	#include <tegia/db/mysql/records.h>
 
 
 

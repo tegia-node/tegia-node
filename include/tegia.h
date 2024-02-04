@@ -3,11 +3,11 @@
 
 
 #include <iostream>
-#include <tegia2/core/const.h>
-#include <tegia2/core/cast.h>
-#include <tegia2/core/json.h>
-#include <tegia2/actors/types.h>
-#include <tegia2/context/context.h>
+#include <tegia/core/const.h>
+#include <tegia/core/cast.h>
+#include <tegia/core/json.h>
+#include <tegia/actors/types.h>
+#include <tegia/context/context.h>
 
 
 namespace tegia {

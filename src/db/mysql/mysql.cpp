@@ -1,4 +1,4 @@
-#include <tegia2/db/mysql/mysql.h>
+#include <tegia/db/mysql/mysql.h>
 #include "../../threads/data.h"
 
 namespace tegia {

@@ -1,4 +1,4 @@
-#include <tegia2/core/crypt.h>
+#include <tegia/core/crypt.h>
 #include <random>
 #include <chrono>
 

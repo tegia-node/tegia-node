@@ -1,9 +1,9 @@
-#include <tegia2/types/person.h>
-#include <tegia2/types/gender.h>
-#include <tegia2/types/date.h>
+#include <tegia/types/person.h>
+#include <tegia/types/gender.h>
+#include <tegia/types/date.h>
 
-#include <tegia2/core/cast.h>
-#include <tegia2/core/string.h>
+#include <tegia/core/cast.h>
+#include <tegia/core/string.h>
 
 namespace tegia {
 namespace types {

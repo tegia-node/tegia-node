@@ -10,8 +10,8 @@
 #include <string>
 #include <locale>
 
-#include <tegia2/core/json.h>
-#include <tegia2/core/facet.h>
+#include <tegia/core/json.h>
+#include <tegia/core/facet.h>
 
 
 //////////////////////////////////////////////////////////////////////////////////////////

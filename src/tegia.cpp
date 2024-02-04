@@ -1,5 +1,5 @@
 
-#include <tegia2/tegia.h>
+#include <tegia/tegia.h>
 #include "node/node.h"
 
 namespace tegia {

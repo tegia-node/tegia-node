@@ -1,4 +1,4 @@
-#include <tegia2/core/http.h>
+#include <tegia/core/http.h>
 
 namespace tegia {
 namespace http {

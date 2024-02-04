@@ -6,8 +6,8 @@
 #include <iostream>
 #include <thread>
 
-#include <tegia2/core/cast.h>
-#include <tegia2/context/user.h>
+#include <tegia/core/cast.h>
+#include <tegia/context/user.h>
 
 #include "../db/mysql/provider.h"
 

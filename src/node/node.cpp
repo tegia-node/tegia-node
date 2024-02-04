@@ -1,7 +1,7 @@
-#include <tegia2/context/context.h>
-#include <tegia2/db/mysql/mysql.h>
+#include <tegia/context/context.h>
+#include <tegia/db/mysql/mysql.h>
 
-#include <tegia2/core/json.h> 
+#include <tegia/core/json.h> 
 
 #include "node.h"
 #include "../threads/pool.h"

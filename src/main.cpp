@@ -9,7 +9,7 @@
 #include <typeinfo> 
 #include <filesystem>
 
-#include <tegia2/core/const.h>
+#include <tegia/core/const.h>
 #include "node/node.h"
 
 

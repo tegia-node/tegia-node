@@ -1,4 +1,4 @@
-#include <tegia2/types/email.h>
+#include <tegia/types/email.h>
 
 namespace tegia {
 namespace types {
