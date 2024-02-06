@@ -181,7 +181,6 @@ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 60 --slave /
 
 mkdir -p $tegia_folder/vendors
 mkdir -p $tegia_folder/configurations
-mkdir -p $tegia_folder/applications
 mkdir -p $tegia_folder/ui
 
 cd $tegia_folder
@@ -207,16 +206,6 @@ sudo ./vcpkg install nlohmann-json json-schema-validator fmt vincentlaucsb-csv-p
 cd $tegia_folder/vendors
 git clone https://github.com/Cheedoong/xml2json
 sudo ln -fs $tegia_folder/vendors/xml2json /usr/include/xml2json
-
-#
-# tegia include files
-#
-
-if [ -d /usr/include/tegia2/ ]; then
-	sudo rm -R /usr/include/tegia2
-fi
-
-sudo ln -fs $tegia_folder/tegia-node/include /usr/include/tegia2
 
 # ----------------------------------------------------------------------------------------
 #
