@@ -11,11 +11,9 @@ _OK_="${GREEN}[OK]  ${RESET}"
 _ERR_="${RED}[ERR] ${RESET}"
 
 
+tegia_folder=$(realpath ../../)
 
 
-tegia_folder=$(realpath ../)
-
-clear
 echo "";
 echo "${GREEN}Установка tegia-node${RESET}"
 echo "";

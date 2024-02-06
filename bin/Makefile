@@ -6,10 +6,11 @@ include ../../Makefile.variable
 #
 # =============================================================================================================	
 		
-platform:
+node:
+
 	@echo " "
 	@echo "------------------------------------------------------------"
-	@echo "TEGIA PLATFORM: \033[32;1m COMPILING \033[0m"
+	@echo "TEGIA NODE: \033[32;1m BUILD \033[0m"
 	@echo "------------------------------------------------------------"
 	@echo " "
 
@@ -71,3 +72,7 @@ platform:
 		-pthread -ldl -lz -lcurl -lcrypto -lmysqlclient -luuid -lstdc++fs -lxml2 \
 		-lnlohmann_json_schema_validator -lfmt `pkg-config --cflags --libs gumbo` \
 		$(Flag)
+
+install:
+	bash ./install.sh 
+	make
