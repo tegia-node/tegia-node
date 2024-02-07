@@ -59,7 +59,8 @@ node:
 #	APP
 	g++ -c -o app_router.o               ../src/app/router.cpp            $(Flag)
 
-	g++ -o tegia-node main.o tegia.o \
+	g++ -o tegia-node \
+		main.o tegia.o \
 		core.crypt.o core.string.o core.json.o core.http.o core.cast.o \
 		tegia.types.gender.o tegia.types.phone.o tegia.types.email.o tegia.types.fio.o tegia.types.vk.o tegia.types.date.o tegia.types.person.o \
 		thread_pool.o thread_data.o \
