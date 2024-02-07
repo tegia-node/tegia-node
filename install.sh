@@ -84,7 +84,7 @@ then
 fi
 
 # TODO: переделать на более правильный вариант
-sudo ln -fs {root_folder}/vendors/xml2json /usr/include/xml2json
+sudo ln -fs ${root_folder}/vendors/xml2json /usr/include/xml2json
 
 
 #
@@ -202,7 +202,22 @@ EOF
 
 echo "${_OK_}file '${root_folder}/tegia.cnf' is saved"
 
+#
+# Makefile.variable
+#
 
+tee ${root_folder}/Makefile.variable << EOF > /dev/null
+ProdFlag			= -rdynamic -I${root_folder}/tegia-node/include -std=c++2a -march=native -m64 -O2
+DevFlag				= -rdynamic -I${root_folder}/tegia-node/include -std=c++2a -march=native -m64 -Og -g -Wpedantic -Wshadow=compatible-local -Wl,--no-as-needed 
+Flag = \$(DevFlag)
+EOF
+
+
+echo " "
+echo "------------------------------------------------------------"
+echo "TEGIA NODE: ${GREEN} INSTALL ${RESET}"
+echo "------------------------------------------------------------"
+echo " "
 
 exit 0
 
@@ -215,55 +230,6 @@ exit 0
 
 
 
-mysql_install()
-{
-	echo "MYSQL INSTALL"
-
-	#
-	# MYSQL CONNECTION
-	#
-
-	#echo "Укажите mysql host"
-	read -rp "${YELLOW}Укажите mysql host:${RESET} [localhost]: " mysql_host
-	if [[ -z "$mysql_host" ]]; then
-		mysql_host="localhost"
-	fi
-
-	#echo "Укажите mysql port"
-	read -rp "${YELLOW}Укажите mysql port:${RESET} [3306]: " mysql_port
-	if [[ -z "$mysql_port" ]]; then
-		mysql_port='3306'
-	fi
-
-	#echo "Укажите mysql user"
-
-    #
-    # install mysql local
-    #
-
-
-
-}
-
-
-# ----------------------------------------------------------------------------------------
-#
-# ----------------------------------------------------------------------------------------
-
-title="Установка MySQL"
-prompt="${YELLOW}Выберите вариант установки:${RESET}"
-options=("Локальная становка MySQL" "Не устанавливать MySQL")
-
-echo "$title"
-PS3="$prompt "
-select opt in "${options[@]}"; do 
-    case "$REPLY" in
-    1) mysql_install; break;;
-    2) echo "${_OK_}MySQL не будет устанавливаться"; break;;
-    *) echo "Invalid option. Try another one.";continue;;
-    esac
-done
-
 
 
 
@@ -273,11 +239,6 @@ done
 #
 # ----------------------------------------------------------------------------------------
 
-tee $tegia_folder/Makefile.variable << EOF > /dev/null
-ProdFlag			= -rdynamic -I${tegia_folder}/tegia-node -std=c++2a -march=native -m64 -O2
-DevFlag				= -rdynamic -I${tegia_folder}/tegia-node -std=c++2a -march=native -m64 -Og -g -Wpedantic -Wshadow=compatible-local -Wl,--no-as-needed 
-Flag = \$(DevFlag)
-EOF
 
 
 exit 0
