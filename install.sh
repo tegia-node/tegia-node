@@ -45,7 +45,6 @@ sudo apt install -y cmake
 #
 # LIBS
 #
-
 sudo apt install -y default-libmysqlclient-dev
 sudo apt install -y uuid-dev
 sudo apt install -y libxml2-dev
@@ -61,10 +60,33 @@ sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
 sudo apt install -y g++-11 gcc-11
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 60 --slave /usr/bin/g++ g++ /usr/bin/g++-11
 
+
+#
+# MySQL
+#
+
+ismysql80="$(dpkg --get-selections | grep mysql-server-8.0)"
+if [[ "${#ismysql80}" == 0 ]]; then
+
+	mkdir -p $tegia_folder/vendors/mysql
+	cd $tegia_folder/vendors/mysql
+	wget -N https://dev.mysql.com/get/mysql-apt-config_0.8.15-1_all.deb
+	sudo DEBIAN_FRONTEND=noninteractive dpkg -i mysql-apt-config_0.8.15-1_all.deb    
+
+	sudo apt-get update -y
+	sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server
+	sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-client
+
+	echo -e "${_OK_}MySQL success installed"
+else
+	echo -e "${_OK_}MySQL is already installed"
+fi
+
 #
 # VCPKG
 #
 
+# ###############
 # cd ${root_folder}
 # if ! [ -d  ${root_folder}/vcpkg/ ]
 # then
@@ -73,6 +95,7 @@ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 60 --slave /
 # fi
 
 # ${root_folder}/vcpkg/vcpkg install nlohmann-json json-schema-validator fmt vincentlaucsb-csv-parser cpp-jwt
+# ###############
 
 #
 # nlohmann json
@@ -112,13 +135,11 @@ fi
 # vincentlaucsb / csv-parser
 #
 
-
 if ! [ -d  ${root_folder}/vendors/csv-parser/ ]
 then
 	cd ${root_folder}/vendors
 	git clone https://github.com/vincentlaucsb/csv-parser.git
 fi
-
 
 #
 # xml2json
@@ -132,15 +153,13 @@ then
 	sudo ln -fs ${root_folder}/vendors/xml2json /usr/include/xml2json
 fi
 
-
-
-
 #
 # CONFIGURE
 #
 
 cd ${root_folder}/tegia-node
-cmake -B build/ -S . -DCMAKE_TOOLCHAIN_FILE=${root_folder}/vcpkg/scripts/buildsystems/vcpkg.cmake
+# cmake -B build/ -S . -DCMAKE_TOOLCHAIN_FILE=${root_folder}/vcpkg/scripts/buildsystems/vcpkg.cmake
+cmake -B build/ -S .
 
 echo " "
 echo "------------------------------------------------------------"
@@ -156,95 +175,6 @@ echo "------------------------------------------------------------"
 echo "TEGIA NODE: ${GREEN} INSTALL ${RESET}"
 echo "------------------------------------------------------------"
 echo " "
-
-#
-# MySQL
-#
-
-ismysql80="$(dpkg --get-selections | grep mysql-server-8.0)"
-if [[ "${#ismysql80}" == 0 ]]; then
-
-	mkdir -p $tegia_folder/vendors/mysql
-	cd $tegia_folder/vendors/mysql
-	wget -N https://dev.mysql.com/get/mysql-apt-config_0.8.15-1_all.deb
-	sudo DEBIAN_FRONTEND=noninteractive dpkg -i mysql-apt-config_0.8.15-1_all.deb    
-
-	sudo apt-get update -y
-	sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server
-	sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-client
-
-	echo -e "${_OK_}MySQL success installed"
-else
-	echo -e "${_OK_}MySQL is already installed"
-fi
-
-#
-# TEGIA USER FOR MySQL
-#
-
-mysql_debian_password()
-{
-    # Получаем пароль от MySQL
-    string=$(sudo cat /etc/mysql/debian.cnf)
-    regsubstring="password"
-    passwd="${string#*password}"
-    passwd="${passwd%%socket*}"
-    len="$((${#passwd}-4))"
-    passwd="${passwd:3:$len}"
-    echo $passwd
-}
-
-read -rp "${YELLOW}Укажите имя для пользователя, который будет использоваться для подключения к MySQL:${RESET} [tegia_user]: " mysql_user
-if [[ -z "$mysql_user" ]]; then
-	mysql_user="tegia_user"
-fi
-
-while [[ -z "$mysql_password" ]]; do
-	read -srp "${YELLOW}Укажите пароль, который будет использоваться для подключения к MySQL:${RESET} " mysql_password
-	if [[ -z "$mysql_password" ]]; then
-		echo -e "\n${_ERR_}Пароль не может быть пустым"
-	else
-		break
-	fi
-done
-echo " "
-
-mysql_host='localhost'
-mysql_port='3306'
-
-#
-# CREATE TEGIA USER
-#
-
-export MYSQL_PWD=$(mysql_debian_password)
-
-iffinduser="$(mysql -u debian-sys-maint --execute="SELECT host,user FROM mysql.user WHERE host = '$mysql_host' AND user = '$mysql_user';")"
-if [[ "${#iffinduser}" != 0 ]]
-then
-	mysql -u debian-sys-maint --port=$mysql_port --execute="DROP USER '$mysql_user'@'$mysql_host';"
-fi
-
-mysql -u debian-sys-maint --port=$mysql_port << EOF
-CREATE USER '$mysql_user'@'$mysql_host' IDENTIFIED BY '$mysql_password';
-GRANT ALL PRIVILEGES ON *.* TO '$mysql_user'@'$mysql_host';
-FLUSH PRIVILEGES;
-EOF
-
-echo -e "${_OK_}tegia user '${mysql_user}' is created on MySQL"
-
-#
-# SAVE 'tegia.cnf' FILE
-#
-
-tee ${root_folder}/tegia.cnf << EOF > /dev/null
-[mysql]
-host=$mysql_host
-port=$mysql_port
-user=$mysql_user
-password=$mysql_password
-EOF
-
-echo "${_OK_}file '${root_folder}/tegia.cnf' is saved"
 
 #
 # SAVE 'Makefile.variable' FILE
