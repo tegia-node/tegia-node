@@ -51,6 +51,7 @@ sudo apt install -y uuid-dev
 sudo apt install -y libxml2-dev
 sudo apt install -y libcurl4-openssl-dev libssl-dev
 sudo apt install -y zlibc libbz2-dev libzip-dev unzip
+sudo apt install -y libfmt-dev
 
 #
 # GNU G++
@@ -64,14 +65,60 @@ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 60 --slave /
 # VCPKG
 #
 
-cd ${root_folder}
-if ! [ -d  ${root_folder}/vcpkg/ ]
+# cd ${root_folder}
+# if ! [ -d  ${root_folder}/vcpkg/ ]
+# then
+#	git clone https://github.com/Microsoft/vcpkg.git
+#	${root_folder}/vcpkg/bootstrap-vcpkg.sh
+# fi
+
+# ${root_folder}/vcpkg/vcpkg install nlohmann-json json-schema-validator fmt vincentlaucsb-csv-parser cpp-jwt
+
+#
+# nlohmann json
+#
+
+if ! [ -d  ${root_folder}/vendors/json/ ]
 then
-	git clone https://github.com/Microsoft/vcpkg.git
-	${root_folder}/vcpkg/bootstrap-vcpkg.sh
+	cd ${root_folder}/vendors
+	git clone https://github.com/nlohmann/json.git
+	cd json
+	mkdir -p build
+	cd build
+	cmake ..
+	make
+	sudo make install
+	sudo ldconfig
 fi
 
-${root_folder}/vcpkg/vcpkg install nlohmann-json json-schema-validator fmt vincentlaucsb-csv-parser cpp-jwt
+#
+# json-schema-validator
+#
+
+if ! [ -d  ${root_folder}/vendors/json-schema-validator/ ]
+then
+	cd ${root_folder}/vendors
+	git clone https://github.com/pboettch/json-schema-validator.git
+	cd json-schema-validator
+	mkdir -p build
+	cd build
+	cmake .. -DBUILD_SHARED_LIBS=ON ..
+	make
+	sudo make install
+	sudo ldconfig
+fi
+
+#
+# vincentlaucsb / csv-parser
+#
+
+
+if ! [ -d  ${root_folder}/vendors/csv-parser/ ]
+then
+	cd ${root_folder}/vendors
+	git clone https://github.com/vincentlaucsb/csv-parser.git
+fi
+
 
 #
 # xml2json
@@ -81,10 +128,11 @@ if ! [ -d  ${root_folder}/vendors/xml2json/ ]
 then
 	cd ${root_folder}/vendors
 	git clone https://github.com/Cheedoong/xml2json
+	# TODO: переделать на более правильный вариант
+	sudo ln -fs ${root_folder}/vendors/xml2json /usr/include/xml2json
 fi
 
-# TODO: переделать на более правильный вариант
-sudo ln -fs ${root_folder}/vendors/xml2json /usr/include/xml2json
+
 
 
 #
@@ -171,12 +219,8 @@ mysql_port='3306'
 export MYSQL_PWD=$(mysql_debian_password)
 
 iffinduser="$(mysql -u debian-sys-maint --execute="SELECT host,user FROM mysql.user WHERE host = '$mysql_host' AND user = '$mysql_user';")"
-if [[ "${#iffinduser}" != 0 ]]; then
-
-	#
-	# Удалить пользователя
-	#
-	
+if [[ "${#iffinduser}" != 0 ]]
+then
 	mysql -u debian-sys-maint --port=$mysql_port --execute="DROP USER '$mysql_user'@'$mysql_host';"
 fi
 
@@ -189,7 +233,7 @@ EOF
 echo -e "${_OK_}tegia user '${mysql_user}' is created on MySQL"
 
 #
-# SAVE tegia.cnf FILE
+# SAVE 'tegia.cnf' FILE
 #
 
 tee ${root_folder}/tegia.cnf << EOF > /dev/null
@@ -203,7 +247,7 @@ EOF
 echo "${_OK_}file '${root_folder}/tegia.cnf' is saved"
 
 #
-# Makefile.variable
+# SAVE 'Makefile.variable' FILE
 #
 
 tee ${root_folder}/Makefile.variable << EOF > /dev/null
@@ -215,35 +259,9 @@ EOF
 
 echo " "
 echo "------------------------------------------------------------"
-echo "TEGIA NODE: ${GREEN} INSTALL ${RESET}"
+echo "TEGIA NODE: ${GREEN} INSTALLATION COMPLETED ${RESET}"
 echo "------------------------------------------------------------"
 echo " "
 
 exit 0
-
-# ----------------------------------------------------------------------------------------
-#
-# Настраиваем подключение к MySQL
-#
-# ----------------------------------------------------------------------------------------
-
-
-
-
-
-
-
-# ----------------------------------------------------------------------------------------
-#
-# Файл с флагами компиляции
-#
-# ----------------------------------------------------------------------------------------
-
-
-
-exit 0
-
-
-
-
 
