@@ -38,12 +38,18 @@ int send(
 	int priority = 0);
 
 
-/*
-bool init()
+inline const std::shared_ptr<message_t> init(nlohmann::json data = nlohmann::json())
 {
-	return false;
+	std::shared_ptr<message_t> message(new message_t( data ));
+	return message;
 };
-*/
+
+template<class T>
+const std::shared_ptr<T> init(nlohmann::json data = nlohmann::json())
+{
+	std::shared_ptr<T> message(new T( data ));
+	return message;
+};
 
 
 } // namespace message
