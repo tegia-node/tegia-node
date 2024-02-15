@@ -363,7 +363,7 @@ namespace mysql {
 		{
 			//LERROR("Restore connection [ok]");
 
-			if(this->dbname != dbname && this->type == "mysql")
+			if(this->type == "mysql")
 			{
 				this->dbname = dbname;
 				mysql_select_db(this->hConnect,this->dbname.c_str());
