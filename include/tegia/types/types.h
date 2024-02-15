@@ -8,4 +8,7 @@
 #include "vk.h"			// vk_id
 #include "date.h"		// date
 
+#include "snils.h"
+#include "rus_passport.h"
+
 #endif
