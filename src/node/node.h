@@ -6,18 +6,20 @@
 #include <tuple>
 
 #include <tegia/core/json.h>
-#include <tegia/actors/types.h>
+#include "../actors/map.h"
 
 #include "config.h"
 
 
 
+/*
 struct actor_t
 {
 	std::string name;
 	tegia::actors::actor_base * actor;
 	tegia::actors::type_base *type;
 };
+*/
 
 
 namespace tegia {
@@ -33,22 +35,28 @@ class node
 {
 	public:
 
-		static node * _self;
-		static node * instance();
+		// static node * _self;
+		// static node * instance();
+		
 		const nlohmann::json * const config(const std::string &name);
+		std::string config_path(const std::string &name);
 
 		node();
 		~node();
 		bool run();
 		bool action();
 
-		const nlohmann::json * const config();
+		// const nlohmann::json * const config();
+
+		
 
 		int send_message(
 			const std::string &actor, 
 			const std::string &action, 
 			const std::shared_ptr<message_t> &message,
 			int priority);
+
+		
 
 	private:
 		tegia::threads::pool * _threads;

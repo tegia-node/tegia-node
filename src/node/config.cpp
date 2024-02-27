@@ -247,9 +247,17 @@ bool config::load()
 			}
 		}
 
+		//
+		// PATH
+		//
+
+		// std::cout << conf->data << std::endl;
+		conf->path = conf->data["path"].get<std::string>();
+
 		std::cout << _OK_TEXT_ << "ADD CONFIG" << std::endl;
 		std::cout << "      name = " << conf->name << std::endl;
 		std::cout << "      file = " << conf->file << std::endl;
+		std::cout << "      path = " << conf->path << std::endl;
 		std::cout << " " << std::endl;
 	}
 
@@ -257,6 +265,7 @@ bool config::load()
 		auto conf = new _conf();
 		conf->name = "_db";
 		conf->file = "";
+		conf->path = "";
 		conf->data = dbs;
 		this->_map.insert({conf->name,conf});
 	}
@@ -280,8 +289,6 @@ bool config::load()
 
 
 
-
-
 const nlohmann::json * const config::get(const std::string &name)
 {
 	auto pos = this->_map.find(name);
@@ -294,6 +301,7 @@ const nlohmann::json * const config::get(const std::string &name)
 		return nullptr;
 	}
 };
+
 
 
 }	// END namespace node

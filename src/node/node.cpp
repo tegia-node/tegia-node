@@ -21,6 +21,7 @@ namespace tegia {
 namespace node {
 
 
+/*
 node * node::_self = nullptr;
 node * node::instance()
 {
@@ -31,6 +32,7 @@ node * node::instance()
 	}
 	return _self;
 };
+*/
 
 
 node::node()
@@ -55,6 +57,7 @@ node::~node()
 void node::init_thread(const nlohmann::json &config)
 {
 	::tegia::threads::data->init(config);
+	::tegia::threads::data->_node = this;
 };
 
 
@@ -88,7 +91,6 @@ bool node::action()
 	std::cout << _YELLOW_ << "--------------------------------------------\n" << _BASE_TEXT_ << std::endl;
 
 	LNOTICE("\n--------------------------------------------\nACTION NODE\n--------------------------------------------\n")
-
 
 	//
 	// INIT ACTOR TYPES
@@ -135,6 +137,7 @@ bool node::action()
 	}
 
 	this->actor_map.add_domain("base","local");
+	this->actor_map.add_domain("parsers","local");
 	this->actor_map.add_domain("http","local");
 	this->actor_map.add_domain("test","remote");
 	this->actor_map.add_domain("app","local");
@@ -157,19 +160,6 @@ bool node::action()
 			60
 		);
 	}
-
-	/*
-	this->actor_map.send_message("base/example/1","/action1",std::move(nlohmann::json::object()));
-	this->actor_map.send_message("base/example/1/test","/action1",std::move(nlohmann::json::object()));
-	this->actor_map.send_message("http/session/1","/action1",std::move(nlohmann::json::object()));
-	this->actor_map.send_message("http/sf435/34","/action1",std::move(nlohmann::json::object()));
-	this->actor_map.send_message("test/sf","/action1",std::move(nlohmann::json::object()));
-	this->actor_map.send_message("dhghg/ghshsh/sf","/action1",std::move(nlohmann::json::object()));
-
-	this->actor_map.send_message("base/example/1","/action2",std::move(nlohmann::json::object()));
-	this->actor_map.send_message("http/session/1","/action2",std::move(nlohmann::json::object()));
-	this->actor_map.send_message("http/listener","/init",std::move(nlohmann::json::object()));
-	*/
 	
 	
 	return true;
@@ -200,6 +190,15 @@ bool node::action()
 		//
 
 		tegia::logger::instance();
+
+
+		/*
+		tegia::user * _user = new tegia::user();
+		_user->print();
+
+		exit(0);
+		*/
+
 
 		//
 		// Читаем конфигурацию
@@ -239,18 +238,35 @@ bool node::action()
 	};
 
 
-	const nlohmann::json * const node::config(const std::string &name)
+
+const nlohmann::json * const node::config(const std::string &name)
+{
+	auto pos = this->_config->_map.find(name);
+	if(pos != this->_config->_map.end())
 	{
-		auto pos = this->_config->_map.find(name);
-		if(pos != this->_config->_map.end())
-		{
-			return const_cast<const nlohmann::json * const>(&pos->second->data);
-		}
-		else
-		{
-			return nullptr;
-		}
-	};
+		return const_cast<const nlohmann::json * const>(&pos->second->data);
+	}
+	else
+	{
+		return nullptr;
+	}
+};
+
+
+
+std::string node::config_path(const std::string &name)
+{
+	auto pos = this->_config->_map.find(name);
+	if(pos != this->_config->_map.end())
+	{
+		return pos->second->path;
+	}
+	else
+	{
+		return "";
+	}	
+};
+
 
 
 }	// END namespace node

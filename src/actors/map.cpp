@@ -1,10 +1,10 @@
-#include <tegia/actors/types.h>
-
 #include <dlfcn.h>
 #include <utility>
 
 #include <tegia/core/const.h>
 #include <tegia/tegia.h>
+
+#include "map.h"
 
 namespace tegia {
 namespace actors {

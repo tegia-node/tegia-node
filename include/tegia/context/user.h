@@ -6,6 +6,7 @@
 #include <iostream>
 #include <bitset>
 
+#include <tegia/core/const.h>
 #include <tegia/core/json.h>
 
 
@@ -23,22 +24,22 @@ class user
 
 	private:
 		std::string _uuid;
+		int _status;
 
 		std::string _name;
 		std::string _surname;
 		std::string _patronymic;
 		std::string _photo;
+		int _gender;
 
-		int _sex;
-		int _status;
-		
 		std::bitset<64> _roles{0};
 
-		user();
-
 	public:
+		user();
 		~user();
 		std::string uuid();
+
+		void print();
 
 };	// END CLASS user
 }	// END NAMESPACE tegia 

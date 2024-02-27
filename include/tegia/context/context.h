@@ -19,7 +19,7 @@ class context
 		static std::string tid();
 		static ::tegia::user * const user();
 
-		static const nlohmann::json * const config(const std::string &name);
+		// static const nlohmann::json * const config(const std::string &name);
 
 		static void log(
 			const int level,

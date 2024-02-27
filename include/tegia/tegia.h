@@ -3,6 +3,7 @@
 
 
 #include <iostream>
+
 #include <tegia/core/const.h>
 #include <tegia/core/cast.h>
 #include <tegia/core/json.h>
@@ -10,15 +11,35 @@
 #include <tegia/context/context.h>
 
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+
+	tegia::conf::*
+
+	Доступ к конфигурационным файлам кластера
+
+*/
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 namespace tegia {
-namespace actors {
+namespace conf {
 
+std::string path(const std::string &name);
+const nlohmann::json * const get(const std::string &name);
 
-
-
-} // namespace actors
+} // namespace conf
 } // namespace tegia
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+
+	tegia::message::*
+
+	Создание и отправка сообщений акторам
+*/
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 namespace tegia {

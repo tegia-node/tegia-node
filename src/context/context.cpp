@@ -28,11 +28,12 @@ std::string context::tid()
 };
 
 
+/*
 const nlohmann::json * const context::config(const std::string &name)
 {
-	return tegia::node::node::instance()->config(name);
+	return tegia::threads::data->node()->config(name);
 };
-
+*/
 
 void context::log(
 	const int level,

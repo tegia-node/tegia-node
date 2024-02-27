@@ -11,10 +11,9 @@
 namespace tegia {
 namespace threads {
 
-_data::_data()
+_data::_data(): mysql_provider(new ::tegia::mysql::provider())
 {
 	this->user = new ::tegia::user();
-	this->mysql_provider = new ::tegia::mysql::provider();
 
 	std::cout << "create thread data" << std::endl;
 };
@@ -59,6 +58,15 @@ void _data::init(const nlohmann::json &config)
 };
 
 
+
+::tegia::node::node * const _data::node()
+{
+	return this->_node;
+};
+
+
+
+/*
 tegia::mysql::records * _data::query(const std::string &context,const std::string &query, bool trace)
 {
 	return this->mysql_provider->query(context,query,trace);
@@ -69,6 +77,7 @@ std::string _data::mysql_strip(const std::string &input)
 {
 	return this->mysql_provider->strip(input);
 };
+*/
 
 
 thread_local tegia::threads::_data * const data = new tegia::threads::_data();

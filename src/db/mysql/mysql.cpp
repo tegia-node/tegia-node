@@ -16,14 +16,16 @@ namespace mysql {
 
 	tegia::mysql::records * query(const std::string &context, const std::string &query, bool trace)
 	{
-		return tegia::threads::data->query(context,query,trace);
+		// return tegia::threads::data->query(context,query,trace);
+		return tegia::threads::data->mysql_provider->query(context,query,trace);
 	};
 
 
 
 	std::string strip(const std::string &input)
 	{
-		return tegia::threads::data->mysql_strip(input);
+		// return tegia::threads::data->mysql_strip(input);
+		return tegia::threads::data->mysql_provider->strip(input);
 	};
 
 

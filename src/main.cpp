@@ -89,7 +89,7 @@ int main(int argc, char* argv[])
 
 	try
 	{
-		auto node = tegia::node::node::instance();
+		auto node = new tegia::node::node();
 		node->run();
 
 		//

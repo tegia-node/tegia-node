@@ -4,13 +4,52 @@
 #include <iostream>
 #include <tegia/core/json.h>
 #include <tegia/core/const.h>
-#include <tegia/actors/actor_base_t.h>
 #include <tegia/actors/message_t.h>
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// БАЗОВЫЙ КЛАСС АКТОРА
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+#define _action_func_bind_(_function_) std::bind(_function_, std::placeholders::_1, std::placeholders::_2)
+#define ADD_ACTION(_name_, _function_) actor_type->add_action( _name_, _action_func_bind_(_function_) )
 
 namespace tegia {
 namespace actors {
 
+
+class actor_base
+{
+	protected:
+		std::string type;
+		std::string name; 
+
+	public:
+
+		actor_base(
+			const std::string &_type,
+			const std::string &_name,
+			nlohmann::json init_data): type(_type),name(_name)
+		{	
+			std::cout << _OK_TEXT_ << "CREATE ACTOR" << std::endl;
+			std::cout << "      type   = " << _type << std::endl;
+			std::cout << "      name   = " << _name << std::endl;
+		};
+
+		virtual ~actor_base(){ };
+
+		actor_base(actor_base const&) = delete;
+		actor_base(actor_base&&) noexcept = delete;
+		actor_base& operator = (actor_base const&) = delete;
+		actor_base& operator = (actor_base&&) noexcept = delete;
+};
+
+
+} // namespace actors
+} // namespace tegia
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -19,6 +58,9 @@ namespace actors {
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+namespace tegia {
+namespace actors {
 
 class type_base
 {
@@ -29,10 +71,9 @@ class type_base
 		type_base(const std::string &_name): name(_name){};
 		virtual ~type_base() noexcept = default;
 
-		// virtual std::shared_ptr<tegia::actors::actor_base> create_actor(const std::string &name, nlohmann::json data) = 0;
 		virtual tegia::actors::actor_base * create_actor(const std::string &name, nlohmann::json data) = 0;
 
-		std::string get_name()
+		inline std::string get_name()
 		{
 			return this->name;
 		};
@@ -42,44 +83,6 @@ class type_base
 			const std::string &action_name, 
 			const std::shared_ptr<message_t> &message
 		) = 0;
-};
-
-
-
-class actor_t
-{
-	public:
-
-		actor_t() = default;
-		~actor_t(){};
-
-		std::string name;
-		
-		// std::shared_ptr<tegia::actors::actor_base> actor;
-		// std::shared_ptr<tegia::actors::type_base> type;
-
-		tegia::actors::actor_base * actor;
-		tegia::actors::type_base * type;
-
-		/*
-		actor_t& operator=(actor_t& _actor) // примечание: Ссылка не является константной
-		{
-			if (&_actor == this)
-				return *this;
-	
-			delete this->actor; 
-			this->actor = _actor.actor; 
-			_actor.actor = nullptr;
-
-			delete this->type; 
-			this->type = _actor.type; 
-			_actor.type = nullptr;
-
-			this->name = _actor.name;
-			
-			return *this;
-		};
-		*/
 };
 
 
@@ -139,80 +142,6 @@ class type: public type_base
 
 			return std::bind(pos->second, static_cast<T*>(_actor), message);
 		};
-};
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// КОНТЕЙНЕР ТИПОВ АКТОРОВ
-//
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-class map
-{
-	private:
-		
-		//
-		// Типы акторов
-		//
-
-		std::unordered_map<
-			std::string, 					// имя типа акторв
-			tegia::actors::type_base *		// 
-		> actor_types;
-		
-		//
-		// Паттерны имен акторов
-		//
-
-		std::unordered_map<
-			std::string, 					// паттерн имени актора
-			tegia::actors::type_base *		// 
-		> name_patterns;
-
-		//
-		// Инициализированные акторы
-		//
-
-		std::unordered_map<
-			std::string,					// имя актора 
-			tegia::actors::actor_t			// объек актора
-		> actor_list;
-
-		std::mutex actor_list_mutex;
-
-		//
-		// Домены
-		//
-
-		std::unordered_map<
-			std::string,					// имя домена
-			std::string						// тип домена [local, remote]
-		> _domains;
-
-		//
-		//
-		//
-
-		std::tuple<bool,tegia::actors::type_base *> resolve(const std::string &name);
-		tegia::actors::actor_base * create_actor(const std::string &name, tegia::actors::type_base * actor_type);
-
-	public:
-
-		map(){};
-		~map(){};
-
-		map(map const&) = delete;
-		map(map&&) noexcept = delete;
-		map& operator = (map const&) = delete;
-		map& operator = (map&&) noexcept = delete;
-
-
-		bool load_type(const std::string &type_name, const std::string &base_path, const nlohmann::json &type_config);
-		bool add_domain(const std::string &domain, const std::string &type);
-		std::tuple<int,std::function<void()>> send_message(const std::string &name, const std::string &action, const std::shared_ptr<message_t> &message);
-
 };
 
 

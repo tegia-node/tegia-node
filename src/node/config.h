@@ -10,6 +10,7 @@ struct _conf
 {
 	std::string name;
 	std::string file;
+	std::string path;
 	nlohmann::json data;
 };
 

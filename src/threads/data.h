@@ -51,16 +51,20 @@ class _data
 		_data();
 		~_data();
 
-		tegia::mysql::records * query(const std::string &context, const std::string &query, bool trace = false);
-		std::string mysql_strip(const std::string &input);
+		::tegia::mysql::provider * const mysql_provider;
+		::tegia::node::node * const node();
+
+		// tegia::mysql::records * query(const std::string &context, const std::string &query, bool trace = false);
+		// std::string mysql_strip(const std::string &input);
 	
 	private:
 
 		void init(const nlohmann::json &config);
 
+		::tegia::node::node * _node;
 		std::string tid;
-		::tegia::user *user;
-		::tegia::mysql::provider *mysql_provider;
+		::tegia::user * user;
+		
 };
 
 extern thread_local tegia::threads::_data * const data;
