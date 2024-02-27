@@ -10,5 +10,6 @@
 
 #include "snils.h"
 #include "rus_passport.h"
+#include "rus_inn.h"
 
 #endif
