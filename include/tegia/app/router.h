@@ -17,7 +17,7 @@ class router_t
 		~router_t() = default;
 
 		bool add(const std::string &method, const std::string &pattern, nlohmann::json data);
-		std::tuple<bool, std::string, nlohmann::json> match(const std::string &method, const std::string &path);
+		std::tuple<int, nlohmann::json> match(const std::string &method, const std::string &path, nlohmann::json * post);
 
 
 		void print();

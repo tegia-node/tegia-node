@@ -1,5 +1,5 @@
 #include <tegia/app/router.h>
-
+#include <tegia/context/context.h>
 
 namespace tegia {
 namespace app {
@@ -24,11 +24,11 @@ bool router_t::add(const std::string &method, const std::string &pattern, nlohma
 		// TODO: проверять дубликаты
 		//
 
-		std::cout << "_elm  = " << _elm << std::endl;
+		// std::cout << "_elm  = " << _elm << std::endl;
 
 		if(_elm[0] == '{')
 		{
-			std::cout << "param = " << _elm.substr(1,_elm.length() - 2) << std::endl;
+			// std::cout << "param = " << _elm.substr(1,_elm.length() - 2) << std::endl;
 
 			data["params"].push_back( _elm.substr(1,_elm.length() - 2) );
 			_path = _path + "*";
@@ -91,7 +91,7 @@ void router_t::print()
 */
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-std::tuple<bool, std::string, nlohmann::json> router_t::match(const std::string &method, const std::string &path)
+std::tuple<int, nlohmann::json> router_t::match(const std::string &method, const std::string &path, nlohmann::json * post)
 {
 	std::string _path = path + "/" + method;
 	std::string prev_pattern = "";
@@ -152,7 +152,7 @@ std::tuple<bool, std::string, nlohmann::json> router_t::match(const std::string 
 				// 
 
 				// std::cout << _ERR_TEXT_ << "[1] NOT FOUND" << std::endl;
-				return std::make_tuple(false,"",nullptr);
+				return std::make_tuple(404,nullptr);
 			}
 			break;
 
@@ -165,11 +165,37 @@ std::tuple<bool, std::string, nlohmann::json> router_t::match(const std::string 
 				nlohmann::json _params = params_name;
 				_params.erase("params");
 
+				//
+				// MAKE PARAMS
+				//
+
 				for(int i = 0; i < params_value.size(); ++i)
 				{
 					_params["params"][params_name["params"][i].get<std::string>()] = params_value[i].get<std::string>();
 				}
-				return std::move(std::make_tuple(true,prev_pattern + curr_pattern,_params));
+
+				_params["post"] = *post;
+				for(auto it = _params["mapping"].begin(); it != _params["mapping"].end(); ++it)
+				{
+					nlohmann::json::json_pointer key(it.key());
+					nlohmann::json::json_pointer value(it.value().get<std::string>());
+
+					_params["data"][key] = _params[value];
+				}
+
+				//
+				// CHECK SECURITY
+				//
+
+				if(_params["security"].get<bool>() == true)
+				{
+					if(tegia::context::user()->status() != 200)
+					{
+						return std::move(std::make_tuple(403,_params));
+					}
+				}				
+								
+				return std::move(std::make_tuple(200,_params));
 			}
 			break;
 
@@ -224,7 +250,7 @@ std::tuple<bool, std::string, nlohmann::json> router_t::match(const std::string 
 				{
 					// NOT FOUND
 					// std::cout << _ERR_TEXT_ << "[2] NOT FOUND" << std::endl;
-					return std::make_tuple(false,"",nullptr);
+					return std::make_tuple(404,nullptr);
 				}
 
 				if(pos->second == nullptr)
@@ -255,7 +281,7 @@ std::tuple<bool, std::string, nlohmann::json> router_t::match(const std::string 
 	}
 
 	// std::cout << _ERR_TEXT_ << "[3] NOT FOUND" << std::endl;
-	return std::make_tuple(false,"",nullptr);
+	return std::make_tuple(404,nullptr);
 };
 
 

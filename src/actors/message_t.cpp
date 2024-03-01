@@ -1,5 +1,12 @@
+#include "../threads/data.h"
 #include <tegia/actors/message_t.h>
 
+
+/////////////////////////////////////////////////////////////////////////////////////
+/*
+	callback_t
+*/
+/////////////////////////////////////////////////////////////////////////////////////
 
 
 callback_t& callback_t::operator= (const callback_t &callback)
@@ -22,7 +29,6 @@ bool callback_t::add(const std::string &_actor, const std::string &_action)
 	this->callback.push({true,_actor,_action});
 	return true;
 };
-
 
 
 addr_t callback_t::get()
@@ -50,4 +56,33 @@ addr_t callback_t::get()
 		return std::move(_callback);
 	}
 
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+/*
+	message_t
+*/
+/////////////////////////////////////////////////////////////////////////////////////
+
+
+message_t::message_t(nlohmann::json _data):
+	data(_data),
+	uuid(tegia::random::uuid()),
+	user(tegia::threads::data->user)
+{};
+
+
+message_t::message_t():
+	data(nlohmann::json::object()),
+	uuid(tegia::random::uuid()),
+	user(tegia::threads::data->user)
+{};
+
+
+
+void message_t::print_user()
+{
+	this->user->print();
 };

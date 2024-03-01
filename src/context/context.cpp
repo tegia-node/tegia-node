@@ -24,16 +24,8 @@ std::string context::tid()
 
 ::tegia::user * const context::user()
 {
-	return const_cast<::tegia::user * const>(tegia::threads::data->user);
+	return const_cast<::tegia::user * const>(tegia::threads::data->user.get());
 };
-
-
-/*
-const nlohmann::json * const context::config(const std::string &name)
-{
-	return tegia::threads::data->node()->config(name);
-};
-*/
 
 void context::log(
 	const int level,

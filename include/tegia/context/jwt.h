@@ -8,11 +8,16 @@
 
 namespace tegia {
 
+class auth;
+
 class jwt
 {
+	friend class auth;
+
 	private:
 		// Дата генерации токена
 		std::string _t_create;
+		long long int _exp = 0;
 
 		// тип токена 
 		//   1 - клиенский токен
@@ -33,6 +38,7 @@ class jwt
 		int unpack(const std::string &tegia_token, const std::string &pub_key);
 
 	public:
+		
 		~jwt();
 		void print();
 		int type();

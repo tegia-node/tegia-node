@@ -45,7 +45,7 @@ user::~user()
 
 void user::print()
 {
-	std::cout << _YELLOW_ << "[user]" << _BASE_TEXT_ << std::endl;
+	std::cout << _YELLOW_ << "[tegia::user]" << _BASE_TEXT_ << std::endl;
 	std::cout << "uuid       = " << this->_uuid << std::endl;
 	std::cout << "status     = " << this->_status << std::endl;
 	std::cout << "surname    = " << this->_surname << std::endl;
@@ -66,6 +66,19 @@ void user::print()
 std::string user::uuid()
 {
 	return this->_uuid;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+/*
+
+*/
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+int user::status()
+{
+	return this->_status;
 };
 
 

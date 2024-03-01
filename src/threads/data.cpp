@@ -13,15 +13,15 @@ namespace threads {
 
 _data::_data(): mysql_provider(new ::tegia::mysql::provider())
 {
-	this->user = new ::tegia::user();
-
+	this->user = std::make_shared<::tegia::user>();
+	
 	std::cout << "create thread data" << std::endl;
 };
 
 
 _data::~_data()
 {
-	delete this->user;
+	this->user;
 	delete this->mysql_provider;
 
 	std::cout << "delete thread data" << std::endl;

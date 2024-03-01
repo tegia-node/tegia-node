@@ -12,6 +12,8 @@
 #include "../db/mysql/provider.h"
 
 
+class message_t;
+
 namespace tegia {
 namespace node {
 
@@ -22,15 +24,12 @@ class node;
 
 namespace tegia 
 {
+	class auth;
 	class context;
 }
 
 namespace tegia {
 namespace threads {
-
-class pool;
-class worker;
-
 
 /*
 	DOCUMENTATION
@@ -42,9 +41,9 @@ class worker;
 
 class _data
 {
+	friend class ::tegia::auth;
+	friend class ::message_t;
 	friend class ::tegia::context;
-	friend class ::tegia::threads::pool;
-	friend class ::tegia::threads::worker;
 	friend class ::tegia::node::node;
 
 	public:
@@ -63,7 +62,7 @@ class _data
 
 		::tegia::node::node * _node;
 		std::string tid;
-		::tegia::user * user;
+		std::shared_ptr<::tegia::user> user;
 		
 };
 

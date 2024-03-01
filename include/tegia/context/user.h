@@ -11,6 +11,9 @@
 
 
 namespace tegia {
+
+class auth;
+
 namespace threads
 {
 	class _data;
@@ -20,7 +23,9 @@ namespace threads
 namespace tegia {
 class user
 {
-	friend class tegia::threads::_data;
+	friend class ::tegia::threads::_data;
+	friend class ::tegia::auth;
+
 
 	private:
 		std::string _uuid;
@@ -38,6 +43,7 @@ class user
 		user();
 		~user();
 		std::string uuid();
+		int status();
 
 		void print();
 

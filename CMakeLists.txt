@@ -31,6 +31,7 @@ add_executable(${PROJECT_NAME} ${TEGIA_SOURCES})
 #
 
 target_include_directories(${PROJECT_NAME} PRIVATE ./include)
+target_include_directories(${PROJECT_NAME} PRIVATE ../vendors)
 
 #
 # GLOBAL LIBRARY
@@ -57,3 +58,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 find_package(nlohmann_json_schema_validator REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json_schema_validator::validator)
 
+find_package(cpp-jwt REQUIRED)
+# add_subdirectory(../vendors/cpp-jwt)
+target_link_libraries(${PROJECT_NAME} PRIVATE cpp-jwt::cpp-jwt)

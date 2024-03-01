@@ -1,4 +1,4 @@
-#include <tegia/context/context.h>
+#include <tegia/tegia.h>
 #include <tegia/db/mysql/mysql.h>
 
 #include <tegia/core/json.h> 
@@ -152,7 +152,8 @@ bool node::action()
 	
 	for(auto message = messages.begin(); message != messages.end(); ++message)
 	{
-		auto msg = std::make_shared<message_t>((*message)["data"]);
+		// auto msg = std::make_shared<message_t>((*message)["data"]);
+		auto msg = tegia::message::init((*message)["data"]);
 		this->send_message(
 			(*message)["actor"].get<std::string>(),
 			(*message)["action"].get<std::string>(),

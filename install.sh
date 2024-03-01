@@ -154,6 +154,22 @@ then
 fi
 
 #
+# jwt
+#
+
+if ! [ -d  ${root_folder}/vendors/cpp-jwt/ ]
+then
+	cd ${root_folder}/vendors
+	git clone https://github.com/arun11299/cpp-jwt.git
+	cd cpp-jwt
+	mkdir -p build
+	cd build
+	cmake ..
+	cmake --build . -j
+	sudo make install
+fi
+
+#
 # CONFIGURE
 #
 

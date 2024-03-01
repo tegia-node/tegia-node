@@ -41,10 +41,41 @@ const nlohmann::json * const get(const std::string &name);
 */
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
+namespace tegia {
+struct message {
 
+static int send(
+	const std::string &name, 
+	const std::string &action, 
+	nlohmann::json data,
+	int priority = 0);
+
+static int send(
+	const std::string &name, 
+	const std::string &action, 
+	const std::shared_ptr<message_t> &message,
+	int priority = 0);
+
+
+static inline const std::shared_ptr<message_t> init(nlohmann::json data = nlohmann::json())
+{
+	std::shared_ptr<message_t> message(new message_t( data ));
+	return message;
+};
+
+template<class T>
+static inline const std::shared_ptr<T> init(nlohmann::json data = nlohmann::json())
+{
+	std::shared_ptr<T> message(new T( data ));
+	return message;
+}
+
+}; // struct message
+}  // namespace tegia
+
+/*
 namespace tegia {
 namespace message {
-
 
 int send(
 	const std::string &name, 
@@ -72,9 +103,9 @@ const std::shared_ptr<T> init(nlohmann::json data = nlohmann::json())
 	return message;
 };
 
-
 } // namespace message
 } // namespace tegia
+*/
 
 
 

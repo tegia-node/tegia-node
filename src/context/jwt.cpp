@@ -9,12 +9,13 @@ jwt::~jwt(){};
 
 void jwt::print()
 {
-	std::cout << _OK_TEXT_ << "tegai::jwt" << std::endl;
-	std::cout << "status:    " << this->_status << std::endl;
-	std::cout << "t_create:  " << this->_t_create << std::endl;
-	std::cout << "type:      " << this->_type << std::endl;
-	std::cout << "ip:        " << this->_ip << std::endl;
-	std::cout << "token:     " << this->_token << std::endl;
+	std::cout << _YELLOW_ << "[tegia::jwt]" << _BASE_TEXT_ << std::endl;
+	std::cout << "status    = " << this->_status << std::endl;
+	std::cout << "t_create  = " << this->_t_create << std::endl;
+	std::cout << "type      = " << this->_type << std::endl;
+	std::cout << "ip        = " << this->_ip << std::endl;
+	std::cout << "token     = " << this->_token << std::endl;
+	std::cout << "exp       = " << this->_exp << std::endl;
 };
 
 int jwt::type()

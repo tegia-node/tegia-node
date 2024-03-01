@@ -5,6 +5,7 @@
 #include <mutex>
 #include <tegia/core/json.h>
 #include <tegia/core/crypt.h>
+#include <tegia/context/user.h>
 
 
 struct addr_t
@@ -42,6 +43,9 @@ class callback_t
 };
 
 
+namespace tegia {
+	struct message;
+}
 
 class message_t
 {
@@ -50,13 +54,8 @@ class message_t
 		nlohmann::json http;
 		callback_t callback;
 
-		message_t(nlohmann::json _data):
-			data(_data),
-			uuid(tegia::random::uuid()){};
-
-		message_t():
-			data(nlohmann::json::object()),
-			uuid(tegia::random::uuid()){};
+		message_t();
+		message_t(nlohmann::json _data);
 
 		message_t(message_t const&) = delete;
 		message_t(message_t&&) noexcept = delete;
@@ -65,8 +64,11 @@ class message_t
 
 		virtual ~message_t() = default;
 
+		void print_user();
+
 	private:
 		std::string uuid;
+		std::shared_ptr<::tegia::user> user;
 };
 
 
