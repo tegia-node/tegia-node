@@ -98,17 +98,6 @@ int rus_passport_t::parse(const std::string & value, const nlohmann::json &valid
 		}
 	}
 
-	//
-	// Проверяем длину
-	//
-
-	if(__rus_passport.length() != 10)
-	{
-		this->_rus_passport = "";
-		this->_is_valid = false;
-		return 2;
-	}
-
 	// 
 	// FORMAT
 	//
@@ -117,9 +106,27 @@ int rus_passport_t::parse(const std::string & value, const nlohmann::json &valid
 		ХХХХ YYYYYY
 	*/
 
-	this->_rus_passport = __rus_passport.substr(0,4) + " " + __rus_passport.substr(4,6);;
-	this->_is_valid = true;
-	return 1;
+	if(__rus_passport.length() == 10)
+	{
+		this->_rus_passport = __rus_passport.substr(0,4) + " " + __rus_passport.substr(4,6);
+		this->_is_valid = true;
+		return 1;
+	}
+
+	if(__rus_passport.length() == 9)
+	{
+		this->_rus_passport = "0" + __rus_passport.substr(0,3) + " " + __rus_passport.substr(3,6);
+		this->_is_valid = true;
+		return 1;
+	}
+
+	//
+	// ERROR
+	//
+
+	this->_rus_passport = "";
+	this->_is_valid = false;
+	return 2;
 };
 
 

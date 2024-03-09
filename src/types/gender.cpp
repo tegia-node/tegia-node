@@ -106,6 +106,7 @@ int gender_t::parse(const std::string & value, const nlohmann::json &validate)
 		case 3236906023: // 'Мужской'
 		case 2212294583: // '1'
 		case 3664761504: // 'M'
+		case 962070671:  // 'М' (киррилица)
 		{
 			this->_gender = "1";
 			this->_is_valid = true;
@@ -121,6 +122,7 @@ int gender_t::parse(const std::string & value, const nlohmann::json &validate)
 		case 655494494:  // 'Женский'
 		case 450215437:  // '2'
 		case 1304234792: // 'F'
+		case 3649954193: // 'Ж'
 		{
 			this->_gender = "2";
 			this->_is_valid = true;

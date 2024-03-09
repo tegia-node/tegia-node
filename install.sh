@@ -41,6 +41,7 @@ sudo apt install -y m4
 sudo apt install -y automake
 sudo apt install -y pkg-config
 sudo apt install -y cmake
+sudo apt install -y libgtest-dev
 
 #
 # LIBS

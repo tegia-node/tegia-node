@@ -73,6 +73,8 @@ nlohmann::json phone_t::json() const
 
 int phone_t::parse(const std::string & value, const nlohmann::json &validate)
 {
+	// std::cout << "phone_t::parse: " << value << std::endl;
+
 	this->_category = 0;
 	std::string _value = value;
 
@@ -80,11 +82,13 @@ int phone_t::parse(const std::string & value, const nlohmann::json &validate)
 	//
 	//
 
+	/*
 	nlohmann::json::json_pointer ptr("/replace/" + _value);
 	if(validate.contains(ptr) == true)
 	{
 		_value = validate[ptr].get<std::string>();
 	}
+	*/
 
 	//
 	// Выделяем только цифры
