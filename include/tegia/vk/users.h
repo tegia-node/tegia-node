@@ -95,6 +95,10 @@ std::tuple<int,nlohmann::json> friends(
 ////////////////////////////////////////////////////////////////////////////////////////////
 /** 
 
+query
+{
+	"q": <string>
+}
 
 */
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -103,10 +107,23 @@ std::tuple<int,nlohmann::json> friends(
 
 std::tuple<int,nlohmann::json> search(
         const std::string &key,
-        const std::string &q,
-        const std::string &t_birth,
+        nlohmann::json query,
 		const tegia::http::proxy &_proxy = tegia::http::proxy())
 {
+
+	std::sring _query = "";
+
+	if(query.contains("q") == true)
+	{
+		_query = _query + "&q=" + tegia::http::escape(query["q"].get<>(std::string));
+	}
+
+	if(query.contains("city") == true)
+	{
+		_query = _query + "&city=" + query["city"].get<>(std::string);
+	}
+
+	/*
 	std::string birth_year = "";
 	std::string birth_month = "";
 	std::string birth_day = "";
@@ -123,14 +140,12 @@ std::tuple<int,nlohmann::json> search(
 	std::cout << "birth_year  = " << birth_year << std::endl;
 	std::cout << "birth_month = " << birth_month << std::endl;
 	std::cout << "birth_day   = " << birth_day << std::endl;
+	*/
 
 	std::string post = "v=" + vk_api_version + 
 						"&access_token=" + key + 
-						"&q=" + tegia::http::escape(q) + 
-						"&count=1000" + 
-						"&birth_day=" + birth_day + 
-						"&birth_month=" + birth_month +
-						"&birth_year=" + birth_year;
+						_query + 
+						"&count=1000";
 	return vk::run2("users.search", post, _proxy);
 };
 

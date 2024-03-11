@@ -51,4 +51,28 @@ namespace json {
 } // END namespace tegia
 
 
+namespace tegia {
+namespace json {
+
+class validator
+{
+	public:
+		validator() = default;
+		~validator() = default;
+
+		bool is_load();
+		int  load(const std::string &name, const std::string &filename);
+		int  validate(nlohmann::json * data);
+
+	private:
+		bool _is_load = false;
+		std::string _name = "";
+		std::string _filename = "";
+		nlohmann::json_schema::json_validator _validator;
+};
+
+} // END namespace json
+} // END namespace tegia
+
+
 #endif
