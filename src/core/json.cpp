@@ -1,6 +1,6 @@
+#include <tegia/core/const.h>
 #include <tegia/core/json.h>
 #include <xml2json/include/xml2json.hpp>
-
 
 namespace tegia {
 namespace json {
@@ -170,4 +170,64 @@ namespace json {
 } // END namespace tegia
 
 
+//////////////////////////////////////////////////////////////////////////////////////////
+/*
 
+	VALIDATOR
+
+*/
+//////////////////////////////////////////////////////////////////////////////////////////
+
+
+namespace tegia {
+namespace json {
+
+
+bool validator::is_load()
+{
+	return this->_is_load;
+};
+
+
+int validator::load(const std::string &name, const std::string &filename)
+{
+	this->_name = name;
+	this->_filename = filename;
+
+	auto [status,info,schema] = tegia::json::_file(filename);
+	if(status != 0)
+	{
+		this->_is_load = false;
+		return 502;
+	}
+
+	this->_validator.set_root_schema(schema);
+	this->_is_load = true;
+	return 200;
+};
+
+
+int validator::validate(nlohmann::json * data)
+{
+	try
+	{
+		this->_validator.validate( *data );
+	}
+
+	catch (const std::exception &e)
+	{
+		std::cout << _ERR_TEXT_ << "validator '" << this->_name << "'" << std::endl;
+		std::cout << e.what() << std::endl; 
+		
+		std::cout << _YELLOW_ << "validate data" << _BASE_TEXT_ << std::endl;
+		std::cout << *data << std::endl;
+
+		return 400;
+	}
+
+	return 200;
+};
+
+
+} // END namespace json
+} // END namespace tegia
