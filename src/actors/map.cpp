@@ -123,9 +123,16 @@ tegia::actors::actor_base * map::create_actor(const std::string &name, tegia::ac
 {
 	this->actor_list_mutex.lock();
 
+	auto _actor_ptr = actor_type->create_actor(name,std::move(nlohmann::json::object()));
+	
+	if(_actor_ptr == nullptr)
+	{
+		return nullptr;
+	}
+
 	actor_t actor;
 	actor.name  = name;
-	actor.actor = actor_type->create_actor(name,std::move(nlohmann::json::object()));
+	actor.actor = _actor_ptr;
 	actor.type = actor_type;
 
 	this->actor_list.insert({name,actor});
@@ -371,6 +378,83 @@ std::tuple<int,std::function<void()>> add_task(
 
 
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+int map::resolve_name(const std::string &name)
+{
+	//
+	//
+	//
+
+	{
+		auto pos = this->actor_list.find(name);
+		if(pos != this->actor_list.end())
+		{
+			return 200;
+		}
+	}
+
+	//
+	// Определяем к какому домену принадлежит актор
+	//
+
+	auto [res,actor_name,actor_domain,domain_type] = resolve_domain(name, &this->_domains);
+
+	//
+	// Обрабатываем ошибку
+	//
+
+	if(res == false)
+	{
+		//
+		// TODO: ERROR
+		//
+
+		std::cout << _ERR_TEXT_ << "401 | NOT FOUND DOMAIN" << std::endl;
+		std::cout << "      actor name = " << name << std::endl;
+		return 401;
+	} 
+
+	//
+	// Определям тип актора по его имени
+	//
+
+	{
+		auto [res,actor_type] = this->resolve(name);
+		if(res == true)
+		{
+			std::cout << _OK_TEXT_ << "200 | FOUND" << std::endl;
+			std::cout << "      actor name = " << name << std::endl;
+			std::cout << "      actor type = " << actor_type->get_name() << std::endl;
+
+			//
+			// Resolve name actor
+			//
+			
+			return actor_type->resolve_name(name);
+		}
+		else
+		{
+			std::cout << _ERR_TEXT_ << "402 | NOT FOUND PATTERN" << std::endl;
+			std::cout << "      actor name = " << name << std::endl;
+			return 402;
+		}
+	}
+
+};
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 
 std::tuple<int,std::function<void()>> map::send_message(const std::string &name, const std::string &action, const std::shared_ptr<message_t> &message)
 {
@@ -383,13 +467,6 @@ std::tuple<int,std::function<void()>> map::send_message(const std::string &name,
 		if(pos != this->actor_list.end())
 		{
 			return add_task(pos->second.actor,pos->second.type,name,action,message);
-			// TODO: add task
-
-			// auto message = std::make_shared<message_t>();
-			// message->data = data;
-
-			// auto fn = pos->second.type->bind_action(pos->second.actor, action, message);
-
 		}
 	}
 
@@ -447,33 +524,15 @@ std::tuple<int,std::function<void()>> map::send_message(const std::string &name,
 			//
 
 			auto actor = this->create_actor(name,actor_type);
-
-			return add_task(actor,actor_type,name,action,message);
-
-			// TODO: add task
-
-			// auto message = std::make_shared<message_t>();
-			// message->data = data;
-
-			/*
-			auto fn = actor_type->bind_action(actor, action, message);
-			if(fn != nullptr)
+			
+			if(actor == nullptr)
 			{
-				auto _fn = [fn]()
-				{
-					int result = fn();
-					// std::cout << "result = [" << result << "]" << std::endl;
-				};
-
-				return std::make_tuple(200,std::move(_fn));
+				std::cout << _ERR_TEXT_ << "404 | NOT RESOLVE NAME" << std::endl;
+				std::cout << "      actor name = " << name << std::endl;
+				return std::make_tuple(404,nullptr);				
 			}
 
-			std::cout << _ERR_TEXT_ << "send message \n" 
-			          << "      [403] not found action\n" 
-					  << "      actor  = '" << name << "'\n" 
-					  << "      action = '" << action << "'" << std::endl; 
-			return std::make_tuple(403,nullptr);
-			*/
+			return add_task(actor,actor_type,name,action,message);
 		}
 		else
 		{

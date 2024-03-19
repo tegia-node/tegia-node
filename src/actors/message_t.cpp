@@ -1,4 +1,5 @@
 #include "../threads/data.h"
+#include <tegia/tegia.h>
 #include <tegia/actors/message_t.h>
 
 
@@ -24,10 +25,14 @@ callback_t& callback_t::operator= (const callback_t &callback)
 
 
 
-bool callback_t::add(const std::string &_actor, const std::string &_action)
+int callback_t::add(const std::string &_actor, const std::string &_action)
 {
-	this->callback.push({true,_actor,_action});
-	return true;
+	int res = tegia::message::resolve(_actor);
+	if(res == 200)
+	{
+		this->callback.push({true,_actor,_action});
+	}
+	return res;
 };
 
 

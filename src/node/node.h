@@ -6,6 +6,8 @@
 #include <tuple>
 
 #include <tegia/core/json.h>
+#include <tegia/dict/dict.h>
+
 #include "../actors/map.h"
 
 #include "config.h"
@@ -56,7 +58,7 @@ class node
 			const std::shared_ptr<message_t> &message,
 			int priority);
 
-		
+		int resolve(const std::string &name);
 
 	private:
 		tegia::threads::pool * _threads;

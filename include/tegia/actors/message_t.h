@@ -23,7 +23,7 @@ class callback_t
 		~callback_t() = default;
 
 		callback_t& operator= (const callback_t &callback);	
-		bool add(const std::string &_actor, const std::string &_action);
+		int add(const std::string &_actor, const std::string &_action);
 		addr_t get();
 
 		inline void pause()

@@ -21,7 +21,7 @@ _data::_data(): mysql_provider(new ::tegia::mysql::provider())
 
 _data::~_data()
 {
-	this->user;
+	// this->user;
 	delete this->mysql_provider;
 
 	std::cout << "delete thread data" << std::endl;

@@ -57,6 +57,11 @@ int message::send(
 	return tegia::threads::data->node()->send_message(name,action,message,priority);
 };
 
+int message::resolve(const std::string &name)
+{
+	return tegia::threads::data->node()->resolve(name);
+};
+
 } // namespace tegia
 
 

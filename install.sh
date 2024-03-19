@@ -198,8 +198,8 @@ echo " "
 #
 
 tee ${root_folder}/Makefile.variable << EOF > /dev/null
-ProdFlag			= -rdynamic -I${root_folder}/tegia-node/include -std=c++2a -march=native -m64 -O2
-DevFlag				= -rdynamic -I${root_folder}/tegia-node/include -std=c++2a -march=native -m64 -Og -g -Wpedantic -Wshadow=compatible-local -Wl,--no-as-needed 
+ProdFlag			= -rdynamic -I${root_folder}/tegia-node/include -I${root_folder}/vendors -std=c++2a -march=native -m64 -O2
+DevFlag				= -rdynamic -I${root_folder}/tegia-node/include -I${root_folder}/vendors -std=c++2a -march=native -m64 -Og -g -Wpedantic -Wshadow=compatible-local -Wl,--no-as-needed 
 Flag = \$(DevFlag)
 EOF
 

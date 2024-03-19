@@ -1,5 +1,61 @@
+#include <string>
+
 #include <tegia/app/router.h>
 #include <tegia/context/context.h>
+
+
+
+void actor_name(nlohmann::json * _params)
+{
+	std::string _actor_name_old = (*_params)["actor"].get<std::string>();
+	std::string _actor_name_new;
+	_actor_name_new.reserve(_actor_name_old.size() * 2);
+
+	int state = 0;
+	size_t start = 0;
+
+	for(size_t i = 0; i < _actor_name_old.size(); ++i)
+	{
+		switch(state)
+		{
+			case 0:
+			{
+				if(_actor_name_old[i] == '{')
+				{
+					state = 10;
+					start = i+1;
+				}
+				else
+				{
+					_actor_name_new.append(std::string(1,_actor_name_old[i]));
+				}
+			}
+			break;
+
+			case 10:
+			{
+				if(_actor_name_old[i] == '}')
+				{
+					std::string path = "/params" + _actor_name_old.substr(start,i-start);
+					// std::cout << "path = '" << path << "'" << std::endl;
+
+					nlohmann::json::json_pointer ptr(path);
+					// std::cout << (*_params)[ptr].get<std::string>() << std::endl;
+
+					_actor_name_new.append((*_params)[ptr].get<std::string>());
+
+					state = 0;
+				}
+			}
+			break;
+		}
+
+		// std::cout << "_actor_name_old = '" << _actor_name_old << "'" << std::endl;
+		// std::cout << "_actor_name_new = '" << _actor_name_new << "'" << std::endl;
+	}
+
+	(*_params)["actor"] = _actor_name_new;
+};
 
 namespace tegia {
 namespace app {
@@ -193,7 +249,18 @@ std::tuple<int, nlohmann::json> router_t::match(const std::string &method, const
 					{
 						return std::move(std::make_tuple(403,_params));
 					}
-				}				
+				}
+
+				//
+				// CHECK ACTOR NAME
+				//
+
+				// std::cout << _params << std::endl;
+
+				actor_name(&_params);
+				
+				// std::cout << _params << std::endl;
+				// exit(0);
 								
 				return std::move(std::make_tuple(200,_params));
 			}

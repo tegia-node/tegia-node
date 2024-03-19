@@ -74,8 +74,22 @@ int node::send_message(const std::string &actor, const std::string &action, cons
 		this->_threads->add_task(_fn,priority);
 	}
 
-	return 0;
+	return result;
 };
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+int node::resolve(const std::string &name)
+{
+	return this->actor_map.resolve_name(name);
+};
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -141,6 +155,7 @@ bool node::action()
 	this->actor_map.add_domain("http","local");
 	this->actor_map.add_domain("test","remote");
 	this->actor_map.add_domain("app","local");
+	this->actor_map.add_domain("ws","local");
 
 	std::cout << _YELLOW_ << "\n--------------------------------------------" << _BASE_TEXT_ << std::endl;
 	std::cout << _YELLOW_ << "NODE INIT" << _BASE_TEXT_ << std::endl;
@@ -191,6 +206,12 @@ bool node::action()
 		//
 
 		tegia::logger::instance();
+
+		//
+		//
+		//
+		
+		tegia::dict_t::instance();
 
 
 		/*

@@ -1,5 +1,8 @@
+#include <tegia/core/cast.h>
 #include <tegia/types/phone.h>
 #include <regex>
+
+#include <tegia/dict/dict.h>
 
 namespace tegia {
 namespace types {
@@ -71,7 +74,7 @@ nlohmann::json phone_t::json() const
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 
-int phone_t::parse(const std::string & value, const nlohmann::json &validate)
+int phone_t::parse(const std::string &value, const nlohmann::json &validate)
 {
 	// std::cout << "phone_t::parse: " << value << std::endl;
 
@@ -115,43 +118,60 @@ int phone_t::parse(const std::string & value, const nlohmann::json &validate)
 		}
 	}
 
+
 	//
-	// RUS_PHONE
+	// CHECK PHONE
 	//
 
+	auto dict = tegia::dict_t::instance();
+	auto info = dict->find(_phone);
+
+	if(info != nullptr)
 	{
-		std::regex  _regex(R"(^7[0-9]{10}$)");
-		std::smatch _match;
-		if(std::regex_match(_phone, _match, _regex))
+		// std::cout << _OK_TEXT_ << "found country" << std::endl;
+		// std::cout << info << std::endl;
+
 		{
-			this->_phone = _phone;
-			this->_is_valid = true;
-			this->_category = 4643001;
-			return 1;
+			std::regex  _regex(info["regexp"].get<std::string>());
+			std::smatch _match;
+			if(std::regex_match(_phone, _match, _regex))
+			{
+				this->_phone = _phone;
+				this->_is_valid = true;
+				this->_category = 4000001 + core::cast<int>(info["country"]["number"].get<std::string>()) * 1000;
+				return 1;
+			}		
 		}
 	}
 
+	if(_phone.size() > 10)
 	{
-		std::regex  _regex(R"(^8[0-9]{10}$)");
-		std::smatch _match;
-		if(std::regex_match(_phone, _match, _regex))
-		{
-			_phone = "7" + _phone.substr(1);
-
-			this->_phone = _phone;
-			this->_is_valid = true;
-			this->_category = 4643001;
-			return 1;
-		}
+		std::cout << "value  = " << value << std::endl;
+		std::cout << "_phone = " << _phone << std::endl;
 	}
 
-	//
-	//
-	//
+	// exit(0);
 
 	this->_phone = _phone;
 	this->_is_valid = false;
 	return 1;
+
+
+
+	/*
+	{
+		std::regex  _regex(R"(^(\+{0,1}7|8)[0-9]{10}$)");
+		std::smatch _match;
+		if(std::regex_match(_phone, _match, _regex))
+		{
+			this->_phone = _phone;
+			this->_is_valid = true;
+			this->_category = 4643001;
+			return 1;
+		}
+	}
+	*/
+
 };
 
 

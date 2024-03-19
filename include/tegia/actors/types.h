@@ -45,6 +45,11 @@ class actor_base
 		actor_base(actor_base&&) noexcept = delete;
 		actor_base& operator = (actor_base const&) = delete;
 		actor_base& operator = (actor_base&&) noexcept = delete;
+
+		static std::tuple<int,nlohmann::json> resolve_name(const std::string &name)
+		{
+			return std::make_tuple(200,nlohmann::json::object());
+		};
 };
 
 
@@ -72,6 +77,7 @@ class type_base
 		virtual ~type_base() noexcept = default;
 
 		virtual tegia::actors::actor_base * create_actor(const std::string &name, nlohmann::json data) = 0;
+		virtual int resolve_name(const std::string &name) = 0;
 
 		inline std::string get_name()
 		{
@@ -125,7 +131,22 @@ class type: public type_base
 
 		tegia::actors::actor_base * create_actor(const std::string &name, nlohmann::json data)
 		{
-			return new T(name, data);
+			auto [code,_data] = T::resolve_name(name);
+			if(code == 200)
+			{
+				return new T(name, data);
+			}
+			else
+			{
+				return nullptr;
+			}
+		};
+
+
+		int resolve_name(const std::string &name)
+		{
+			auto [code,_data] = T::resolve_name(name);
+			return code;
 		};
 
 

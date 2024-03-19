@@ -107,10 +107,11 @@ class map
 		map& operator = (map const&) = delete;
 		map& operator = (map&&) noexcept = delete;
 
-
+		
 		bool load_type(const std::string &type_name, const std::string &base_path, const nlohmann::json &type_config);
 		bool add_domain(const std::string &domain, const std::string &type);
 		std::tuple<int,std::function<void()>> send_message(const std::string &name, const std::string &action, const std::shared_ptr<message_t> &message);
+		int resolve_name(const std::string &name);
 
 };
 

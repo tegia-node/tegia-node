@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include <tegia/core/time.h>
-#include <tegia/context/auth.h>
+#include <tegia/app/auth.h>
 #include <jwt/jwt.hpp>
 
 #include "../threads/data.h"
@@ -15,9 +15,9 @@ namespace tegia {
 {
 	::tegia::user * _user = new ::tegia::user();
 
-	_user->_uuid = "99e87083-76e1-4acc-8ccd-f2f542574e7e";
-	_user->_surname = "Семенов";
-	_user->_name = "Павел";
+	_user->_uuid = "204d01a6-5922-4be1-a375-3c0342f973f7";
+	_user->_surname = "Горячев";
+	_user->_name = "Игорь";
 	_user->_patronymic = "Александрович";
 	_user->_gender = 1;
 	
@@ -62,8 +62,8 @@ std::string auth::key(const std::string &filename)
 	_jwt->_type = type;
 	if(type == 2)
 	{
-		// 90 суток
-		token.payload().add_claim("exp", std::chrono::system_clock::now() + std::chrono::seconds{7776000});
+		// 180 суток
+		token.payload().add_claim("exp", std::chrono::system_clock::now() + std::chrono::seconds{15552000});
 	}
 	else
 	{

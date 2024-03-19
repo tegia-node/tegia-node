@@ -47,6 +47,8 @@ class user
 
 		void print();
 
+		nlohmann::json json();
+
 };	// END CLASS user
 }	// END NAMESPACE tegia 
 
