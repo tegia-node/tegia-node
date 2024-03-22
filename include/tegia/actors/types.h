@@ -50,6 +50,11 @@ class actor_base
 		{
 			return std::make_tuple(200,nlohmann::json::object());
 		};
+
+		virtual int __init(nlohmann::json data)
+		{
+			return 0;
+		};
 };
 
 
@@ -134,7 +139,15 @@ class type: public type_base
 			auto [code,_data] = T::resolve_name(name);
 			if(code == 200)
 			{
-				return new T(name, data);
+				auto actor = new T(name, data);
+				int res = actor->__init(std::move(_data));
+				if(res == 0)
+				{
+					return actor;
+				}
+
+				delete actor;
+				return nullptr;
 			}
 			else
 			{
