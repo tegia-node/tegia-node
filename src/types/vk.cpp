@@ -70,7 +70,7 @@ nlohmann::json vk_t::json() const
 
 int vk_t::parse(const std::string &value, const nlohmann::json &validate)
 {
-	std::cout << value << std::endl;
+	// std::cout << value << std::endl;
 	
 	if(value == "")
 	{

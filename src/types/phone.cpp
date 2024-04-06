@@ -82,22 +82,17 @@ int phone_t::parse(const std::string &value, const nlohmann::json &validate)
 	std::string _value = value;
 
 	//
-	//
-	//
-
-	/*
-	nlohmann::json::json_pointer ptr("/replace/" + _value);
-	if(validate.contains(ptr) == true)
-	{
-		_value = validate[ptr].get<std::string>();
-	}
-	*/
-
-	//
 	// Выделяем только цифры
 	//
 
 	if(_value == "")
+	{
+		this->_phone = _value;
+		this->_is_valid = false;
+		return 0;
+	}
+
+	if(_value == "0")
 	{
 		this->_phone = _value;
 		this->_is_valid = false;
@@ -119,6 +114,13 @@ int phone_t::parse(const std::string &value, const nlohmann::json &validate)
 	}
 
 
+	if(_phone.size() < 6)
+	{
+		this->_phone = _phone;
+		this->_is_valid = false;
+		return 1;	
+	}
+
 	//
 	// CHECK PHONE
 	//
@@ -128,9 +130,6 @@ int phone_t::parse(const std::string &value, const nlohmann::json &validate)
 
 	if(info != nullptr)
 	{
-		// std::cout << _OK_TEXT_ << "found country" << std::endl;
-		// std::cout << info << std::endl;
-
 		{
 			std::regex  _regex(info["regexp"].get<std::string>());
 			std::smatch _match;
@@ -140,38 +139,66 @@ int phone_t::parse(const std::string &value, const nlohmann::json &validate)
 				this->_is_valid = true;
 				this->_category = 4000001 + core::cast<int>(info["country"]["number"].get<std::string>()) * 1000;
 				return 1;
-			}		
+			}
 		}
 	}
-
-	if(_phone.size() > 10)
-	{
-		std::cout << "value  = " << value << std::endl;
-		std::cout << "_phone = " << _phone << std::endl;
-	}
-
-	// exit(0);
-
-	this->_phone = _phone;
-	this->_is_valid = false;
-	return 1;
-
-
-
 	/*
+	else
 	{
-		std::regex  _regex(R"(^(\+{0,1}7|8)[0-9]{10}$)");
+		std::cout << _ERR_TEXT_ << "not found INFO" << std::endl;
+		std::cout << "      value  = '" << value << "'" << std::endl;
+		std::cout << "      phone '" << _phone << "'" << std::endl;
+
+		this->_phone = _phone;
+		this->_is_valid = false;
+		return 1;			
+	}
+	*/
+
+	//
+	// Особый случай для России [1] 8 XXX XXX XXXX
+	//
+
+	{
+		std::regex  _regex("^8[0-9]{10}$");
 		std::smatch _match;
 		if(std::regex_match(_phone, _match, _regex))
 		{
-			this->_phone = _phone;
+			this->_phone = "7" + _phone.substr(1);
 			this->_is_valid = true;
 			this->_category = 4643001;
 			return 1;
 		}
 	}
-	*/
 
+	//
+	// Особый случай для России [2] 9XX XXX XXXX
+	//
+
+	{
+		std::regex  _regex("^9[0-9]{9}$");
+		std::smatch _match;
+		if(std::regex_match(_phone, _match, _regex))
+		{
+			this->_phone = "7" + _phone;
+			this->_is_valid = true;
+			this->_category = 4643001;
+			return 1;
+		}
+	}
+
+	if(_phone.size() > 10)
+	{
+		/*
+		std::cout << _ERR_TEXT_ << "not match phone" << std::endl;
+		std::cout << "      value  = '" << value << "'" << std::endl;
+		std::cout << "      phone '" << _phone << "'" << std::endl;
+		*/
+	}
+
+	this->_phone = _phone;
+	this->_is_valid = false;
+	return 1;
 };
 
 

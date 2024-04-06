@@ -155,8 +155,12 @@ bool node::action()
 	this->actor_map.add_domain("http","local");
 	this->actor_map.add_domain("test","remote");
 	this->actor_map.add_domain("app","local");
+
 	this->actor_map.add_domain("ws","local");
+	this->actor_map.add_domain("task","local");
+	
 	this->actor_map.add_domain("enrichment","local");
+	this->actor_map.add_domain("models","local");
 
 	std::cout << _YELLOW_ << "\n--------------------------------------------" << _BASE_TEXT_ << std::endl;
 	std::cout << _YELLOW_ << "NODE INIT" << _BASE_TEXT_ << std::endl;

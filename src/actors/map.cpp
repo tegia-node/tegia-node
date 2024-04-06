@@ -123,9 +123,9 @@ tegia::actors::actor_base * map::create_actor(const std::string &name, tegia::ac
 {
 	this->actor_list_mutex.lock();
 
-	auto _actor_ptr = actor_type->create_actor(name,std::move(nlohmann::json::object()));
+	auto [code,_actor_ptr] = actor_type->create_actor(name,std::move(nlohmann::json::object()),false);
 	
-	if(_actor_ptr == nullptr)
+	if(code != 200)
 	{
 		return nullptr;
 	}
@@ -435,7 +435,9 @@ int map::resolve_name(const std::string &name)
 			// Resolve name actor
 			//
 			
-			return actor_type->resolve_name(name);
+			auto [code,actor] = actor_type->create_actor(name,nlohmann::json::object(),true);
+			// return actor_type->resolve_name(name);
+			return code;
 		}
 		else
 		{
@@ -459,7 +461,9 @@ int map::resolve_name(const std::string &name)
 std::tuple<int,std::function<void()>> map::send_message(const std::string &name, const std::string &action, const std::shared_ptr<message_t> &message)
 {
 	//
+	//	ШАГ 1:
 	//
+	//	Если актор уже загружен, то получаем объект актора по его имени и создаем задачу для пула потоков
 	//
 
 	{
@@ -508,7 +512,7 @@ std::tuple<int,std::function<void()>> map::send_message(const std::string &name,
 	}
 
 	//
-	// Определям тип актора по его имени
+	// Определям тип актора (возвращаем объект actor_type) по его имени
 	//
 
 	{

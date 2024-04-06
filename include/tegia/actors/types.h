@@ -50,11 +50,6 @@ class actor_base
 		{
 			return std::make_tuple(200,nlohmann::json::object());
 		};
-
-		virtual int __init(nlohmann::json data)
-		{
-			return 0;
-		};
 };
 
 
@@ -81,7 +76,7 @@ class type_base
 		type_base(const std::string &_name): name(_name){};
 		virtual ~type_base() noexcept = default;
 
-		virtual tegia::actors::actor_base * create_actor(const std::string &name, nlohmann::json data) = 0;
+		virtual std::tuple<int,tegia::actors::actor_base *> create_actor(const std::string &name, nlohmann::json data, bool is_check) = 0;
 		virtual int resolve_name(const std::string &name) = 0;
 
 		inline std::string get_name()
@@ -134,25 +129,14 @@ class type: public type_base
 			return true;
 		};
 
-		tegia::actors::actor_base * create_actor(const std::string &name, nlohmann::json data)
+		std::tuple<int,tegia::actors::actor_base *> create_actor(const std::string &name, nlohmann::json data, bool is_check)
 		{
-			auto [code,_data] = T::resolve_name(name);
-			if(code == 200)
+			if(is_check == true)
 			{
-				auto actor = new T(name, data);
-				int res = actor->__init(std::move(_data));
-				if(res == 0)
-				{
-					return actor;
-				}
+				return std::make_tuple(200,nullptr);
+			}
 
-				delete actor;
-				return nullptr;
-			}
-			else
-			{
-				return nullptr;
-			}
+			return std::make_tuple(200,new T(name, data));
 		};
 
 

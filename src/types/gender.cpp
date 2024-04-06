@@ -86,7 +86,6 @@ int gender_t::parse(const std::string & value, const nlohmann::json &validate)
 			return 1;
 		}
 		break;
-		
 
 		case 4108050209: // '0'
 		case 808273962:  // '-1'
@@ -95,6 +94,18 @@ int gender_t::parse(const std::string & value, const nlohmann::json &validate)
 			this->_gender = "0";
 			this->_is_valid = false;
 			return 2;
+		}
+		break;
+
+		//
+		// EMPTY
+		//
+
+		case 3916222277: // ' '
+		{
+			this->_gender = "0";
+			this->_is_valid = false;
+			return 0;
 		}
 		break;
 

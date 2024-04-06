@@ -83,6 +83,14 @@ int email_t::parse(const std::string & value, const nlohmann::json &validate)
 	// TODO: Хотя бы минимальную валидацию
 	
 	this->_email = value;
+
+	std::transform(
+		this->_email.begin(), 
+		this->_email.end(), 
+		this->_email.begin(),
+		[](unsigned char c){ return std::tolower(c); }
+	);
+	
 	this->_is_valid = true;
 	return 1;
 };

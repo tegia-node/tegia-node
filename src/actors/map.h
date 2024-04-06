@@ -91,7 +91,7 @@ class map
 		> _domains;
 
 		//
-		//
+		// 
 		//
 
 		std::tuple<bool,tegia::actors::type_base *> resolve(const std::string &name);

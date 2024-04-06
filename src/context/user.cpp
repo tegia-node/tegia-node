@@ -19,7 +19,7 @@ user::user():
 	_gender(1),
 	_photo("")	
 {
-	std::cout << "create user" << std::endl; 
+	// std::cout << "create user" << std::endl; 
 };
 
 
