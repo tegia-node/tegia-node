@@ -81,9 +81,19 @@ int email_t::parse(const std::string & value, const nlohmann::json &validate)
 	}
 
 	// TODO: Хотя бы минимальную валидацию
-	
+
 	this->_email = value;
 
+	//
+	// (at) -> @
+	//
+
+	auto pos = value.find("(at)");
+	if(pos != std::string::npos)
+	{
+		this->_email = value.substr(0,pos) + "@" + value.substr(pos+4);
+	}
+	
 	std::transform(
 		this->_email.begin(), 
 		this->_email.end(), 
