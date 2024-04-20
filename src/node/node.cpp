@@ -161,6 +161,8 @@ bool node::action()
 	
 	this->actor_map.add_domain("enrichment","local");
 	this->actor_map.add_domain("models","local");
+	this->actor_map.add_domain("growth","local");
+
 
 	std::cout << _YELLOW_ << "\n--------------------------------------------" << _BASE_TEXT_ << std::endl;
 	std::cout << _YELLOW_ << "NODE INIT" << _BASE_TEXT_ << std::endl;
