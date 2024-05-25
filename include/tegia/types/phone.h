@@ -17,15 +17,15 @@ class phone_t: public tegia::types::base_t
 
 		phone_t();
 		virtual ~phone_t() = default;
-		std::string value() const override final;
-		std::string hash() const override final;
-		nlohmann::json json() const override final;
+		std::string value() const override;
+		std::string hash() const override;
+		nlohmann::json json() const override;
 
 		//
 		// Specific
 		//
 
-		int parse(const std::string &_gender, const nlohmann::json &validate = nlohmann::json::object());
+		int parse(const std::string &value, const nlohmann::json &validate = nlohmann::json::object());
 };
 
 

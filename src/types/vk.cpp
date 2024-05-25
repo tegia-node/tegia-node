@@ -41,7 +41,7 @@ std::string vk_t::value() const
 
 std::string vk_t::hash() const
 {
-	return tegia::crypt::MD5(core::cast<std::string>(this->_id));
+	return tegia::crypt::MD5u(core::cast<std::string>(this->_id));
 };
 
 
@@ -84,15 +84,34 @@ int vk_t::parse(const std::string &value, const nlohmann::json &validate)
 	// Проверяем,что это прямая ссылка на ID
 	//
 
-	std::regex  _regex(R"(id[0-9]{1,})");
-	std::smatch _match;
-	if(std::regex_search(value, _match, _regex))
 	{
-		this->_link = value;
-		this->_id = core::cast<long long int>(_match[0].str().substr(2));
-		this->_is_valid = true;
-		return 1;
+		std::regex  _regex(R"(id[0-9]{1,})");
+		std::smatch _match;
+		if(std::regex_search(value, _match, _regex))
+		{
+			this->_link = value;
+			this->_id = core::cast<long long int>(_match[0].str().substr(2));
+			this->_is_valid = true;
+			return 1;
+		}
 	}
+
+	//
+	// Проверяем,что это прямой ID
+	//
+
+	{
+		std::regex  _regex(R"([0-9]{1,})");
+		std::smatch _match;
+		if(std::regex_search(value, _match, _regex))
+		{
+			this->_link = value;
+			this->_id = core::cast<long long int>(_match[0].str());
+			this->_is_valid = true;
+			return 1;
+		}
+	}
+
 
 	// TODO: Делать запрос к ВК
 

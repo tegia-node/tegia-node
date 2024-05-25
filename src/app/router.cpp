@@ -149,74 +149,118 @@ void router_t::print()
 
 std::tuple<int, nlohmann::json> router_t::match(const std::string &method, const std::string &path, nlohmann::json * post)
 {
+	//
+	//
+	//
+
 	std::string _path = path + "/" + method;
+
 	std::string prev_pattern = "";
-	std::string curr_pattern = "";
-	
+	prev_pattern.reserve(_path.size());
+
+	std::string curr_pattern = "/";
+	curr_pattern.reserve(_path.size());
+
 	nlohmann::json params_value;
 	nlohmann::json params_name;
 	int params_offset = 0;
 
+
 	int state = 0;
 	size_t k = 0;
+	bool flag = true;
 
-	while(true)
+	while(flag)
 	{
 		switch(state)
 		{
 			//
-			//
+			// READ DATA
 			//
 
 			case 0:
 			{
-				if(_path[k] == '/')
+				k++;
+				// std::cout << "case 0 [" << k << "] '" << _path[k] << "'" << std::endl;
+
+				if(_path[k] == '/' || k == _path.size())
 				{
 					state = 10;
 					break;
 				}
 
 				curr_pattern = curr_pattern + _path[k];
+			}
+			break;
 
-				if(k == _path.size() - 1)
+			//
+			// FIND PATTERN
+			//
+
+			case 10:
+			{
+				// std::cout << "case 10 '" << _path[k] << "'" << std::endl;
+				// std::cout << "prev_pattern = " << prev_pattern << std::endl;
+				// std::cout << "curr_pattern = " << curr_pattern << std::endl;
+
+				auto pos = this->_route_map.find(prev_pattern + curr_pattern);
+				if(pos == this->_route_map.end())
 				{
-					state = 10;	
+					state = 404;
 					break;
 				}
 
-				k++;
-			}
-			break;
+				prev_pattern = prev_pattern + curr_pattern;
+				curr_pattern = "/";
 
-			//
-			//
-			//
-
-			case 1:
-			{
-				prev_pattern = prev_pattern + curr_pattern + _path[k];
-				curr_pattern = "";
-				k++;
+				// std::cout << "prev_pattern = " << prev_pattern << std::endl;
+				// std::cout << "curr_pattern = " << curr_pattern << std::endl;
+				
 				state = 0;
+
+				if(pos->second != nullptr)
+				{
+					params_name = pos->second;
+					state = 200;
+				}
 			}
 			break;
 
-			case 2:
+			//
+			// NOT FOUND PATTERN
+			//
+
+			case 404:
 			{
-				//
-				// TODO: ERROR
-				// 
+				auto pos = this->_route_map.find(prev_pattern + "/*");
+				if(pos == this->_route_map.end())
+				{
+					return std::make_tuple(404,nullptr);
+				}
 
-				// std::cout << _ERR_TEXT_ << "[1] NOT FOUND" << std::endl;
-				return std::make_tuple(404,nullptr);
+				params_value.push_back(curr_pattern.substr(1));
+				prev_pattern = prev_pattern + "/*";
+				curr_pattern = "/";			
+				state = 0;
+
+				if(pos->second != nullptr)
+				{
+					params_name = pos->second;
+					state = 200;
+				}
+
+				// std::cout << "prev_pattern = " << prev_pattern << std::endl;
+				// std::cout << "curr_pattern = " << curr_pattern << std::endl;
+
+				// exit(0);
 			}
 			break;
 
 			//
-			//
+			// FOUND PATTERN
 			//
 
-			case 3:
+			case 200:
 			{
 				nlohmann::json _params = params_name;
 				_params.erase("params");
@@ -236,7 +280,10 @@ std::tuple<int, nlohmann::json> router_t::match(const std::string &method, const
 					nlohmann::json::json_pointer key(it.key());
 					nlohmann::json::json_pointer value(it.value().get<std::string>());
 
-					_params["data"][key] = _params[value];
+					if(_params.contains(value) == true)
+					{
+						_params["data"][key] = _params[value];
+					}
 				}
 
 				//
@@ -255,91 +302,8 @@ std::tuple<int, nlohmann::json> router_t::match(const std::string &method, const
 				// CHECK ACTOR NAME
 				//
 
-				// std::cout << _params << std::endl;
-
 				actor_name(&_params);
-				
-				// std::cout << _params << std::endl;
-				// exit(0);
-								
 				return std::move(std::make_tuple(200,_params));
-			}
-			break;
-
-			//
-			//
-			//
-
-			case 10:
-			{
-				// std::cout << "[" << k << "] state = 10" << std::endl;
-
-				// std::cout << "prev_pattern = " << prev_pattern << std::endl;
-				// std::cout << "curr_pattern = " << curr_pattern << std::endl;
-
-				auto pos = this->_route_map.find(prev_pattern + curr_pattern);
-				if(pos == this->_route_map.end())
-				{
-					state = 20;
-					break;
-				}
-
-				if(pos->second == nullptr)
-				{
-					state = 1;
-					break;
-				}
-
-				if(k < path.size() - 1)
-				{
-					state = 2;
-					break;
-				}
-
-				params_name = pos->second;
-				state = 3;
-				
-				// return std::move(std::make_tuple(true,prev_pattern + curr_pattern,pos->second));				
-			}
-			break;
-
-			//
-			//
-			//
-
-			case 20:
-			{
-				// std::cout << "prev_pattern = " << prev_pattern << std::endl;
-				// std::cout << "curr_pattern = " << curr_pattern << std::endl;
-
-				auto pos = this->_route_map.find(prev_pattern + "*");
-				if(pos == this->_route_map.end())
-				{
-					// NOT FOUND
-					// std::cout << _ERR_TEXT_ << "[2] NOT FOUND" << std::endl;
-					return std::make_tuple(404,nullptr);
-				}
-
-				if(pos->second == nullptr)
-				{
-					params_value.push_back(curr_pattern);
-					curr_pattern = "*";
-					state = 1;
-					break;
-				}
-
-				if(k < path.size() - 1)
-				{
-					state = 2;
-					break;
-				}
-
-				params_value.push_back(curr_pattern);
-				params_name = pos->second;
-				curr_pattern = "*";
-				state = 3;
-
-				// return std::move(std::make_tuple(true,prev_pattern + "*",pos->second));
 			}
 			break;
 		}

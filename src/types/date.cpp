@@ -41,7 +41,7 @@ std::string date_t::value() const
 
 std::string date_t::hash() const
 {
-	return tegia::crypt::MD5(this->_date);
+	return tegia::crypt::MD5u(this->_date);
 };
 
 

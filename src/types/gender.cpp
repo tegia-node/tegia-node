@@ -39,7 +39,7 @@ std::string gender_t::value() const
 
 std::string gender_t::hash() const
 {
-	return tegia::crypt::MD5(this->_gender);
+	return tegia::crypt::MD5u(this->_gender);
 };
 
 

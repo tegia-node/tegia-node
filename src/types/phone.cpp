@@ -43,7 +43,7 @@ std::string phone_t::value() const
 
 std::string phone_t::hash() const
 {
-	return tegia::crypt::MD5(this->_phone);
+	return tegia::crypt::MD5u(this->_phone);
 };
 
 

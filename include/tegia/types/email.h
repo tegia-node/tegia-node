@@ -14,10 +14,10 @@ class email_t: public tegia::types::base_t
 	public:
 		email_t();
 		virtual ~email_t() = default;
-		std::string value() const override final;
-		std::string hash() const override final;
-		nlohmann::json json() const override final;
-
+		std::string value() const override;
+		std::string hash() const override;
+		nlohmann::json json() const override;
+		
 		//
 		// Specific
 		//

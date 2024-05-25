@@ -21,6 +21,7 @@
 #include "fmt/core.h"
 
 #include <tegia/core/facet.h>
+#include <tegia/core/const.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 /**
@@ -65,6 +66,11 @@ namespace string {
 		return std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t>{}.from_bytes(utf8);
 	};
 
+	inline std::u32string to_u32str(const std::string &utf8)
+	{
+		return std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t>{}.from_bytes(utf8);
+	};
+
 
 	inline std::string u32str_to_str(const std::u32string &utf32str)
 	{
@@ -84,8 +90,119 @@ namespace string {
 	std::string quote(const std::string &data);
 	std::tuple<int,std::string> dequote(const std::string &data);
 
+	//
+	//
+	//
+
+	// std::string to_latin(const std::string &cyrillicName);
+
+
+
+	//
+	// Функция для вычисления расстояния Левенштейна между двумя строками
+	//
+
+	int levenshtein(const std::string& word1, const std::string& word2, bool u32 = false);
+
 }	// END string NAMESPACE
 }	// END tegia  NAMESPACE
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//
+//
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+//
+// Перегрузка оператора << для std::u32string
+//
+
+std::ostream& operator<<(std::ostream& os, const std::u32string& str);
+
+
+namespace tegia {
+namespace u32string {
+
+inline std::string to_str(const std::u32string &utf32str)
+{
+	return std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t>{}.to_bytes(utf32str);
+};
+
+std::u32string to_latin(char32_t symbol);
+std::u32string to_latin(const std::u32string &u32cyrillicName);
+
+int levenshtein(const std::u32string& word1, const std::u32string& word2);
+
+// ---------------------------------------------------------------------------------------------
+/*
+	@brief Проверяет к какому алфавиту относится символ (cyr, lat)
+	@param symbol Символ для проверки
+	@return 
+		- 0, если символ не принадлежит алфавиту
+		- 1, если lat символ
+		- 2, если cyr символ
+		- 3, если неизвестная ошибка
+*/
+// ---------------------------------------------------------------------------------------------
+
+int alphabet(char32_t symbol);
+
+// ---------------------------------------------------------------------------------------------
+/*
+	@brief Проверяет, что символ относится к заданному алфавиту
+	@param symbol Символ для проверки.
+	@param alphabet Строка, содержащая имя алфавита.
+	@return 
+		- 0, если символ не принадлежит алфавиту
+		- 1, если символ принадлежит алфавиту
+		- 2, если алфавит не определен
+*/
+// ---------------------------------------------------------------------------------------------
+
+int is_alphabet(char32_t symbol, const std::string &alphabet);
+
+// ---------------------------------------------------------------------------------------------
+/*
+	@brief Проверяет, что строка содержит символы заданного алфавита
+	@param string Строка для проверки.
+	@param alphabet Строка, содержащая имя алфавита.
+	@return 
+		- 0, если в строке нет символов из заданного алфавита
+		- 1, если в строке только символы из заданного алфавита
+		- 2, если алфавит не определен
+		- 3, если в строке есть символы из другого алфавита
+*/
+// ---------------------------------------------------------------------------------------------
+
+int check_alphabet(const std::u32string &string, const std::string &alphabet);
+
+// ---------------------------------------------------------------------------------------------
+/*
+	@brief Преобразует имя из ВК в латиницу 
+	@param name Строка с именем из ВК для преобразования
+	@return Имя в латинице
+*/
+// ---------------------------------------------------------------------------------------------
+
+std::u32string vk_name(std::u32string name);
+
+
+
+}	// END u32string NAMESPACE
+}	// END tegia  NAMESPACE
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//
+//
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 namespace tegia {

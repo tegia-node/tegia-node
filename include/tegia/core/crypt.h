@@ -87,6 +87,7 @@ namespace crypt {
 */
 
 std::string MD5(const std::string &str);
+std::string MD5u(const std::string &str);
 
 }	// END namespace crypt
 }	// END namespace tegia

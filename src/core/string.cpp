@@ -630,6 +630,64 @@ namespace string {
 	};
 
 
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/*
+		
+	*/
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	int levenshtein(const std::string& word1, const std::string& word2, bool u32) 
+	{
+		if(u32 == true)
+		{
+			auto w1 = tegia::string::str_to_u32str(word1);
+			auto w2 = tegia::string::str_to_u32str(word2);
+
+			int m = w1.length();
+			int n = w2.length();
+
+			std::vector<std::vector<int>> dp(m + 1, std::vector<int>(n + 1, 0));
+
+			for (int i = 0; i <= m; ++i) {
+				for (int j = 0; j <= n; ++j) {
+					if (i == 0)
+						dp[i][j] = j;
+					else if (j == 0)
+						dp[i][j] = i;
+					else if (w1[i - 1] == w2[j - 1])
+						dp[i][j] = dp[i - 1][j - 1];
+					else
+						dp[i][j] = 1 + std::min({ dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1] });
+				}
+			}
+
+			return dp[m][n];
+		}
+		else
+		{
+			int m = word1.length();
+			int n = word2.length();
+
+			std::vector<std::vector<int>> dp(m + 1, std::vector<int>(n + 1, 0));
+
+			for (int i = 0; i <= m; ++i) {
+				for (int j = 0; j <= n; ++j) {
+					if (i == 0)
+						dp[i][j] = j;
+					else if (j == 0)
+						dp[i][j] = i;
+					else if (word1[i - 1] == word2[j - 1])
+						dp[i][j] = dp[i - 1][j - 1];
+					else
+						dp[i][j] = 1 + std::min({ dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1] });
+				}
+			}
+
+			return dp[m][n];		
+		}
+	}
+
 }	// END string NAMESPACE
 }	// END tegia  NAMESPACE
 
@@ -646,8 +704,309 @@ namespace string {
 
 
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+	
+*/
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+std::ostream& operator<<(std::ostream& os, const std::u32string& str) 
+{
+	// Преобразование std::u32string в UTF-8 для вывода в std::ostream
+	for (char32_t c : str) {
+		// Вывод каждого символа как UTF-8
+		if (c <= 0x7F) {
+			os << static_cast<char>(c);
+		} else if (c <= 0x7FF) {
+			os << static_cast<char>((c >> 6) | 0xC0);
+			os << static_cast<char>((c & 0x3F) | 0x80);
+		} else if (c <= 0xFFFF) {
+			os << static_cast<char>((c >> 12) | 0xE0);
+			os << static_cast<char>(((c >> 6) & 0x3F) | 0x80);
+			os << static_cast<char>((c & 0x3F) | 0x80);
+		} else if (c <= 0x10FFFF) {
+			os << static_cast<char>((c >> 18) | 0xF0);
+			os << static_cast<char>(((c >> 12) & 0x3F) | 0x80);
+			os << static_cast<char>(((c >> 6) & 0x3F) | 0x80);
+			os << static_cast<char>((c & 0x3F) | 0x80);
+		}
+	}
+	return os;
+};
+
+
+namespace tegia {
+namespace u32string {
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+	
+*/
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+int levenshtein(const std::u32string& word1, const std::u32string& word2) 
+{
+	int m = word1.length();
+	int n = word2.length();
+
+	std::vector<std::vector<int>> dp(m + 1, std::vector<int>(n + 1, 0));
+
+	for (int i = 0; i <= m; ++i) {
+		for (int j = 0; j <= n; ++j) {
+			if (i == 0)
+				dp[i][j] = j;
+			else if (j == 0)
+				dp[i][j] = i;
+			else if (word1[i - 1] == word2[j - 1])
+				dp[i][j] = dp[i - 1][j - 1];
+			else
+				dp[i][j] = 1 + std::min({ dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1] });
+		}
+	}
+
+	return dp[m][n];
+};
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+	
+*/
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+static const std::unordered_map<char32_t, std::u32string> cyrillicToLatin = {
+	{U'А', U"A"}, {U'Б', U"B"}, {U'В', U"V"}, {U'Г', U"G"}, {U'Д', U"D"}, {U'Е', U"E"}, {U'Ё', U"Yo"},
+	{U'Ж', U"Zh"}, {U'З', U"Z"}, {U'И', U"I"}, {U'Й', U"Y"}, {U'К', U"K"}, {U'Л', U"L"}, {U'М', U"M"},
+	{U'Н', U"N"}, {U'О', U"O"}, {U'П', U"P"}, {U'Р', U"R"}, {U'С', U"S"}, {U'Т', U"T"}, {U'У', U"U"},
+	{U'Ф', U"F"}, {U'Х', U"Kh"}, {U'Ц', U"Ts"}, {U'Ч', U"Ch"}, {U'Ш', U"Sh"}, {U'Щ', U"Sch"},
+	{U'Ъ', U""}, {U'Ы', U"Y"}, {U'Ь', U""}, {U'Э', U"E"}, {U'Ю', U"Yu"}, {U'Я', U"Ya"},
+	{U'а', U"a"}, {U'б', U"b"}, {U'в', U"v"}, {U'г', U"g"}, {U'д', U"d"}, {U'е', U"e"}, {U'ё', U"yo"},
+	{U'ж', U"zh"}, {U'з', U"z"}, {U'и', U"i"}, {U'й', U"y"}, {U'к', U"k"}, {U'л', U"l"}, {U'м', U"m"},
+	{U'н', U"n"}, {U'о', U"o"}, {U'п', U"p"}, {U'р', U"r"}, {U'с', U"s"}, {U'т', U"t"}, {U'у', U"u"},
+	{U'ф', U"f"}, {U'х', U"kh"}, {U'ц', U"ts"}, {U'ч', U"ch"}, {U'ш', U"sh"}, {U'щ', U"sch"},
+	{U'ъ', U""}, {U'ы', U"y"}, {U'ь', U""}, {U'э', U"e"}, {U'ю', U"yu"}, {U'я', U"ya"}
+};
+
+
+std::u32string to_latin(char32_t symbol) 
+{
+	auto pos = cyrillicToLatin.find(symbol);
+	if(pos == cyrillicToLatin.end())
+	{
+		return U"";
+	}
+
+	return pos->second;
+};
+
+
+std::u32string to_latin(const std::u32string &u32cyrillicName) 
+{
+	std::u32string latinName;
+
+	for(auto it = u32cyrillicName.begin(); it != u32cyrillicName.end(); ++it)
+	{
+		auto pos = cyrillicToLatin.find( *it );
+		if(pos != cyrillicToLatin.end())
+		{
+			latinName.append( pos->second );
+		}
+	}
+	return latinName;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+	0 - не определено
+	1 - cyr
+	2 - lat
+*/
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+static const std::u32string alphabets = 
+		U"абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
+		U"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+
+int alphabet(char32_t symbol)
+{
+	auto pos = alphabets.find(symbol);
+	if(pos == std::u32string::npos)
+	{
+		return 0;
+	}
+
+	//
+	// CYR
+	//
+
+	if(pos < 66)
+	{
+		return 1;
+	}
+
+	//
+	// LAT
+	//
+
+	if(pos > 65 && pos < 118)
+	{
+		return 2;
+	}
+
+	// WTF ???
+
+	return 3;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+
+*/
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+int is_alphabet(char32_t symbol, const std::string &alphabet)
+{
+	/*
+		TODO: Можно оптимизировать поиск упорядочив буквы по частоте встречаемости в текстах
+	*/
+
+	//
+	// RUS
+	//
+
+	if(alphabet == "rus")
+	{
+		std::u32string chars = U"абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
+		auto pos = chars.find(symbol);
+		if(pos == std::u32string::npos)
+		{
+			return 0;
+		}
+		return 1;
+	}
+
+	//
+	// ENG
+	//
+
+	if(alphabet == "eng")
+	{
+		std::u32string chars = U"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		auto pos = chars.find(symbol);
+		if(pos == std::u32string::npos)
+		{
+			return 0;
+		}
+		return 1;			
+	}
+
+	return 2;
+};
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+	0 - в строке нет символов из заданного алфавита
+	1 - в строке только символы из заданного алфавита
+	2 - алфавит не определен
+	3 - в строке есть символы из другого алфавита
+*/
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+int check_alphabet(const std::u32string &string, const std::string &alphabet)
+{
+	int result = -1;
+
+	for(auto it = string.begin(); it != string.end(); ++it)
+	{
+		auto ret = tegia::u32string::is_alphabet( *it, alphabet);
+
+		// std::cout << "'" << std::u32string(1,*it) << "' " << alphabet << " " << ret << std::endl;
+
+		if(ret == 2) return 2;
+
+		if(ret == 0 && result == -1) result = 0; 
+		if(ret == 1 && result == -1) result = 1; 
+		
+		if(ret == 0 && result == 1) return 3;
+		if(ret == 1 && result == 0) return 3;
+	}
+
+	return result;
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+
+*/
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+std::u32string vk_name(std::u32string name)
+{
+	std::cout << "vk name = '" << name << "'" << std::endl;
+
+	std::u32string lat_name = U"";
+	
+	for(auto it = name.begin(); it != name.end(); ++it)
+	{
+		int ret = tegia::u32string::alphabet(*it);
+		switch(ret)
+		{
+			case 0:
+			{
+				// ERROR
+				std::cout << _ERR_TEXT_ << std::endl;
+				std::cout << "symbol = '" << std::u32string(1, *it) << "'" << std::endl;
+				std::cout << "ret    = " << ret << std::endl;
+				// exit(0);
+			}
+			break;
+
+			case 1:
+			{
+				lat_name = lat_name + tegia::u32string::to_latin( *it );
+			}
+			break;
+
+			case 2:
+			{
+				lat_name = lat_name + std::u32string(1, *it);
+			}
+			break;
+
+			case 3:
+			{
+				// ERROR
+				std::cout << _ERR_TEXT_ << std::endl;
+				std::cout << "symbol = '" << std::u32string(1, *it) << "'" << std::endl;
+				std::cout << "ret    = " << ret << std::endl;
+				exit(0);
+			}
+			break;
+		}
+	}
+
+	// std::cout << "name     = '" << name << "'" << std::endl;
+	// std::cout << "lat_name = '" << lat_name << "'" << std::endl;
+	// std::cout << tegia::u32string::check_alphabet(lat_name,"eng") << std::endl;
+
+	return std::move(lat_name);
+};
+
+
+}	// END u32string NAMESPACE
+}	// END tegia  NAMESPACE
 
 
 

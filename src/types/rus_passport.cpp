@@ -40,7 +40,7 @@ std::string rus_passport_t::value() const
 
 std::string rus_passport_t::hash() const
 {
-	return tegia::crypt::MD5(this->_rus_passport);
+	return tegia::crypt::MD5u(this->_rus_passport);
 };
 
 

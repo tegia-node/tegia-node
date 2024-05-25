@@ -39,7 +39,7 @@ std::string email_t::value() const
 
 std::string email_t::hash() const
 {
-	return tegia::crypt::MD5(this->_email);
+	return tegia::crypt::MD5u(this->_email);
 };
 
 

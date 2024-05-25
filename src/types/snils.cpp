@@ -40,7 +40,7 @@ std::string snils_t::value() const
 
 std::string snils_t::hash() const
 {
-	return tegia::crypt::MD5(this->_snils);
+	return tegia::crypt::MD5u(this->_snils);
 };
 
 

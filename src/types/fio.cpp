@@ -39,7 +39,7 @@ std::string fio_t::value() const
 
 std::string fio_t::hash() const
 {
-	return tegia::crypt::MD5(this->_fio);
+	return tegia::crypt::MD5u(this->_fio);
 };
 
 
