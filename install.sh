@@ -189,7 +189,7 @@ echo " "
 #
 
 tee ${root_folder}/Makefile.variable << EOF > /dev/null
-iNODE				= ${root_folder}tegia-node/include
+iNODE				= ${root_folder}/tegia-node/include
 iVENDORS			= ${root_folder}/vendors
 C++VER				= -std=c++2a
 
