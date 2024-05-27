@@ -184,24 +184,23 @@ echo "TEGIA NODE: ${GREEN} BUILD ${RESET}"
 echo "------------------------------------------------------------"
 echo " "
 
-cd ${root_folder}/tegia-node/build
-cmake --build .
-
-echo " "
-echo "------------------------------------------------------------"
-echo "TEGIA NODE: ${GREEN} INSTALL ${RESET}"
-echo "------------------------------------------------------------"
-echo " "
-
 #
 # SAVE 'Makefile.variable' FILE
 #
 
 tee ${root_folder}/Makefile.variable << EOF > /dev/null
-ProdFlag			= -rdynamic -I${root_folder}/tegia-node/include -I${root_folder}/vendors -std=c++2a -march=native -m64 -O2
-DevFlag				= -rdynamic -I${root_folder}/tegia-node/include -I${root_folder}/vendors -std=c++2a -march=native -m64 -Og -g -Wpedantic -Wshadow=compatible-local -Wl,--no-as-needed 
+iNODE				= ${root_folder}tegia-node/include
+iVENDORS			= ${root_folder}/vendors
+C++VER				= -std=c++2a
+
+ProdFlag			= -rdynamic -I\$(iNODE) -I\$(iVENDORS) \$(C++VER) -march=native -m64 -O2
+DevFlag				= -rdynamic -I\$(iNODE) -I\$(iVENDORS) \$(C++VER) -march=native -m64 -Og -g -Wpedantic -Wshadow=compatible-local -Wl,--no-as-needed 
 Flag = \$(DevFlag)
 EOF
+
+
+cd ${root_folder}/tegia-node/build
+cmake --build .
 
 
 echo " "
