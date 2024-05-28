@@ -62,6 +62,15 @@ nlohmann::json phone_t::json() const
 	return std::move(tmp);
 };
 
+nlohmann::json phone_t::graph() const
+{
+	nlohmann::json tmp;
+	tmp["type"] = "phone";
+	tmp["value"] = this->_phone;
+
+	return std::move(tmp);
+};
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 /**

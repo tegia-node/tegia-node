@@ -58,6 +58,15 @@ nlohmann::json gender_t::json() const
 	return std::move(tmp);
 };
 
+nlohmann::json gender_t::graph() const
+{
+	nlohmann::json tmp;
+	tmp["type"] = "gender";
+	tmp["value"] = this->_gender;
+
+	return std::move(tmp);
+};
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 /**

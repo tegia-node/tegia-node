@@ -59,6 +59,15 @@ nlohmann::json rus_passport_t::json() const
 	return std::move(tmp);
 };
 
+nlohmann::json rus_passport_t::graph() const
+{
+	nlohmann::json tmp;
+	tmp["type"] = "rus_passport";
+	tmp["value"] = this->_rus_passport;
+
+	return std::move(tmp);
+};
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 /**

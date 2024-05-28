@@ -59,6 +59,15 @@ nlohmann::json rus_inn_t::json() const
 	return std::move(tmp);
 };
 
+nlohmann::json rus_inn_t::graph() const
+{
+	nlohmann::json tmp;
+	tmp["type"] = "rus_inn";
+	tmp["value"] = this->_rus_inn;
+
+	return std::move(tmp);
+};
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 /**

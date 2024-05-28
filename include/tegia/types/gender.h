@@ -17,7 +17,8 @@ class gender_t: public tegia::types::base_t
 		std::string value() const override final;
 		std::string hash() const override final;
 		nlohmann::json json() const override final;
-
+		nlohmann::json graph() const;
+		
 		//
 		// Specific
 		//

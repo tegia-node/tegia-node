@@ -59,6 +59,15 @@ nlohmann::json snils_t::json() const
 	return std::move(tmp);
 };
 
+nlohmann::json snils_t::graph() const
+{
+	nlohmann::json tmp;
+	tmp["type"] = "snils";
+	tmp["value"] = this->_snils;
+
+	return std::move(tmp);
+};
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 /**

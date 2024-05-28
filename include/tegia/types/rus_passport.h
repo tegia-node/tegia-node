@@ -17,7 +17,8 @@ class rus_passport_t: public tegia::types::base_t
 		std::string value() const override;
 		std::string hash() const override;
 		nlohmann::json json() const override;
-
+		nlohmann::json graph() const;
+		
 		//
 		// Specific
 		//

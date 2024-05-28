@@ -58,6 +58,15 @@ nlohmann::json fio_t::json() const
 	return std::move(tmp);
 };
 
+nlohmann::json fio_t::graph() const
+{
+	nlohmann::json tmp;
+	tmp["type"] = "fio";
+	tmp["value"] = this->_fio;
+
+	return std::move(tmp);
+};
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 /**

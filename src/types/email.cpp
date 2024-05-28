@@ -59,6 +59,16 @@ nlohmann::json email_t::json() const
 };
 
 
+nlohmann::json email_t::graph() const
+{
+	nlohmann::json tmp;
+	tmp["type"] = "email";
+	tmp["value"] = this->_email;
+
+	return std::move(tmp);
+};
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 /**
 		

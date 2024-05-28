@@ -60,6 +60,15 @@ nlohmann::json date_t::json() const
 	return std::move(tmp);
 };
 
+nlohmann::json date_t::graph() const
+{
+	nlohmann::json tmp;
+	tmp["type"] = "date";
+	tmp["value"] = this->_date;
+
+	return std::move(tmp);
+};
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 /**

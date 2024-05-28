@@ -71,6 +71,15 @@ nlohmann::json person_t::json() const
 	return std::move(tmp);
 };
 
+nlohmann::json person_t::graph() const
+{
+	nlohmann::json tmp;
+	tmp["type"] = "person";
+	tmp["value"] = this->json();
+
+	return std::move(tmp);
+};
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 /**

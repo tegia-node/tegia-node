@@ -162,6 +162,7 @@ bool node::action()
 	this->actor_map.add_domain("enrichment","local");
 	this->actor_map.add_domain("models","local");
 	this->actor_map.add_domain("growth","local");
+	this->actor_map.add_domain("leaks","local");
 
 
 	std::cout << _YELLOW_ << "\n--------------------------------------------" << _BASE_TEXT_ << std::endl;

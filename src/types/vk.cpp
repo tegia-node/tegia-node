@@ -60,6 +60,15 @@ nlohmann::json vk_t::json() const
 	return std::move(tmp);
 };
 
+nlohmann::json vk_t::graph() const
+{
+	nlohmann::json tmp;
+	tmp["type"] = "vk_id";
+	tmp["value"] = this->_id;
+
+	return std::move(tmp);
+};
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 /**
