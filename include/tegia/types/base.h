@@ -33,6 +33,9 @@ const long long int SNILS        = 3840612784;  // crc32("snils")
 
 enum class TYPE: long long int { 
 	OTHER        = 3646436640,    // crc32("other")
+
+	STRING       = 2663297705,    // crc32("string")
+
 	EMAIL        = 3885137012,    // crc32("email")
 	PHONE        = 1146066909,    // crc32("phone")
 
