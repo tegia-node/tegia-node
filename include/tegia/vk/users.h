@@ -111,16 +111,16 @@ std::tuple<int,nlohmann::json> search(
 		const tegia::http::proxy &_proxy = tegia::http::proxy())
 {
 
-	std::sring _query = "";
+	std::string _query = "";
 
 	if(query.contains("q") == true)
 	{
-		_query = _query + "&q=" + tegia::http::escape(query["q"].get<>(std::string));
+		_query = _query + "&q=" + tegia::http::escape(query["q"].get<std::string>());
 	}
 
 	if(query.contains("city") == true)
 	{
-		_query = _query + "&city=" + query["city"].get<>(std::string);
+		_query = _query + "&city=" + query["city"].get<std::string>();
 	}
 
 	/*

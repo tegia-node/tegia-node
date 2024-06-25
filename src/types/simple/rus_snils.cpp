@@ -1,4 +1,4 @@
-#include <tegia/types/snils.h>
+#include <tegia/types/simple/rus_snils.h>
 #include <regex>
 
 namespace tegia {
@@ -12,60 +12,9 @@ namespace types {
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 
-snils_t::snils_t():base_t("snils")
+rus_snils_t::rus_snils_t():simple_t("rus_snils")
 {
 	
-};
-
-
-////////////////////////////////////////////////////////////////////////////////////////////
-/**
-		
-*/   
-////////////////////////////////////////////////////////////////////////////////////////////
-
-
-std::string snils_t::value() const
-{
-	return this->_snils;
-};
-
-
-////////////////////////////////////////////////////////////////////////////////////////////
-/**
-		
-*/   
-////////////////////////////////////////////////////////////////////////////////////////////
-
-
-std::string snils_t::hash() const
-{
-	return tegia::crypt::MD5u(this->_snils);
-};
-
-
-////////////////////////////////////////////////////////////////////////////////////////////
-/**
-		
-*/   
-////////////////////////////////////////////////////////////////////////////////////////////
-
-
-nlohmann::json snils_t::json() const
-{
-	nlohmann::json tmp;
-	tmp["snils"] = this->_snils;
-
-	return std::move(tmp);
-};
-
-nlohmann::json snils_t::graph() const
-{
-	nlohmann::json tmp;
-	tmp["type"] = "snils";
-	tmp["value"] = this->_snils;
-
-	return std::move(tmp);
 };
 
 
@@ -80,11 +29,11 @@ nlohmann::json snils_t::graph() const
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 
-int snils_t::parse(const std::string & value, const nlohmann::json &validate)
+int rus_snils_t::parse(const std::string &value, const nlohmann::json &validate)
 {
 	if(value == "")
 	{
-		this->_snils = value;
+		this->_value = value;
 		this->_is_valid = false;
 		return 0;
 	}
@@ -113,14 +62,14 @@ int snils_t::parse(const std::string & value, const nlohmann::json &validate)
 
 	if(__snils == "")
 	{
-		this->_snils = "";
+		this->_value = "";
 		this->_is_valid = false;
 		return 0;		
 	}
 
 	if(__snils.length() != 11)
 	{
-		this->_snils = "";
+		this->_value = "";
 		this->_is_valid = false;
 		return 2;
 	}
@@ -135,7 +84,7 @@ int snils_t::parse(const std::string & value, const nlohmann::json &validate)
 
 	__snils = __snils.substr(0,3) + "-" + __snils.substr(3,3) + "-" + __snils.substr(6,3) + " " + __snils.substr(9,2);
 
-	this->_snils = __snils;
+	this->_value = __snils;
 	this->_is_valid = true;
 	return 1;
 };

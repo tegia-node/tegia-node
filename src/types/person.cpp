@@ -1,6 +1,6 @@
 #include <tegia/types/person.h>
-#include <tegia/types/gender.h>
-#include <tegia/types/date.h>
+#include <tegia/types/simple/gender.h>
+#include <tegia/types/simple/date.h>
 
 #include <tegia/core/cast.h>
 #include <tegia/core/string.h>

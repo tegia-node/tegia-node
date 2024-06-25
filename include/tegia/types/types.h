@@ -1,15 +1,25 @@
 #ifndef H_TEGIA_TYPES
 #define H_TEGIA_TYPES
 
-#include "gender.h"		// gender
-#include "phone.h"		// phone
-#include "email.h"		// email
-#include "fio.h"		// fio
-#include "vk.h"			// vk_id
-#include "date.h"		// date
+//
+// SIMPLE TYPES
+//
 
-#include "snils.h"
-#include "rus_passport.h"
-#include "rus_inn.h"
+#include "simple/date.h"
+#include "simple/email.h"
+#include "simple/gender.h"
+#include "simple/phone.h"
+#include "simple/vk.h"
+
+#include "simple/rus_passport.h"
+#include "simple/rus_inn.h"
+#include "simple/rus_snils.h"
+
+
+
+
+
+#include "fio.h"		// fio
+
 
 #endif
