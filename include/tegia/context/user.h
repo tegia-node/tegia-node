@@ -20,6 +20,15 @@ namespace threads
 }
 }
 
+
+namespace ROLES {
+
+const int ADMIN = 63;
+const int USER = 62;
+
+} // END namespace ROLES
+
+
 namespace tegia {
 class user
 {
@@ -39,14 +48,18 @@ class user
 
 		std::bitset<64> _roles{0};
 
+		void role(int role, bool set);
+		unsigned long long int role();
+
 	public:
 		user();
 		~user();
 		std::string uuid();
 		int status();
 
-		void print();
+		bool check(int role);
 
+		void print();
 		nlohmann::json json();
 
 };	// END CLASS user

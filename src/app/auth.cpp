@@ -11,15 +11,22 @@
 namespace tegia {
 
 
-::tegia::user * auth::test()
+::tegia::user * auth::test(
+	const std::string _uuid,
+	const std::string _surname,
+	const std::string _name,
+	const std::string _patronymic,
+	int _gender,
+	unsigned long long int roles)
 {
 	::tegia::user * _user = new ::tegia::user();
 
-	_user->_uuid = "204d01a6-5922-4be1-a375-3c0342f973f7";
-	_user->_surname = "Горячев";
-	_user->_name = "Игорь";
-	_user->_patronymic = "Александрович";
-	_user->_gender = 1;
+	_user->_uuid = _uuid;
+	_user->_surname = _surname;
+	_user->_name = _name;
+	_user->_patronymic = _patronymic;
+	_user->_gender = _gender;
+	_user->_roles = std::bitset<64>(roles);
 	
 	return _user;
 };
@@ -125,6 +132,7 @@ std::string auth::key(const std::string &filename)
 		_user->_name = payload.get_claim_value<std::string>("name");
 		_user->_patronymic = payload.get_claim_value<std::string>("patronymic");
 		_user->_gender = payload.get_claim_value<int>("gender");
+		_user->_roles = std::bitset<64>(payload.get_claim_value<unsigned long long int>("roles"));
 		_user->_status = 200;
 
 		//

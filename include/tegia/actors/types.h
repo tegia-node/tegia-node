@@ -27,6 +27,8 @@ class actor_base
 		std::string type;
 		std::string name; 
 
+		std::function<int()> check_access = nullptr;
+
 	public:
 
 		actor_base(
@@ -112,10 +114,16 @@ class type: public type_base
 		actions_map<T> map{};
 		std::string name;
 
+	protected:
+		// Static method for constructor-specific initialization
+		static void init(type<T> * instance, const std::string& _name) {
+			// Default initialization
+		};
+		
 	public:
 		type(const std::string &_name): type_base(_name)
 		{
-
+			init(this,_name);
 		};
 
 		~type() noexcept override 
@@ -158,7 +166,10 @@ class type: public type_base
 				return nullptr;
 			}
 
-			return std::bind(pos->second, static_cast<T*>(_actor), message);
+			return [pos, _actor, message]() -> int 
+					{
+						return pos->second(static_cast<T*>(_actor), message);
+					};			
 		};
 };
 
