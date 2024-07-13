@@ -63,16 +63,23 @@ void node::init_thread(const nlohmann::json &config)
 
 int node::send_message(const std::string &actor, const std::string &action, const std::shared_ptr<message_t> &message, int priority)
 {
+	// auto start_time = std::chrono::high_resolution_clock::now();
+
 	auto [result,_fn] = this->actor_map.send_message(
 		actor,
 		action,
 		message
 	);
 
+	// auto end_time = std::chrono::high_resolution_clock::now();
+	// auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
+	// std::cout << "[OLD] Время упаковки: " << duration.count() << " наносекунд" << std::endl;
+
 	if(result == 200)
 	{
 		this->_threads->add_task(_fn,priority);
 	}
+
 
 	return result;
 };
@@ -87,7 +94,7 @@ int node::send_message(const std::string &actor, const std::string &action, cons
 
 int node::resolve(const std::string &name)
 {
-	return this->actor_map.resolve_name(name);
+	return 0; // this->actor_map.resolve_name(name);
 };
 
 
@@ -110,6 +117,22 @@ bool node::action()
 	// INIT ACTOR TYPES
 	//
 
+	this->actor_map.add_domain("base",tegia::domain::LOCAL);
+	this->actor_map.add_domain("parsers",tegia::domain::LOCAL);
+	this->actor_map.add_domain("http",tegia::domain::LOCAL);
+	this->actor_map.add_domain("test",tegia::domain::LOCAL);
+	this->actor_map.add_domain("app",tegia::domain::LOCAL);
+
+	this->actor_map.add_domain("ws",tegia::domain::LOCAL);
+	this->actor_map.add_domain("task",tegia::domain::LOCAL);
+	
+	this->actor_map.add_domain("enrichment",tegia::domain::LOCAL);
+	this->actor_map.add_domain("models",tegia::domain::LOCAL);
+	this->actor_map.add_domain("growth",tegia::domain::LOCAL);
+	this->actor_map.add_domain("leaks",tegia::domain::LOCAL);
+	this->actor_map.add_domain("example",tegia::domain::LOCAL);
+
+
 	std::vector<nlohmann::json> messages;
 
 	for(auto conf = this->_config->_map.begin(); conf != this->_config->_map.end(); ++conf)
@@ -124,6 +147,10 @@ bool node::action()
 		} 
 
 		//
+		//
+		//
+
+		//
 		// TYPES
 		//
 
@@ -132,10 +159,10 @@ bool node::action()
 			// std::cout << "type = " << type.key() << std::endl;
 			// std::cout << (*type) << std::endl;
 
-			this->actor_map.load_type(
+			this->actor_map.add_type(
 				type.key(), 										// type name
 				conf->second->data["path"].get<std::string>(),		// base path
-				(*type)												// type config
+				&(*type)											// type config
 			);
 		}
 
@@ -149,21 +176,6 @@ bool node::action()
 		}
 
 	}
-
-	this->actor_map.add_domain("base","local");
-	this->actor_map.add_domain("parsers","local");
-	this->actor_map.add_domain("http","local");
-	this->actor_map.add_domain("test","remote");
-	this->actor_map.add_domain("app","local");
-
-	this->actor_map.add_domain("ws","local");
-	this->actor_map.add_domain("task","local");
-	
-	this->actor_map.add_domain("enrichment","local");
-	this->actor_map.add_domain("models","local");
-	this->actor_map.add_domain("growth","local");
-	this->actor_map.add_domain("leaks","local");
-	this->actor_map.add_domain("example","local");
 
 
 	std::cout << _YELLOW_ << "\n--------------------------------------------" << _BASE_TEXT_ << std::endl;

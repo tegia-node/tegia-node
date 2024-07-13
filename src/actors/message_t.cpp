@@ -27,12 +27,13 @@ callback_t& callback_t::operator= (const callback_t &callback)
 
 int callback_t::add(const std::string &_actor, const std::string &_action)
 {
-	int res = tegia::message::resolve(_actor);
-	if(res == 200)
-	{
+	//int res = tegia::message::resolve(_actor);
+	//if(res == 200)
+	//{
 		this->callback.push({true,_actor,_action});
-	}
-	return res;
+	//}
+	//return res;
+	return 200;
 };
 
 

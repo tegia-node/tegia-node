@@ -1,7 +1,12 @@
 
-#include <tegia/tegia.h>
+#include <tegia/namespaces.h>
+
 #include "node/node.h"
 #include "threads/data.h"
+
+#include <tegia/actors/actor.h>
+#include <tegia/actors/type.h>
+
 
 namespace tegia {
 namespace actors {

@@ -65,7 +65,7 @@ class node
 		tegia::node::config  * _config;
 
 
-		tegia::actors::map actor_map;
+		tegia::actors::map_t actor_map;
 
 
 		void init_thread(const nlohmann::json &config);

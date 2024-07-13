@@ -2,7 +2,6 @@
 #include <utility>
 
 #include <tegia/core/const.h>
-#include <tegia/tegia.h>
 
 #include "map.h"
 
@@ -10,33 +9,89 @@ namespace tegia {
 namespace actors {
 
 
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
-
 
 */
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-bool map::load_type(const std::string &type_name, const std::string &base_path, const nlohmann::json &type_config)
+map_t::map_t()
+{
+
+};
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+
+*/
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+map_t::~map_t()
+{
+	
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+
+*/
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+void map_t::add_domain(const std::string &name, int type)
+{
+	auto domain = new tegia::actors::domain_t();
+	domain->_name = name;
+	domain->_type = type;
+
+	auto [pos,code] = this->_domains.insert({name,domain});
+	if(code == false)
+	{
+		delete domain;
+	}
+};
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+
+*/
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void map_t::add_type(
+	const std::string &type_name, 
+	const std::string &base_path, 
+	nlohmann::json * data)
 {
 	//
-	// Проверими загружен ли даный тип акторов
+	// CHECK TYPE
 	//
 
-	auto pos = this->actor_types.find(type_name);
-	if(pos != this->actor_types.end())
 	{
-		// TODO: write log
-		return true;
-	}	
+		auto pos = this->_types.find(type_name);
+		if(pos != this->_types.end()) return;
+	}
 
 	//
-	// Загружаем библиотеку актора
+	// CHECK DATA
+	//
+
+	if(data->contains("patterns") == false || (*data)["patterns"].is_array() == false)
+	{
+		return;
+	}
+
+	//
+	// LOAD LIBRARY
 	//
 
 	void * lib;
-	std::string path = base_path + type_config["path"].get<std::string>();
+	std::string path = base_path + (*data)["path"].get<std::string>();
 
 	lib = dlopen(path.c_str(), RTLD_LAZY);
 	if (!lib)
@@ -45,509 +100,334 @@ bool map::load_type(const std::string &type_name, const std::string &base_path, 
 
 		std::string message = "[" + std::string(dlerror()) + "]";
 		std::cout << _ERR_TEXT_ << "load " << type_name << " " << message << std::endl;
-		return false;
+		return;
 	}
 
+
+	// typedef tegia::actors::type_base_t * (*init_type_t)(const std::string&);
+
+
+    // Получение указателя на функцию
+    // init_type_t _init_type = (init_type_t) dlsym(lib, "_init_type");
+	auto _fn = ( tegia::actors::type_base_t * (*)(void) )dlsym(lib,"_init_type");
+    const char* dlsym_error = dlerror();
+    if (dlsym_error) {
+        std::cerr << "Cannot load symbol '_init_type': " << dlsym_error << '\n';
+        dlclose(lib);
+        return;
+    }
+
+	// 
+
 	//
-	// Добавляем в список типов акторов
+	// ADD PATTERNS
 	//
 
-	auto _fn = ( tegia::actors::type_base * (*)(void) )dlsym(lib,"_load_type");
-	auto type = _fn();
-
-	this->actor_types.insert({
-		type_name,
-		type
-	});
-
-	//
-	// Добавляем алиасы имен
-	//
-
-	for(auto pattern = type_config["patterns"].begin(); pattern != type_config["patterns"].end(); ++pattern)
+	for(auto it = (*data)["patterns"].begin(); it != (*data)["patterns"].end(); ++it)
 	{
-		std::string _pattern = pattern->get<std::string>();
 		std::string tmp = "";
+		std::string pattern = it->get<std::string>();
 
-		for(size_t k = 0; k < _pattern.size(); ++k)
+		for(size_t k = 0; k < pattern.size(); ++k)
 		{
-			if(_pattern[k] == '/')
+			if(pattern[k] == '/')
 			{
 				//
 				// TODO: проверять дубликаты
 				//
 
-				this->name_patterns.insert({tmp,nullptr});
-				tmp = tmp + _pattern[k];
+				std::cout << "tmp = " << tmp << std::endl;
+
+				this->_patterns.insert({tmp,nullptr});
+				tmp = tmp + pattern[k];
 			}
 			else
 			{
-				tmp = tmp + _pattern[k];
+				tmp = tmp + pattern[k];
 			}
 		}
-		this->name_patterns.insert({tmp,type});				
-	}
 
-	return true;
+		//
+		// 
+		//
+
+		this->_patterns.insert(std::make_pair(tmp,_fn()));
+	}
+	// END for()
 };
 
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
 /*
 
-
-*/
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-bool map::add_domain(const std::string &domain, const std::string &type)
-{
-	this->_domains.insert({domain,type});
-	return true;
-};
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-
-
-*/
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-tegia::actors::actor_base * map::create_actor(const std::string &name, tegia::actors::type_base * actor_type)
-{
-	this->actor_list_mutex.lock();
-
-	auto [code,_actor_ptr] = actor_type->create_actor(name,std::move(nlohmann::json::object()),false);
+	100 - remote domain
+	200 - ok
+	403 - firbidden
 	
-	if(code != 200)
-	{
-		return nullptr;
-	}
-
-	actor_t actor;
-	actor.name  = name;
-	actor.actor = _actor_ptr;
-	actor.type = actor_type;
-
-	this->actor_list.insert({name,actor});
-	this->actor_list_mutex.unlock();
-	return actor.actor;
-};
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-
-	parser/fns/egrul/loader
-	parser/fns/egrip/loader
-	parser/fns/egrul/parser
-	parser/fns/inn
-	parser/fns/npd
-	parser/mvd/passports/invalid
-
-	-----
-	EXAMPLE 1
-	-----
-
-	domains:
-		1	parser
-	actors:
-		{1}/fns/egrul/loader
-		{1}/fns/egrip/loader
-		{1}/fns/egrul/parser
-		{1}/fns/inn
-		{1}/fns/npd
-		{1}/mvd/passports/invalid
-
-	-----
-	EXAMPLE 2
-	-----
-
-	domains:
-		1	parser/fns
-		2	parser/mvd
-
-	actors:
-		{1}/egrul/loader
-		{1}/egrip/loader
-		{1}/egrul/parser
-		{1}/inn
-		{1}/npd
-		{2}/passports/invalid
-
-	-----
-	EXAMPLE 3
-	-----
-
-	domains:
-		1	parser/fns
-		2	parser/fns/egrul
-		3	parser/mvd
-	
-	actors:
-		{2}/loader
-		{2}/parser
-		{1}/egrip/loader
-		{1}/inn
-		{1}/npd
-		{3}/passports/invalid
+	404 - not found
 */
+///////////////////////////////////////////////////////////////////////////////////////
 
 
-std::tuple<bool,std::string,std::string,std::string> resolve_domain(const std::string &name, std::unordered_map<std::string,std::string> * domains)
-{
-	int state = 0;
-	int i = 0;
-
-	bool found_domain = false;
-	std::string prev_domain = "";
-	std::string domain = "";
-	std::string type = "";
-
-	while(true)
-	{
-		switch(state)
-		{
-			//
-			// 
-			//
-
-			case 0:
-			{
-				if(i == name.size()-1)
-				{
-					if(found_domain == true)
-					{
-						/*
-						std::cout << "[OK] FOUND DOMAIN" << std::endl;
-						std::cout << "name   = " << name << std::endl;
-						std::cout << "domain = " << prev_domain << std::endl;
-						std::cout << "type   = " << type << std::endl;
-						*/
-
-						return std::move(std::make_tuple(true,name,prev_domain,type));
-					}
-
-					// ERROR
-					// std::cout << _ERR_TEXT_ << "NOT FOUND DOMAIN" << std::endl;
-					// exit(0);
-
-					return std::move(std::make_tuple(false,name,"",""));
-				}
-
-				if(name[i] == '/')
-				{
-					state = 10;
-					i++;
-					break;
-				}
-
-				domain = domain + name[i];
-				i++;
-			}
-			break;
-
-			//
-			//
-			//
-			
-			case 10:
-			{
-				// std::cout << "name   = " << name << std::endl;
-				// std::cout << "domain = " << domain << std::endl;
-
-				auto pos = domains->find(domain);
-				if(pos == domains->end())
-				{
-					if(found_domain == true)
-					{
-						/*
-						std::cout << "[OK] FOUND DOMAIN" << std::endl;
-						std::cout << "name   = " << name << std::endl;
-						std::cout << "domain = " << prev_domain << std::endl;
-						std::cout << "type   = " << type << std::endl;
-						*/
-
-						return std::move(std::make_tuple(true,name,prev_domain,type));
-					}
-	
-					// std::cout << "NOT FOUND " << std::endl;
-					domain = domain + "/";
-					state = 0;
-				}
-				else
-				{
-					prev_domain = domain;
-					domain = domain + "/";
-					found_domain = true;
-					type = pos->second;
-					state = 0;
-				}
-			}
-			break;
-		}
-	}
-
-	return std::move(std::make_tuple(false,"","",""));
-}
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-
-	1. Ищем актор по имени в списке локальных загруженных акторов. Следовательно, нужен общий список 
-	созданных в ноде акторов.
-	* Если актор нашли, то создаем задачу
-	* Если актор не нашли, то шаг 2
-
-	2. Выполняем разрешение доменна актора
-	* Если домен не найден, то ошибка (как возвращать ошибку?)
-	* Если домен удаленный, то формируем транспортный пакет
-	* Если домен локальный, то шаг 3
-
-	3. 
-
-
-	Коды ошибок:
-	200 - успешно
-	100 - сообщение отправлено на удаленный узел
-	4хх - ошибка
-
-	401 - не найден домен
-	402 - не найден паттерн имени актора, поэтому не удалось определить тип актора
-	403 - not found ection
-	
-*/
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-std::tuple<int,std::function<void()>> add_task(
-	tegia::actors::actor_base * actor,
-	tegia::actors::type_base * type,
+std::tuple<int,std::function<void()>> map_t::send_message(
 	const std::string &name, 
 	const std::string &action, 
 	const std::shared_ptr<message_t> &message)
 {
-	auto fn = type->bind_action(actor, action, message);
-	if(fn != nullptr)
-	{
-		auto _fn = [=]()
-		{
-			auto start_time = std::chrono::high_resolution_clock::now();
-			
-			try
-			{
-				int result = fn();
+	// auto start_sendmessage_time = std::chrono::high_resolution_clock::now();
 
-				auto callback = message->callback.get();
-				if(callback.is_addr == true)
-				{
-					tegia::message::send(callback.actor, callback.action, message);
-				}	
-			}
-			catch(const std::exception& e)
-			{
-				std::cout << _ERR_TEXT_ << "[" << name << action << "] " << e.what() << std::endl;
-				exit(0);
-			}
-
-			auto end_time = std::chrono::high_resolution_clock::now();
-		};
-
-		return std::move(std::make_tuple(200,std::move(_fn)));
-	}
-
-	std::cout << _ERR_TEXT_ << "send message \n" 
-				<< "      [403] not found action\n" 
-				<< "      actor  = '" << name << "'\n" 
-				<< "      action = '" << action << "'" << std::endl; 
-	return std::move(std::make_tuple(403,nullptr));	
-};
-
-
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-//
-//
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-int map::resolve_name(const std::string &name)
-{
+	///////////////////////////////////////////////////////////////////////////////////////
 	//
+	// FIND ACTOR
 	//
-	//
+	///////////////////////////////////////////////////////////////////////////////////////
 
 	{
-		auto pos = this->actor_list.find(name);
-		if(pos != this->actor_list.end())
+		auto pos = this->actors.find(name);
+		if(pos != this->actors.end())
 		{
-			return 200;
+			return pos->second->get_action(action, message);
 		}
-	}
-
-	//
-	// Определяем к какому домену принадлежит актор
-	//
-
-	auto [res,actor_name,actor_domain,domain_type] = resolve_domain(name, &this->_domains);
-
-	//
-	// Обрабатываем ошибку
-	//
-
-	if(res == false)
-	{
-		//
-		// TODO: ERROR
-		//
-
-		std::cout << _ERR_TEXT_ << "401 | NOT FOUND DOMAIN" << std::endl;
-		std::cout << "      actor name = " << name << std::endl;
-		return 401;
-	} 
-
-	//
-	// Определям тип актора по его имени
-	//
-
-	{
-		auto [res,actor_type] = this->resolve(name);
-		if(res == true)
-		{
-			std::cout << _OK_TEXT_ << "200 | FOUND" << std::endl;
-			std::cout << "      actor name = " << name << std::endl;
-			std::cout << "      actor type = " << actor_type->get_name() << std::endl;
-
-			//
-			// Resolve name actor
-			//
-			
-			auto [code,actor] = actor_type->create_actor(name,nlohmann::json::object(),true);
-			// return actor_type->resolve_name(name);
-			return code;
-		}
-		else
-		{
-			std::cout << _ERR_TEXT_ << "402 | NOT FOUND PATTERN" << std::endl;
-			std::cout << "      actor name = " << name << std::endl;
-			return 402;
-		}
-	}
-
-};
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-//
-//
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-std::tuple<int,std::function<void()>> map::send_message(const std::string &name, const std::string &action, const std::shared_ptr<message_t> &message)
-{
-	//
-	//	ШАГ 1:
-	//
-	//	Если актор уже загружен, то получаем объект актора по его имени и создаем задачу для пула потоков
-	//
-
-	{
-		auto pos = this->actor_list.find(name);
-		if(pos != this->actor_list.end())
-		{
-			return add_task(pos->second.actor,pos->second.type,name,action,message);
-		}
-	}
-
-	//
-	// Определяем к какому домену принадлежит актор
-	//
-
-	auto [res,actor_name,actor_domain,domain_type] = resolve_domain(name, &this->_domains);
-
-	//
-	// Обрабатываем ошибку
-	//
-
-	if(res == false)
-	{
-		//
-		// TODO: ERROR
-		//
-
-		std::cout << _ERR_TEXT_ << "401 | NOT FOUND DOMAIN" << std::endl;
-		std::cout << "      actor name = " << name << std::endl;
-		return std::make_tuple(401,nullptr);
-	} 
-
-	//
-	// Отправляем траснпортный пакет на удаленный домен
-	// 
-
-	if(domain_type == "remote")
-	{
-		//
-		// TODO: Формируем транспортный пакет
-		//
-
-		std::cout << _OK_TEXT_ << "100 | REMOTE DOMAIN" << std::endl;
-		std::cout << "      actor name   = " << name << std::endl;
-		std::cout << "      actor domain = " << actor_domain << std::endl;
-		return std::make_tuple(100,nullptr);
-	}
-
-	//
-	// Определям тип актора (возвращаем объект actor_type) по его имени
-	//
-
-	{
-		auto [res,actor_type] = this->resolve(name);
-		if(res == true)
-		{
-			std::cout << _OK_TEXT_ << "200 | FOUND" << std::endl;
-			std::cout << "      actor name = " << name << std::endl;
-			std::cout << "      actor type = " << actor_type->get_name() << std::endl;
-
-			//
-			// Create actor
-			//
-
-			auto actor = this->create_actor(name,actor_type);
-			
-			if(actor == nullptr)
-			{
-				std::cout << _ERR_TEXT_ << "404 | NOT RESOLVE NAME" << std::endl;
-				std::cout << "      actor name = " << name << std::endl;
-				return std::make_tuple(404,nullptr);				
-			}
-
-			return add_task(actor,actor_type,name,action,message);
-		}
-		else
-		{
-			std::cout << _ERR_TEXT_ << "402 | NOT FOUND PATTERN" << std::endl;
-			std::cout << "      actor name = " << name << std::endl;
-			return std::make_tuple(402,nullptr);
-		}
-	}
 	
-	return std::make_tuple(400,nullptr);
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////
+	//
+	// CREATE ACTOR
+	//
+	///////////////////////////////////////////////////////////////////////////////////////
+
+
+	tegia::actors::domain_t * domain = nullptr;
+
+	size_t index = 0;
+	int state = 100;
+	std::string actor_name = "";
+
+	size_t domain_index = 0;
+	bool found_domain = false;
+
+	size_t action_index = 0;
+	bool found_action = false;
+	bool is_pattern = false;
+
+
+	//
+	//
+	//
+
+	while(index <= name.size())
+	{
+		// std::cout << "[" << state << "] [" << index << "] [" << name.substr(0,index) << "]" << std::endl;
+
+		switch(state)
+		{
+			//
+			//
+			//
+
+			case 100:
+			{
+				if(name[index] == '/' || index == name.size())
+				{
+					state = 110;
+					break;
+				}
+				index++;				
+			}
+			break;
+
+			//
+			//
+			//
+			
+			case 110:
+			{
+				auto pos = this->_domains.find( name.substr(0,index) );
+				if(pos == this->_domains.end())
+				{
+					if(found_domain == true)
+					{
+						action_index = domain_index;
+						state = 190;
+					}
+					else
+					{
+						index++;
+						state = 100;						
+					}
+				}
+				else
+				{
+					domain = pos->second;
+					found_domain = true;
+					domain_index = index;
+					index++;
+					state = 100;
+				}
+			}
+			break;
+
+			//
+			//
+			//
+
+			case 190:
+			{
+				if(domain->_type != tegia::domain::LOCAL)
+				{
+					std::cout << _ERR_TEXT_ << _RED_TEXT_ << "send message \n" 
+								<< "      [100] remoute domain\n" 
+								<< "      actor  = '" << name << "'\n" 
+								<< "      action = '" << action << "'\n"
+								<< "      domain = '" << domain->_name << "'" << _BASE_TEXT_ << std::endl;
+					// return 100;
+					return std::make_tuple(100,nullptr);
+				}
+
+				actor_name = name.substr(0, index);
+				state = 210;
+			}
+			break;
+
+			//
+			//
+			//
+			
+			case 200:
+			{
+				if(name[index] == '/' || index == name.size())
+				{
+					actor_name = name.substr(0,index);
+					state = 210;
+					break;
+				}
+				index++;
+			}
+			break;
+
+			//
+			//
+			//
+
+			case 210:
+			{
+				// std::cout << _YELLOW_ << "actor name = '" << actor_name << "'" << _BASE_TEXT_ << std::endl;
+
+				auto pos = this->_patterns.find(actor_name);
+				
+				if(pos == this->_patterns.end())
+				{
+					// std::cout << "not found" << std::endl;
+					state = 220;
+					break;
+				}
+				else
+				{
+					is_pattern = false;
+
+					if(pos->second == nullptr)
+					{
+						state = 200;
+						action_index = index;
+						index++;
+						break;
+					}
+					
+					auto actor = pos->second->create_actor(name);
+					this->actors.insert({name,actor});
+					// auto fn = actor->get_action(action, message);
+					// return std::make_tuple(200,fn);
+					return actor->get_action(action, message);
+
+					// std::cout << _RED_TEXT_ << "END [" << name << "][" << action << "]" << _BASE_TEXT_ << std::endl; 
+
+					//
+					//
+					//
+
+					// return 200;
+				}
+			}
+			break;
+
+			//
+			//
+			//
+
+			case 220:
+			{
+				// std::cout << "[220]" << std::endl;
+
+				if(is_pattern == false)
+				{
+					// std::cout << _YELLOW_ << "actor name = '" << name.substr(0, index) << "'" << _BASE_TEXT_ << std::endl;
+					// std::cout << _YELLOW_ << "actor name = '" << name.substr(0, action_index) << "'" << _BASE_TEXT_ << std::endl;
+
+					actor_name = name.substr(0, action_index) + "/*";
+					state = 210;
+					is_pattern = true;
+				}
+				else
+				{
+					std::cout << _ERR_TEXT_ << _RED_TEXT_ << "send message \n" 
+								<< "      [404] NOT FOUND ACTOR TYPE\n" 
+								<< "      actor  = '" << name << "'\n" 
+								<< "      action = '" << action << "'\n"
+								<< "      domain = '" << domain->_name << "'" << _BASE_TEXT_ << std::endl;
+					// return 404;
+					return std::make_tuple(404,nullptr);
+				}
+			}
+			break;
+		}
+		// END switch(state)
+	}
+	// END while(true)
+
+	//
+	//
+	//
+
+	switch(state)
+	{
+		case 100:
+		{
+			std::cout << _ERR_TEXT_ << _RED_TEXT_ << "send message \n" 
+						<< "      [404] NOT FOUND ACTOR DOMAIN\n" 
+						<< "      actor  = '" << name << "'\n" 
+						<< "      action = '" << action << "'" << _BASE_TEXT_ << std::endl;
+			// return 404;
+			return std::make_tuple(404,nullptr);
+		}
+		break;
+
+		case 200:
+		{
+			std::cout << _ERR_TEXT_ << _RED_TEXT_ << "send message \n" 
+						<< "      [404] NOT FOUND ACTOR TYPE\n" 
+						<< "      actor  = '" << name << "'\n" 
+						<< "      action = '" << action << "'\n"
+						<< "      domain = '" << domain->_name << "'" << _BASE_TEXT_ << std::endl;
+			// return 404;
+			return std::make_tuple(404,nullptr);
+		}
+		break;
+
+		default:
+		{
+			std::cout << _ERR_TEXT_ << "404 | NOT FOUND STATE = '" << state << "'" << std::endl;
+			// return 404;
+			return std::make_tuple(404,nullptr);
+		}
+		break;
+	}
+
 };
+
+
+
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -555,150 +435,6 @@ std::tuple<int,std::function<void()>> map::send_message(const std::string &name,
 
 
 */
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-std::tuple<bool,tegia::actors::type_base *> map::resolve(const std::string &name)
-{
-	std::string prev_pattern = "";
-	std::string curr_pattern = "";
-	int state = 0;
-	size_t k = 0;
-
-	while(true)
-	{
-		switch(state)
-		{
-			//
-			//
-			//
-
-			case 0:
-			{
-				// std::cout << "[" << k << "] state = 0" << std::endl;
-
-				if(name[k] == '/')
-				{
-					state = 10;
-					break;
-				}
-
-				curr_pattern = curr_pattern + name[k];
-
-				if(k == name.size() - 1)
-				{
-					state = 10;	
-					break;
-				}
-
-				k++;
-			}
-			break;
-
-			//
-			//
-			//
-
-			case 1:
-			{
-				prev_pattern = prev_pattern + curr_pattern + name[k];
-				curr_pattern = "";
-				k++;
-				state = 0;
-			}
-			break;
-
-			case 2:
-			{
-				//
-				// TODO: ERROR
-				// 
-
-				// std::cout << "k < name.size() - 1" << std::endl;
-				return std::make_tuple(false,nullptr);
-			}
-			break;
-
-			//
-			//
-			//
-
-			case 10:
-			{
-				// std::cout << "[" << k << "] state = 10" << std::endl;
-
-				// std::cout << "prev_pattern = " << prev_pattern << std::endl;
-				// std::cout << "curr_pattern = " << curr_pattern << std::endl;
-
-				auto pos = this->name_patterns.find(prev_pattern + curr_pattern);
-				if(pos == this->name_patterns.end())
-				{
-					state = 20;
-					break;
-				}
-
-				if(pos->second == nullptr)
-				{
-					state = 1;
-					break;
-				}
-
-				if(k < name.size() - 1)
-				{
-					state = 2;
-					break;
-				}
-
-				return std::move(std::make_tuple(true,pos->second));				
-			}
-			break;
-
-			//
-			//
-			//
-
-			case 20:
-			{
-				// std::cout << "[" << k << "] state = 20" << std::endl;
-
-				auto pos = this->name_patterns.find(prev_pattern + "*");
-				if(pos == this->name_patterns.end())
-				{
-					// NOT FOUND
-					// std::cout << _ERR_TEXT_ << "NOT FOUND" << std::endl;
-					return std::make_tuple(false,nullptr);
-				}
-
-				if(pos->second == nullptr)
-				{
-					curr_pattern = "*";
-					state = 1;
-					break;
-				}
-
-				if(k < name.size() - 1)
-				{
-					state = 2;
-					break;
-				}
-
-				return std::move(std::make_tuple(true,pos->second));
-			}
-			break;
-		}
-		//	END switch(state)
-		
-	}
-
-
-	return std::make_tuple(false,nullptr);
-};
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-//
-//
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
