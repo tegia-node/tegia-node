@@ -2,7 +2,7 @@
 #define H_TEGIA_ACTOR_BASE
 
 #include <iostream>
-#include <tegia/namespaces.h>
+#include <tegia/core.h>
 
 
 #define RETURN_TYPE(TYPE_T,ACTOR_TYPE)                             \

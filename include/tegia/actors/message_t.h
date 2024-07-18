@@ -20,7 +20,7 @@ class callback_t
 {
 	public:
 		callback_t() = default;
-		~callback_t() = default;
+		~callback_t() = default;		
 
 		callback_t& operator= (const callback_t &callback);	
 		int add(const std::string &_actor, const std::string &_action);
@@ -65,6 +65,8 @@ class message_t
 		virtual ~message_t() = default;
 
 		void print_user();
+
+		int status = 0;
 
 	private:
 		std::string uuid;

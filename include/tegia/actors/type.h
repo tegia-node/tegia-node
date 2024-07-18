@@ -40,6 +40,7 @@ template<typename actor_type>
 class type_t
 {
 	using action_fn_ptr = int (actor_type::*)(const std::shared_ptr<message_t> &);
+	// using action_fn_ptr = std::function<int(actor_type * actor, const std::shared_ptr<message_t> &)>;
 
 	friend class actor_t<actor_type>;
 

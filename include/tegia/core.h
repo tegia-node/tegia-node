@@ -1,5 +1,5 @@
-#ifndef H_TEGIA_NAMESPASES
-#define H_TEGIA_NAMESPASES
+#ifndef H_TEGIA_CORE
+#define H_TEGIA_CORE
 
 
 #include <iostream>
@@ -36,6 +36,7 @@ const nlohmann::json * const get(const std::string &name);
 	tegia::message::*
 
 	Создание и отправка сообщений акторам
+
 */
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -44,19 +45,25 @@ class message_t;
 namespace tegia {
 struct message {
 
+
 static int send(
 	const std::string &name, 
 	const std::string &action, 
 	nlohmann::json data,
 	int priority = 0);
 
+
+static int send(
+	const std::shared_ptr<message_t> &message,
+	std::function<int(const std::shared_ptr<message_t> &)> fn,
+	int priority = 0);
+
+
 static int send(
 	const std::string &name, 
 	const std::string &action, 
 	const std::shared_ptr<message_t> &message,
 	int priority = 0);
-
-static int resolve(const std::string &name);
 
 
 static inline const std::shared_ptr<message_t> init(nlohmann::json data = nlohmann::json())
