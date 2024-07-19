@@ -57,30 +57,43 @@ sudo apt install -y libfmt-dev
 # GNU G++
 #
 
-sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-sudo apt install -y g++-11 gcc-11
-sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 60 --slave /usr/bin/g++ g++ /usr/bin/g++-11
-
+# sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+# sudo apt install -y g++-11 gcc-11
+# sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 60 --slave /usr/bin/g++ g++ /usr/bin/g++-11
 
 #
 # MySQL
 #
 
-ismysql80="$(dpkg --get-selections | grep mysql-server-8.0)"
-if [[ "${#ismysql80}" == 0 ]]; then
+version=$(lsb_release -r | awk '{print $2}')
 
-	mkdir -p $tegia_folder/vendors/mysql
-	cd $tegia_folder/vendors/mysql
-	wget -N https://dev.mysql.com/get/mysql-apt-config_0.8.15-1_all.deb
-	sudo DEBIAN_FRONTEND=noninteractive dpkg -i mysql-apt-config_0.8.15-1_all.deb    
+# Проверяем версию ОС и выполняем соответствующие действия
+if [[ "$version" == "20.04" ]]
+then
+    echo "Версия ОС: Ubuntu 20.04"
+	ismysql80="$(dpkg --get-selections | grep mysql-server-8.0)"
+	if [[ "${#ismysql80}" == 0 ]]; then
 
-	sudo apt-get update -y
-	sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server
-	sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-client
+		mkdir -p $tegia_folder/vendors/mysql
+		cd $tegia_folder/vendors/mysql
+		wget -N https://dev.mysql.com/get/mysql-apt-config_0.8.15-1_all.deb
+		sudo DEBIAN_FRONTEND=noninteractive dpkg -i mysql-apt-config_0.8.15-1_all.deb    
 
-	echo -e "${_OK_}MySQL success installed"
+		sudo apt-get update -y
+		sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server
+		sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-client
+
+		echo -e "${_OK_}MySQL success installed"
+	else
+		echo -e "${_OK_}MySQL is already installed"
+	fi
+elif [[ "$version" == "24.04" ]]
+then
+    echo "Версия ОС: Ubuntu 24.04"
+    sudo apt install -y mysql-server
 else
-	echo -e "${_OK_}MySQL is already installed"
+    echo "Версия ОС: другая версия (или неизвестная)"
+    # Ваши действия для других версий
 fi
 
 #

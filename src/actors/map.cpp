@@ -136,7 +136,7 @@ void map_t::add_type(
 				// TODO: проверять дубликаты
 				//
 
-				std::cout << "tmp = " << tmp << std::endl;
+				// std::cout << "tmp = " << tmp << std::endl;
 
 				this->_patterns.insert({tmp,nullptr});
 				tmp = tmp + pattern[k];
@@ -154,6 +154,8 @@ void map_t::add_type(
 		this->_patterns.insert(std::make_pair(tmp,_fn()));
 	}
 	// END for()
+
+	std::cout << _OK_TEXT_ << "ADD TYPE [ " << type_name << " ]" << std::endl;
 };
 
 
