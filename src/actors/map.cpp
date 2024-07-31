@@ -179,6 +179,8 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 {
 	// auto start_sendmessage_time = std::chrono::high_resolution_clock::now();
 
+	std::cout << _YELLOW_ << "send message " << name << " " << action << _BASE_TEXT_<< std::endl;
+
 	///////////////////////////////////////////////////////////////////////////////////////
 	//
 	// FIND ACTOR
@@ -284,7 +286,6 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 								<< "      actor  = '" << name << "'\n" 
 								<< "      action = '" << action << "'\n"
 								<< "      domain = '" << domain->_name << "'" << _BASE_TEXT_ << std::endl;
-					// return 100;
 					return std::make_tuple(100,nullptr);
 				}
 
@@ -315,13 +316,21 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 
 			case 210:
 			{
-				// std::cout << _YELLOW_ << "actor name = '" << actor_name << "'" << _BASE_TEXT_ << std::endl;
-
 				auto pos = this->_patterns.find(actor_name);
 				
 				if(pos == this->_patterns.end())
 				{
-					// std::cout << "not found" << std::endl;
+					/*
+					std::cout << _ERR_TEXT_ << _RED_TEXT_ << "send message \n" 
+								<< "      [404] NOT FOUND\n"
+								<< "      code   = 220" << "'\n" 
+								<< "      actor  = '" << name << "'\n" 
+								<< "      action = '" << action << "'\n"
+								<< "      domain = '" << domain->_name << "'" << _BASE_TEXT_ << std::endl;
+					// return 404;
+					return std::make_tuple(404,nullptr);
+					*/
+
 					state = 220;
 					break;
 				}
@@ -342,6 +351,7 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 					// auto fn = actor->get_action(action, message);
 					// return std::make_tuple(200,fn);
 					return actor->get_action(action, message);
+
 
 					// std::cout << _RED_TEXT_ << "END [" << name << "][" << action << "]" << _BASE_TEXT_ << std::endl; 
 
@@ -378,7 +388,6 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 								<< "      actor  = '" << name << "'\n" 
 								<< "      action = '" << action << "'\n"
 								<< "      domain = '" << domain->_name << "'" << _BASE_TEXT_ << std::endl;
-					// return 404;
 					return std::make_tuple(404,nullptr);
 				}
 			}
@@ -400,7 +409,6 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 						<< "      [404] NOT FOUND ACTOR DOMAIN\n" 
 						<< "      actor  = '" << name << "'\n" 
 						<< "      action = '" << action << "'" << _BASE_TEXT_ << std::endl;
-			// return 404;
 			return std::make_tuple(404,nullptr);
 		}
 		break;
@@ -412,7 +420,6 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 						<< "      actor  = '" << name << "'\n" 
 						<< "      action = '" << action << "'\n"
 						<< "      domain = '" << domain->_name << "'" << _BASE_TEXT_ << std::endl;
-			// return 404;
 			return std::make_tuple(404,nullptr);
 		}
 		break;
@@ -420,7 +427,6 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 		default:
 		{
 			std::cout << _ERR_TEXT_ << "404 | NOT FOUND STATE = '" << state << "'" << std::endl;
-			// return 404;
 			return std::make_tuple(404,nullptr);
 		}
 		break;

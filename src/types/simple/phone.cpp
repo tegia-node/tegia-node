@@ -93,6 +93,34 @@ int phone_t::parse(const std::string &value, const nlohmann::json &validate)
 	// CHECK PHONE
 	//
 
+	auto index = tegia::dicts::catalog_t::index("ITU-T E.164","prefix");
+	if(index == nullptr)
+	{
+		std::cout << _ERR_TEXT_ << "NOT LOAD INDEX 'ITU-T E.164/prefix'" << std::endl;
+		exit(0);
+	}
+
+	for(size_t i = 1; i < _phone.size(); ++i)
+	{
+		auto [res,data] = index->find("+" + _phone.substr(0,i));
+
+		if(res == true)
+		{
+			// std::cout << data << std::endl;
+
+			this->_value = _phone;
+			this->_is_valid = true;
+			this->_code = 4000001 + core::cast<int>(data["country"]["number"].get<std::string>()) * 1000;
+			return 1;
+		}
+	}
+
+
+	//
+	// OLD SEARCH
+	//
+
+	/*
 	auto dict = tegia::dict_t::instance();
 	auto info = dict->find(_phone);
 
@@ -110,6 +138,7 @@ int phone_t::parse(const std::string &value, const nlohmann::json &validate)
 			}
 		}
 	}
+	*/
 
 	//
 	// Особый случай для России [1] 8 XXX XXX XXXX

@@ -70,11 +70,17 @@ class actor_t: public actor_base_t
 			return this->_name;
 		};
 
+
 		std::tuple<int,std::function<void()>> get_action(const std::string &action, const std::shared_ptr<message_t> &message) override
 		{
 			auto pos = this->_type->action_map.find(action);
 			if(pos == this->_type->action_map.end())
 			{
+				std::cout   << _ERR_TEXT_ << _RED_TEXT_ << "get action \n" 
+							<< "      [404] NOT FOUND ACTION\n"
+							<< "      actor  = '" << this->_name << "'\n" 
+							<< "      action = '" << action << "'" << _BASE_TEXT_ << std::endl;	
+
 				return std::move(std::make_tuple(404,nullptr));
 			}
 

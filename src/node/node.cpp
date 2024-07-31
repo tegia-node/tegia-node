@@ -56,7 +56,7 @@ void node::init_thread(const nlohmann::json &config)
 
 int node::send_message(const std::string &actor, const std::string &action, const std::shared_ptr<message_t> &message, int priority)
 {
-	// auto start_time = std::chrono::high_resolution_clock::now();
+	auto start_time = std::chrono::high_resolution_clock::now();
 
 	auto [result,_fn] = this->actor_map.send_message(
 		actor,
@@ -64,9 +64,9 @@ int node::send_message(const std::string &actor, const std::string &action, cons
 		message
 	);
 
-	// auto end_time = std::chrono::high_resolution_clock::now();
-	// auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
-	// std::cout << "[CORE] Время упаковки: " << duration.count() << " наносекунд" << std::endl;
+	auto end_time = std::chrono::high_resolution_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
+	std::cout << "[CORE] Время упаковки: " << duration.count() << " наносекунд" << std::endl;
 
 	if(result == 200)
 	{
@@ -154,14 +154,24 @@ bool node::action()
 
 	for(auto conf = this->_config->_map.begin(); conf != this->_config->_map.end(); ++conf)
 	{
+		std::cout << conf->second->data << std::endl;
+		
 		if(conf->first == "_db") continue;
+
 		if(conf->first == "node")
 		{
-			// std::cout << "LOAD " << conf->first << std::endl; 
-			// std::cout << conf->second->data << std::endl; 
+			//
+			// INIT
+			//
 
+			if(conf->second->data.contains("init") == false) continue;
+			for(auto message = conf->second->data["init"].begin(); message != conf->second->data["init"].end(); ++message)
+			{
+				messages.push_back( (*message) );
+			}
+			
 			continue;
-		} 
+		}
 
 		//
 		//
@@ -187,6 +197,7 @@ bool node::action()
 		// INIT
 		//
 
+		if(conf->second->data.contains("init") == false) continue;
 		for(auto message = conf->second->data["init"].begin(); message != conf->second->data["init"].end(); ++message)
 		{
 			messages.push_back( (*message) );
@@ -246,27 +257,27 @@ bool node::run()
 	tegia::logger::instance();
 
 	//
-	//
-	//
-	
-	tegia::dict_t::instance();
-
-
-	/*
-	tegia::user * _user = new tegia::user();
-	_user->print();
-
-	exit(0);
-	*/
-
-
-	//
 	// Читаем конфигурацию
 	//
 
 	this->_config = new tegia::node::config();
 	this->_config->load();
 
+	//
+	// Справочники
+	//
+	
+	auto node_conf = this->_config->get("node");
+	tegia::dicts::catalog_t::instance( (*node_conf)["dictionaries"] );
+
+
+	tegia::dict_t::instance();
+
+
+	//
+	//
+	//	
+	
 	auto _conf_db = this->_config->get("_db");
 	if(_conf_db == nullptr)
 	{

@@ -29,19 +29,17 @@ class actor_base_t;
 
 struct type_base_t
 {
-	std::function<tegia::actors::actor_base_t * (const std::string &)> create_actor = nullptr;
+	virtual tegia::actors::actor_base_t * create_actor(const std::string &name) = 0;
 };
 
 //
 //
 //
 
-template<typename actor_type>
-class type_t
+template<typename actor_type, typename Enable = void>
+class type_t: public type_base_t
 {
 	using action_fn_ptr = int (actor_type::*)(const std::shared_ptr<message_t> &);
-	// using action_fn_ptr = std::function<int(actor_type * actor, const std::shared_ptr<message_t> &)>;
-
 	friend class actor_t<actor_type>;
 
 	private:
@@ -49,8 +47,17 @@ class type_t
 		std::map<std::string, action_fn_ptr> action_map;
 
 	public:
-		type_t(const std::string &name):_name(name){};
+		type_t(const std::string &name):_name(name)
+		{
+			std::cout << "Common constructor" << std::endl;
+		};
 		
+		tegia::actors::actor_base_t * create_actor(const std::string &name) override
+		{
+			
+			return new actor_type(name,this);
+		};
+
 		inline std::string name()
 		{
 			return this->_name;

@@ -270,20 +270,6 @@ bool config::load()
 		this->_map.insert({conf->name,conf});
 	}
 
-	//
-	// TEST
-	//
-
-	/*
-	for(auto it = this->_map.begin(); it != this->_map.end(); ++it)
-	{
-		std::cout << it->first << std::endl;
-	}
-
-	exit(0);
-	*/
-
-
 	return true;
 };
 
