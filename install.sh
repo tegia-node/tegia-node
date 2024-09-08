@@ -10,7 +10,7 @@ RESET=`tput sgr0`
 _OK_="${GREEN}[OK]  ${RESET}"
 _ERR_="${RED}[ERR] ${RESET}"
 
-
+node_folder=$(realpath)
 root_folder=$(realpath ../)
 
 
@@ -20,11 +20,10 @@ echo "TEGIA NODE: ${GREEN} DEPENDENCES ${RESET}"
 echo "------------------------------------------------------------"
 echo " "
 
-mkdir -p ${root_folder}/tegia-node/build
+mkdir -p ${node_folder}/build
 mkdir -p ${root_folder}/vendors
 mkdir -p ${root_folder}/configurations
 mkdir -p ${root_folder}/ui
-
 
 #
 # ENV
@@ -187,7 +186,7 @@ fi
 # CONFIGURE
 #
 
-cd ${root_folder}/tegia-node
+cd ${node_folder}
 # cmake -B build/ -S . -DCMAKE_TOOLCHAIN_FILE=${root_folder}/vcpkg/scripts/buildsystems/vcpkg.cmake
 cmake -B build/ -S .
 
@@ -202,7 +201,7 @@ echo " "
 #
 
 tee ${root_folder}/Makefile.variable << EOF > /dev/null
-iNODE				= ${root_folder}/tegia-node/include
+iNODE				= ${node_folder}/include
 iVENDORS			= ${root_folder}/vendors
 C++VER				= -std=c++2a
 
@@ -212,7 +211,7 @@ Flag = \$(DevFlag)
 EOF
 
 
-cd ${root_folder}/tegia-node/build
+cd ${node_folder}/build
 cmake --build .
 
 
