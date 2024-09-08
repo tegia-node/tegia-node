@@ -51,7 +51,7 @@ int pool::init(int threads_count, std::function<void(void)> _thread_init, std::f
 			std::bind(&pool::thread_init,this, std::placeholders::_1, _thread_init)
 		);
 
-		std::cout << _RED_TEXT_ << "tid = " << pWorker->tid << _BASE_TEXT_ << std::endl;
+		// std::cout << _RED_TEXT_ << "tid = " << pWorker->tid << _BASE_TEXT_ << std::endl;
 
 		this->_workers.emplace(pWorker->tid, pWorker);
 	}

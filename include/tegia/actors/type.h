@@ -75,7 +75,7 @@ class type_t: public type_base_t
 
 		actor_t * create_actor(const std::string &name) override
 		{
-			std::cout << _YELLOW_ << "create actor " << this->type << " " << name << _BASE_TEXT_<< std::endl;
+			// std::cout << _YELLOW_ << "create actor " << this->type << " " << name << _BASE_TEXT_<< std::endl;
 			return new actor_type(name);
 		};
 };

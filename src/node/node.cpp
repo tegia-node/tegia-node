@@ -56,7 +56,7 @@ void node::init_thread(const nlohmann::json &config)
 
 int node::send_message(const std::string &actor, const std::string &action, const std::shared_ptr<message_t> &message, int priority)
 {
-	auto start_time = std::chrono::high_resolution_clock::now();
+	// auto start_time = std::chrono::high_resolution_clock::now();
 
 	auto [result,_fn] = this->actor_map.send_message(
 		actor,
@@ -64,9 +64,9 @@ int node::send_message(const std::string &actor, const std::string &action, cons
 		message
 	);
 
-	auto end_time = std::chrono::high_resolution_clock::now();
-	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
-	std::cout << "[CORE] Время упаковки: " << duration.count() << " наносекунд" << std::endl;
+	// auto end_time = std::chrono::high_resolution_clock::now();
+	// auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
+	// std::cout << "[CORE] Время упаковки: " << duration.count() << " наносекунд" << std::endl;
 
 	if(result == 200)
 	{
@@ -157,7 +157,7 @@ bool node::action()
 
 	for(auto conf = this->_config->_map.begin(); conf != this->_config->_map.end(); ++conf)
 	{
-		std::cout << conf->second->data << std::endl;
+		// std::cout << conf->second->data << std::endl;
 		
 		if(conf->first == "_db") continue;
 

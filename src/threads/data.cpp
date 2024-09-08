@@ -15,7 +15,7 @@ _data::_data(): mysql_provider(new ::tegia::mysql::provider())
 {
 	this->user = std::make_shared<::tegia::user>();
 	
-	std::cout << "create thread data" << std::endl;
+	// std::cout << "create thread data" << std::endl;
 };
 
 
@@ -24,12 +24,12 @@ _data::~_data()
 	// this->user;
 	delete this->mysql_provider;
 
-	std::cout << "delete thread data" << std::endl;
+	// std::cout << "delete thread data" << std::endl;
 };
 
 void _data::init(const nlohmann::json &config)
 {
-	std::cout << "init context" << std::endl;
+	// std::cout << "init context" << std::endl;
 	this->tid = core::cast<std::string>(std::this_thread::get_id());
 
 	//
@@ -48,13 +48,13 @@ void _data::init(const nlohmann::json &config)
 	{
 		for (auto it = config["databases"].begin(); it != config["databases"].end(); ++it)
 		{
-			std::cout << "db_name = " << it.key() << std::endl;
+			// std::cout << "db_name = " << it.key() << std::endl;
 			
 			this->mysql_provider->add_database(it.key(),it.value());
 		}
 	}
 
-	std::cout << "[init] tid = " << this->tid << std::endl;
+	std::cout << _OK_TEXT_ << "INT THREAD " << this->tid << std::endl;
 };
 
 

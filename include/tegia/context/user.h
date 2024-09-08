@@ -110,7 +110,7 @@ class user
 
 			// Lambda to set bits and print values
 			auto set_bit = [&](int bit) {
-				std::cout << "[" << _roles.count() << "] [" << bit << "]" << std::endl;
+				// std::cout << "[" << _roles.count() << "] [" << bit << "]" << std::endl;
 				_roles.set(bit);
 			};
 

@@ -258,7 +258,7 @@ bool config::load()
 		std::cout << "      name = " << conf->name << std::endl;
 		std::cout << "      file = " << conf->file << std::endl;
 		std::cout << "      path = " << conf->path << std::endl;
-		std::cout << " " << std::endl;
+		// std::cout << " " << std::endl;
 	}
 
 	{

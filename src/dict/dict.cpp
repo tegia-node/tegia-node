@@ -257,14 +257,20 @@ dict_t * dict_t::instance()
 
 void dict_t::init()
 {
-	std::cout << "INIT DICT" << std::endl;
-
 	auto [code,info,data] = tegia::json::_file(this->folder + "/countries.json");
 
-	std::cout << "code = " << code << std::endl;
-	std::cout << "info = " << info << std::endl;
+	if(code != 0)
+	{
+		std::cout << _ERR_TEXT_ << "INIT DICT" << std::endl;
+		std::cout << "      code = " << code << std::endl;
+		std::cout << "      info = " << info << std::endl;
+	}
 
-	std::cout << data["info"] << std::endl;
+	std::cout << _OK_TEXT_ << "INIT DICT" << std::endl;
+	std::cout << "      ISO  = " << data["info"]["iso"].get<std::string>() << std::endl;
+	std::cout << "      code = " << code << std::endl;
+	std::cout << "      info = " << info << std::endl;
+
 
 	for(auto it = data["data"].begin(); it != data["data"].end(); ++it)
 	{
@@ -279,10 +285,12 @@ void dict_t::init()
 			this->_map.insert({code.substr(1),tmp});
 		}
 
+		/*
 		std::cout << (*it)["code"]["alpha-3"].get<std::string>() 
 				<< " :: " << (*it)["code"]["number"].get<std::string>() 
 				<< " :: " << code.substr(1)
 				<< std::endl;
+		*/
 	}
 
 	// exit(0); 
