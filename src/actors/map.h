@@ -24,6 +24,7 @@ namespace domain {
 } // END namespace domain
 } // END namespace tegia
 
+
 //
 //
 //
@@ -41,32 +42,36 @@ class domain_t
 		~domain_t() = default;
 };
 
-
-//using actor_factory_fn = std::function<tegia::actors::actor_base_t * (const std::string &)>;
-
+//
+//
+//
 
 class map_t
 {
+	protected:
+		// std::unordered_map<std::string, action_fn_ptr >                  _actions;
+		std::unordered_map<std::string, tegia::actors::action_t     * >  _actions;
+		std::unordered_map<std::string, tegia::actors::actor_t      * >  _actors;
+		std::unordered_map<std::string, tegia::actors::type_base_t  * >  _types;
+		std::unordered_map<std::string, tegia::actors::type_base_t  * >  _patterns;
+		std::unordered_map<std::string, tegia::actors::domain_t     * >  _domains;
+
 	public:
-		map_t();
-		~map_t();
 
-		std::unordered_map <std::string, tegia::actors::domain_t *> _domains;
-		std::unordered_map <std::string, nlohmann::json> _types;
-		std::unordered_map <std::string, tegia::actors::type_base_t *> _patterns;
-		std::unordered_map<std::string, tegia::actors::actor_base_t * > actors;
+		map_t() = default;
+		~map_t() = default;
 
 		//
-		// domain
+		// domains
 		//
 
-		void add_domain(const std::string &name, int type);
+		int add_domain(const std::string &name, int type);
 
 		//
 		// types
 		//
 
-		void add_type(
+		int add_type(
 			const std::string &type_name, 
 			const std::string &base_path, 
 			nlohmann::json * data
@@ -75,17 +80,14 @@ class map_t
 		//
 		//
 		//
-		
+
 		std::tuple<int,std::function<void()>> send_message(
 			const std::string &name, 
 			const std::string &action, 
 			const std::shared_ptr<message_t> &message);
+
 };
 
-
-//
-//
-//
 
 
 } // namespace actors

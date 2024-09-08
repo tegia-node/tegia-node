@@ -43,12 +43,25 @@ class callback_t
 };
 
 
+/*
 namespace tegia {
 	struct message;
 }
+*/
+
+
+namespace tegia{
+namespace actors {
+	class map_t;
+}
+}
+
 
 class message_t
 {
+	friend class tegia::actors::map_t;
+	// friend class tegia::context;
+
 	public:
 		nlohmann::json data;
 		nlohmann::json http;
@@ -65,11 +78,13 @@ class message_t
 		virtual ~message_t() = default;
 
 		void print_user();
+		std::string user_id();
 
 		int status = 0;
 
 	private:
 		std::string uuid;
+		// std::string ws;
 		std::shared_ptr<::tegia::user> user;
 };
 

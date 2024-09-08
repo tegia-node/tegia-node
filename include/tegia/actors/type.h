@@ -4,6 +4,7 @@
 #include <iostream>
 #include <tegia/core/json.h>
 #include <tegia/core/const.h>
+#include <tegia/actors/actor.h>
 #include <tegia/actors/message_t.h>
 
 
@@ -17,64 +18,72 @@
 namespace tegia {
 namespace actors {
 
-
-template<typename actor_type>
-class actor_t;
-
-class actor_base_t;
-
-//
-//
-//
-
-struct type_base_t
+struct action_t
 {
-	virtual tegia::actors::actor_base_t * create_actor(const std::string &name) = 0;
+	std::string type;
+	std::string action;
+	action_fn_ptr fn;
+	unsigned long long int roles = 0;
 };
 
+
 //
 //
 //
 
-template<typename actor_type, typename Enable = void>
-class type_t: public type_base_t
+
+class type_base_t
 {
-	using action_fn_ptr = int (actor_type::*)(const std::shared_ptr<message_t> &);
-	friend class actor_t<actor_type>;
-
-	private:
-		std::string _name;
-		std::map<std::string, action_fn_ptr> action_map;
+	protected:
 
 	public:
-		type_t(const std::string &name):_name(name)
-		{
-			std::cout << "Common constructor" << std::endl;
-		};
-		
-		tegia::actors::actor_base_t * create_actor(const std::string &name) override
-		{
-			
-			return new actor_type(name,this);
-		};
+		virtual actor_t * create_actor(const std::string &name) = 0;
 
-		inline std::string name()
-		{
-			return this->_name;
-		};
+		std::string type;
+		std::unordered_map<std::string,action_t *> fmap;
 
-		void add_action(const std::string& name, action_fn_ptr _action_fn)
+		type_base_t(const std::string &type): type(type){};
+
+		int add_action(const std::string &action, action_fn_ptr fn, unsigned long long int roles)
 		{
-			this->action_map.insert({name, _action_fn});
+			action_t * _action = new action_t{this->type,action,fn,roles};
+			this->fmap.insert({this->type + action,_action});
+			return 0;			
 		};
 };
 
+
 //
 //
 //
+
+
+#define ADD_ACTION(path, func, ...) \
+    type->add_action(path, static_cast<tegia::actors::action_fn_ptr>(func), tegia::user::roles(__VA_ARGS__))
+
+
+//
+//
+//
+
+
+template <typename actor_type, typename Enable = void>
+class type_t: public type_base_t
+{
+	public:
+		type_t(const std::string &type): type_base_t(type){};
+
+		actor_t * create_actor(const std::string &name) override
+		{
+			std::cout << _YELLOW_ << "create actor " << this->type << " " << name << _BASE_TEXT_<< std::endl;
+			return new actor_type(name);
+		};
+};
+
 
 } // namespace actors
 } // namespace tegia
+
 
 
 #endif

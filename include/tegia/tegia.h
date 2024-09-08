@@ -14,4 +14,6 @@
 #include <tegia/context/context.h>
 
 
+#include <tegia/core/error.h>
+
 #endif

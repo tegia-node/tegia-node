@@ -14,19 +14,25 @@
 
 class message_t;
 
-namespace tegia {
-namespace node {
-
-class node;
-
-}
-}
-
 namespace tegia 
 {
 	class auth;
 	class context;
 }
+
+namespace tegia::node 
+{
+	class node;
+}
+
+namespace tegia::actors 
+{
+	class map_t;
+}
+
+//
+//
+//
 
 namespace tegia {
 namespace threads {
@@ -45,6 +51,7 @@ class _data
 	friend class ::message_t;
 	friend class ::tegia::context;
 	friend class ::tegia::node::node;
+	friend class ::tegia::actors::map_t;
 
 	public:
 		_data();

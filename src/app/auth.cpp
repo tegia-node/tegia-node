@@ -116,7 +116,16 @@ std::string auth::key(const std::string &filename)
 	using namespace ::jwt::params;
 
 	auto _user = std::make_shared<::tegia::user>();
+	_user->_roles.reset(ROLES::SESSION::SYSTEM);
 	::tegia::jwt  * _jwt  = new ::tegia::jwt();
+
+	if(token == "")
+	{
+		_user->_roles.set(ROLES::SESSION::PUBLIC);
+		_jwt->_status = 6;
+		tegia::threads::data->user = _user;
+		return _jwt;		
+	}
 
 	try 
 	{
@@ -132,7 +141,12 @@ std::string auth::key(const std::string &filename)
 		_user->_name = payload.get_claim_value<std::string>("name");
 		_user->_patronymic = payload.get_claim_value<std::string>("patronymic");
 		_user->_gender = payload.get_claim_value<int>("gender");
+
+		//
 		_user->_roles = std::bitset<64>(payload.get_claim_value<unsigned long long int>("roles"));
+		_user->_roles.set(ROLES::SESSION::USER);
+		//
+		
 		_user->_status = 200;
 
 		//
@@ -148,12 +162,16 @@ std::string auth::key(const std::string &filename)
 
 		//
 
+		std::cout << _YELLOW_ << "AUTH" << _BASE_TEXT_ << std::endl;
+		_user->print();
+		 
 		tegia::threads::data->user = _user;
 		return _jwt;
 	}
 
 	catch (const ::jwt::TokenExpiredError& e) 
 	{
+		_user->_roles.set(ROLES::SESSION::PUBLIC);
 		//Handle Token expired exception here
 		_jwt->_status = 1;
 		tegia::threads::data->user = _user;
@@ -162,6 +180,7 @@ std::string auth::key(const std::string &filename)
 
 	catch (const ::jwt::SignatureFormatError& e) 
 	{
+		_user->_roles.set(ROLES::SESSION::PUBLIC);
 		//Handle invalid signature format error
 		_jwt->_status = 2;
 		tegia::threads::data->user = _user;
@@ -170,6 +189,7 @@ std::string auth::key(const std::string &filename)
 
 	catch (const ::jwt::DecodeError& e) 
 	{
+		_user->_roles.set(ROLES::SESSION::PUBLIC);
 		//Handle all kinds of other decode errors
 		_jwt->_status = 3;
 		tegia::threads::data->user = _user;
@@ -178,6 +198,7 @@ std::string auth::key(const std::string &filename)
 
 	catch (const ::jwt::VerificationError& e) 
 	{
+		_user->_roles.set(ROLES::SESSION::PUBLIC);
 		// Handle the base verification error.
 		//NOTE: There are other derived types of verification errors
 		// which will be discussed in next topic.
@@ -188,6 +209,7 @@ std::string auth::key(const std::string &filename)
 
 	catch (...) 
 	{
+		_user->_roles.set(ROLES::SESSION::PUBLIC);
 		_jwt->_status = 5;
 		tegia::threads::data->user = _user;
 		return _jwt;

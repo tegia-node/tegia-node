@@ -149,6 +149,9 @@ bool node::action()
 	this->actor_map.add_domain("leaks",tegia::domain::LOCAL);
 	this->actor_map.add_domain("example",tegia::domain::LOCAL);
 
+	this->actor_map.add_domain("auth",tegia::domain::LOCAL);
+	this->actor_map.add_domain("user",tegia::domain::LOCAL);
+
 
 	std::vector<nlohmann::json> messages;
 

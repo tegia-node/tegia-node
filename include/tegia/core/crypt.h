@@ -118,6 +118,9 @@ unsigned long int crc32(const std::string &data);
 namespace tegia {
 namespace crypt {
 
+std::string base64_encode(const unsigned char* buffer, size_t length);
+std::string base64_decode(const std::string& encoded_data);
+
 const int PUBLICKEY = 1;
 const int PRIVATEKEY = 0;
 const int PADDING = RSA_PKCS1_PADDING;
@@ -146,49 +149,34 @@ class rsa
 
 	public:
 
-		rsa()
-		{
-			this->encrypted = new unsigned char[40960];
-			this->decrypted = new unsigned char[40960];
-		};
+		rsa();
+		~rsa();
+		RSA * createRSA(unsigned char * key,int _public);
+		std::string unpack_key(const std::string& base64Key, int keyType);
 
-		~rsa()
-		{
-			delete[] this->encrypted;
-			delete[] this->decrypted;
-			// RSA_free(this->pRSA);
-		};
+		//
+		//
+		//
 
-		RSA * createRSA(unsigned char * key,int _public)
-		{
-			RSA *rsa = nullptr;
-			BIO *keybio = nullptr;
-			keybio = BIO_new_mem_buf(key, -1);
-			if (keybio == nullptr)
-			{
-				printf( "Failed to create key BIO");
-				return 0;
-			}
+		bool generate_key_pair(int key_size);
+		std::string get_public_key();
+		std::string get_private_key();
 
-			if(_public == PUBLICKEY)
-			{
-				rsa = PEM_read_bio_RSA_PUBKEY(keybio, &rsa,NULL, NULL);				
-			}
-			else
-			{
-				rsa = PEM_read_bio_RSAPrivateKey(keybio, &rsa,NULL, NULL);
-			}
+		// Шифрование публичным ключом
+		int public_encrypt(const std::string &data);
+		int private_decrypt(const std::string &encrypted_data);
+		int private_encrypt(const std::string &data);
+		int public_decrypt(const std::string &encrypted_data);
 
-			if(rsa == nullptr)
-			{
-				printf( "Failed to create RSA");
-			}
+		bool initialize_with_key(const std::string &key, int keyType);
 
-			//BIO_set_close(keybio, BIO_NOCLOSE); /* So BIO_free() leaves BUF_MEM alone */
-			//BIO_free(keybio);
-		
-			return rsa;
-		}
+		std::string base64_encode(const unsigned char* buffer, size_t length);
+		std::string base64_decode(const std::string& encoded_data);
+
+		//
+		//
+		//
+
 
 		int public_encrypt2(const std::string &data, const std::string &key)
 		{
@@ -228,6 +216,7 @@ class rsa
 		std::string get_encrypt()
 		{
 			return std::string( (char*)this->encrypted,this->encrypted_len);
+			// return this->base64_encode(this->encrypted, this->encrypted_len);
 		};
 
 		std::string get_decrypt()
@@ -235,7 +224,12 @@ class rsa
 			return std::string( (char*)this->decrypted,this->decrypted_len);
 		};
 
-};	// END class rsa
+		std::string get_encrypted_base64() 
+		{
+			return base64_encode(this->encrypted, this->encrypted_len);
+		};
+
+};	// END class 
 
 }	// END namespace crypt
 }	// END namespace tegia

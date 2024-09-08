@@ -92,3 +92,9 @@ void message_t::print_user()
 {
 	this->user->print();
 };
+
+
+std::string message_t::user_id()
+{
+	return this->user->uuid();
+};
