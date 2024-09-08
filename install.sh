@@ -13,11 +13,6 @@ _ERR_="${RED}[ERR] ${RESET}"
 node_folder=$(realpath .)
 root_folder=$(realpath ../)
 
-echo $node_folder
-mkdir -p ${node_folder}/build
-
-exit 0;
-
 echo " "
 echo "------------------------------------------------------------"
 echo "TEGIA NODE: ${GREEN} DEPENDENCES ${RESET}"
