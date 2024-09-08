@@ -10,9 +10,13 @@ RESET=`tput sgr0`
 _OK_="${GREEN}[OK]  ${RESET}"
 _ERR_="${RED}[ERR] ${RESET}"
 
-node_folder=$(realpath)
+node_folder=$(realpath .)
 root_folder=$(realpath ../)
 
+echo $node_folder
+mkdir -p ${node_folder}/build
+
+exit 0;
 
 echo " "
 echo "------------------------------------------------------------"
