@@ -258,7 +258,7 @@ bool config::load()
 		std::cout << "      name = " << conf->name << std::endl;
 		std::cout << "      file = " << conf->file << std::endl;
 		std::cout << "      path = " << conf->path << std::endl;
-		std::cout << " " << std::endl;
+		// std::cout << " " << std::endl;
 	}
 
 	{
@@ -269,20 +269,6 @@ bool config::load()
 		conf->data = dbs;
 		this->_map.insert({conf->name,conf});
 	}
-
-	//
-	// TEST
-	//
-
-	/*
-	for(auto it = this->_map.begin(); it != this->_map.end(); ++it)
-	{
-		std::cout << it->first << std::endl;
-	}
-
-	exit(0);
-	*/
-
 
 	return true;
 };

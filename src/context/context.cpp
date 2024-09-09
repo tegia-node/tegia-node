@@ -22,10 +22,25 @@ std::string context::tid()
 	return tegia::threads::data->tid;
 };
 
+/*
 ::tegia::user * const context::user()
 {
 	return const_cast<::tegia::user * const>(tegia::threads::data->user.get());
 };
+*/
+
+const std::shared_ptr<tegia::user> context::user()
+{
+    return tegia::threads::data->user;
+};
+
+
+/*
+void context::user(const std::shared_ptr<message_t> &message)
+{
+	tegia::threads::data->user = message->user;	
+};
+*/
 
 void context::log(
 	const int level,

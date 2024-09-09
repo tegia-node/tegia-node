@@ -1,15 +1,42 @@
 #include <string>
 
-#include <tegia/app/router.h>
+#include <tegia/ws/router.h>
 #include <tegia/context/context.h>
 
 
+namespace tegia {
+namespace app {
 
-void actor_name(nlohmann::json * _params)
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+
+*/
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+router_t::router_t(const std::string &ws_name):ws_name(ws_name){};
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+
+*/
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+void router_t::actor_name(nlohmann::json * _params)
 {
 	std::string _actor_name_old = (*_params)["actor"].get<std::string>();
 	std::string _actor_name_new;
 	_actor_name_new.reserve(_actor_name_old.size() * 2);
+
+	// std::cout << _params->dump() << std::endl;
+
+	if(_actor_name_old == "{/this}")
+	{
+		(*_params)["actor"] = this->ws_name;
+		return;
+	}
 
 	int state = 0;
 	size_t start = 0;
@@ -37,7 +64,7 @@ void actor_name(nlohmann::json * _params)
 				if(_actor_name_old[i] == '}')
 				{
 					std::string path = "/params" + _actor_name_old.substr(start,i-start);
-					// std::cout << "path = '" << path << "'" << std::endl;
+					std::cout << "path = '" << path << "'" << std::endl;
 
 					nlohmann::json::json_pointer ptr(path);
 					// std::cout << (*_params)[ptr].get<std::string>() << std::endl;
@@ -56,9 +83,6 @@ void actor_name(nlohmann::json * _params)
 
 	(*_params)["actor"] = _actor_name_new;
 };
-
-namespace tegia {
-namespace app {
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -147,7 +171,11 @@ void router_t::print()
 */
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-std::tuple<int, nlohmann::json> router_t::match(const std::string &method, const std::string &path, nlohmann::json * post)
+std::tuple<int, nlohmann::json> router_t::match(
+	int role,
+	const std::string &method, 
+	const std::string &path, 
+	nlohmann::json * post)
 {
 	//
 	//
@@ -290,13 +318,13 @@ std::tuple<int, nlohmann::json> router_t::match(const std::string &method, const
 				// CHECK SECURITY
 				//
 
-				if(_params["security"].get<bool>() == true)
+
+				/*
+				if(_params["role"].get<int>() > role)
 				{
-					if(tegia::context::user()->status() != 200)
-					{
-						return std::move(std::make_tuple(403,_params));
-					}
+					return std::move(std::make_tuple(403,_params));
 				}
+				*/
 
 				//
 				// CHECK ACTOR NAME

@@ -17,9 +17,12 @@ class context
 {
 	public:
 		static std::string tid();
-		static ::tegia::user * const user();
+		// static ::tegia::user * const user();
+		static const std::shared_ptr<tegia::user> user();
 
 		// static const nlohmann::json * const config(const std::string &name);
+
+		// static void user(const std::shared_ptr<message_t> &message);
 
 		static void log(
 			const int level,
@@ -27,7 +30,7 @@ class context
 			const std::string &filename, 
 			const std::string &function, 
 			const int line,			
-			const std::string &message			
+			const std::string &message
 		);
 
 };	// END CLASS context

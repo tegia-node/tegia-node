@@ -32,6 +32,7 @@ add_executable(${PROJECT_NAME} ${TEGIA_SOURCES})
 
 target_include_directories(${PROJECT_NAME} PRIVATE ./include)
 target_include_directories(${PROJECT_NAME} PRIVATE ../vendors)
+target_include_directories(${PROJECT_NAME} PRIVATE /usr/include/libxml2)
 
 #
 # GLOBAL LIBRARY
@@ -44,6 +45,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE z)
 target_link_libraries(${PROJECT_NAME} PRIVATE curl)
 target_link_libraries(${PROJECT_NAME} PRIVATE crypto)
 target_link_libraries(${PROJECT_NAME} PRIVATE mysqlclient)
+target_link_libraries(${PROJECT_NAME} PRIVATE xml2)
 
 #
 # VCPKG LIBRARY

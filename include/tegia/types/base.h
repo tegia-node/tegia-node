@@ -14,6 +14,8 @@ namespace types {
 //
 //
 
+
+/*
 const long long int OTHER        = 3646436640;  // crc32("other")
 const long long int EMAIL        = 3885137012;  // crc32("email")
 const long long int PHONE        = 1146066909;  // crc32("phone")
@@ -29,30 +31,43 @@ const long long int VK_LINK      = 3712801537;  // crc32("vk_link")
 const long long int RUS_PASSPORT = 1556358888;  // crc32("rus_passport")
 const long long int RUS_INN      = 2249915708;  // crc32("rus_inn")
 const long long int SNILS        = 3840612784;  // crc32("snils")
+*/
 
 
-enum class TYPE: long long int { 
+enum class TYPE: long long int {
+
 	OTHER        = 3646436640,    // crc32("other")
 
-	STRING       = 2663297705,    // crc32("string")
+	//
+	// SIMPLE TYPES
+	//
 
-	EMAIL        = 3885137012,    // crc32("email")
-	PHONE        = 1146066909,    // crc32("phone")
+	STRING              = 2663297705,    // crc32("string")
 
-	PERSON       = 886886774,     // crc32("person")
-	GENDER       = 3343321666,    // crc32("gender")
-	DATE         = 2862495610,    // crc32("date")
+	EMAIL               = 3885137012,    // crc32("email")
+	PHONE               = 1146066909,    // crc32("phone")
 
-	FACEBOOK_ID  = 2615737752,    // crc32("facebook_id")
-	VK_ID        = 3315043922,    // crc32("vk_id")
-	VK_LINK      = 3712801537,    // crc32("vk_link")
+	GENDER              = 3343321666,    // crc32("gender")
+	DATE                = 2862495610,    // crc32("date")
 
-	RUS_PASSPORT = 1556358888,    // crc32("rus_passport")
-	RUS_INN      = 2249915708,    // crc32("rus_inn")
-	SNILS        = 3840612784     // crc32("snils")
+	FACEBOOK_ID         = 2615737752,    // crc32("facebook_id")
+	VK_ID               = 3315043922,    // crc32("vk_id")
+	VK_LINK             = 3712801537,    // crc32("vk_link")
+
+	RUS_PASSPORT        = 1556358888,    // crc32("rus_passport")
+	RUS_INN             = 2249915708,    // crc32("rus_inn")
+	SNILS               = 3840612784,    // crc32("snils")
+	RUS_SNILS           = 3840612784,    // crc32("rus_snils")
+
+	//
+	// COMPOSITE TYPES
+	//
+
+	PERSON       = 886886774      // crc32("person")
+
 };
 
-//;
+//
 //
 //
 
@@ -81,6 +96,7 @@ class base_t
 			return this->_is_valid;
 		};
 };
+
 
 }	// END namespace types
 }	// END namespace tegia

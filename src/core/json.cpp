@@ -182,16 +182,59 @@ namespace json {
 namespace tegia {
 namespace json {
 
+bool validator::load(const std::string &filename)
+{
+	int res = 0;
+	std::string info = "";
+	std::tie(res,info,this->_schema) = tegia::json::_file(filename);
 
+	if(res != 0)
+	{
+		return false;
+	}
+
+	this->_validator.set_root_schema(this->_schema); 
+	this->_is_init = true;
+	return true;
+};
+
+bool validator::load(nlohmann::json schema)
+{
+	this->_schema = schema;
+	this->_validator.set_root_schema(this->_schema); 
+	this->_is_init = true;
+	return true;
+};
+
+bool validator::validate(nlohmann::json data)
+{
+	if(_is_init == false) return false;
+
+	this->_validator.validate(data, this->_err);
+
+	if (this->_err)
+	{
+		// std::cout << _ERR_TEXT_ << "Validation failed" << std::endl;
+		return false;
+	}
+	else
+	{
+		// std::cout << "Validation succeeded\n";
+		return true;
+	}
+};
+
+
+
+/*
 bool validator::is_load()
 {
 	return this->_is_load;
 };
 
 
-int validator::load(const std::string &name, const std::string &filename)
+int validator::load(const std::string &filename)
 {
-	this->_name = name;
 	this->_filename = filename;
 
 	auto [status,info,schema] = tegia::json::_file(filename);
@@ -227,7 +270,7 @@ int validator::validate(nlohmann::json * data)
 
 	return 200;
 };
-
+*/
 
 } // END namespace json
 } // END namespace tegia

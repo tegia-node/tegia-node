@@ -1,16 +1,11 @@
 
-#include <tegia/tegia.h>
+#include <tegia/core.h>
+
 #include "node/node.h"
 #include "threads/data.h"
 
-namespace tegia {
-namespace actors {
-
-
-
-
-} // namespace actors
-} // namespace tegia
+#include <tegia/actors/actor.h>
+#include <tegia/actors/type.h>
 
 
 
@@ -19,7 +14,6 @@ namespace conf {
 
 std::string path(const std::string &name)
 {
-	// return tegia::node::node::instance()->config_path(name);
 	return tegia::threads::data->node()->config_path(name);
 };
 
@@ -57,10 +51,15 @@ int message::send(
 	return tegia::threads::data->node()->send_message(name,action,message,priority);
 };
 
-int message::resolve(const std::string &name)
+
+int message::send(
+	const std::shared_ptr<message_t> &message,
+	std::function<int(const std::shared_ptr<message_t> &)> fn,
+	int priority)
 {
-	return tegia::threads::data->node()->resolve(name);
+	return tegia::threads::data->node()->send_message(message,fn,priority);
 };
+
 
 } // namespace tegia
 

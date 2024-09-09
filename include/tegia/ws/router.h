@@ -13,18 +13,24 @@ namespace app {
 class router_t
 {
 	public:
-		router_t() = default;
+		router_t(const std::string &ws_name);
 		~router_t() = default;
 
 		bool add(const std::string &method, const std::string &pattern, nlohmann::json data);
-		std::tuple<int, nlohmann::json> match(const std::string &method, const std::string &path, nlohmann::json * post);
-
+		std::tuple<int, nlohmann::json> match(
+			int role,
+			const std::string &method, 
+			const std::string &path, 
+			nlohmann::json * post);
 
 		void print();
 
 
 	private:
+		std::string ws_name;
 		std::unordered_map<std::string, nlohmann::json> _route_map;
+
+		void actor_name(nlohmann::json * _params);
 };
 
 

@@ -4,119 +4,94 @@
 #include <iostream>
 #include <tegia/core/json.h>
 #include <tegia/core/const.h>
-#include <tegia/actors/types.h>
+
+#include <tegia/actors/type.h>
+#include <tegia/actors/actor.h>
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 //
-// КОНТЕЙНЕР ДЛЯ ИНСТАНЦИРОВАННОГО АКТОРА
 //
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
 
+namespace tegia {
+
+namespace domain {
+
+	static int LOCAL = 1;
+	static int REMOUTE = 2;
+
+} // END namespace domain
+} // END namespace tegia
+
+
+//
+//
+//
 
 namespace tegia {
 namespace actors {
 
-class actor_t
+class domain_t
 {
 	public:
+		std::string _name = "";
+		int _type = 0;
 
-		actor_t() = default;
-		~actor_t(){};
-
-		std::string name;
-
-		// Указатель на экземпляр класса актора
-		tegia::actors::actor_base * actor;
-
-		// Указатель на экземпляр типа автора
-		tegia::actors::type_base * type;
+		domain_t() = default;
+		~domain_t() = default;
 };
 
-} // namespace actors
-} // namespace tegia
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-// МАССИВ ВСЕХ ИНСТАНЦИРОВАННЫХ АКТОРОВ
 //
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
 
-
-namespace tegia {
-namespace actors {
-
-
-class map
+class map_t
 {
-	private:
-		
-		//
-		// Типы акторов
-		//
-
-		std::unordered_map<
-			std::string, 					// имя типа акторв
-			tegia::actors::type_base *		// 
-		> actor_types;
-		
-		//
-		// Паттерны имен акторов
-		//
-
-		std::unordered_map<
-			std::string, 					// паттерн имени актора
-			tegia::actors::type_base *		// 
-		> name_patterns;
-
-		//
-		// Инициализированные акторы
-		//
-
-		std::unordered_map<
-			std::string,					// имя актора 
-			tegia::actors::actor_t			// объек актора
-		> actor_list;
-
-		std::mutex actor_list_mutex;
-
-		//
-		// Домены
-		//
-
-		std::unordered_map<
-			std::string,					// имя домена
-			std::string						// тип домена [local, remote]
-		> _domains;
-
-		//
-		// 
-		//
-
-		std::tuple<bool,tegia::actors::type_base *> resolve(const std::string &name);
-		tegia::actors::actor_base * create_actor(const std::string &name, tegia::actors::type_base * actor_type);
+	protected:
+		// std::unordered_map<std::string, action_fn_ptr >                  _actions;
+		std::unordered_map<std::string, tegia::actors::action_t     * >  _actions;
+		std::unordered_map<std::string, tegia::actors::actor_t      * >  _actors;
+		std::unordered_map<std::string, tegia::actors::type_base_t  * >  _types;
+		std::unordered_map<std::string, tegia::actors::type_base_t  * >  _patterns;
+		std::unordered_map<std::string, tegia::actors::domain_t     * >  _domains;
 
 	public:
 
-		map(){};
-		~map(){};
+		map_t() = default;
+		~map_t() = default;
 
-		map(map const&) = delete;
-		map(map&&) noexcept = delete;
-		map& operator = (map const&) = delete;
-		map& operator = (map&&) noexcept = delete;
+		//
+		// domains
+		//
 
-		
-		bool load_type(const std::string &type_name, const std::string &base_path, const nlohmann::json &type_config);
-		bool add_domain(const std::string &domain, const std::string &type);
-		std::tuple<int,std::function<void()>> send_message(const std::string &name, const std::string &action, const std::shared_ptr<message_t> &message);
-		int resolve_name(const std::string &name);
+		int add_domain(const std::string &name, int type);
+
+		//
+		// types
+		//
+
+		int add_type(
+			const std::string &type_name, 
+			const std::string &base_path, 
+			nlohmann::json * data
+		);
+
+		//
+		//
+		//
+
+		std::tuple<int,std::function<void()>> send_message(
+			const std::string &name, 
+			const std::string &action, 
+			const std::shared_ptr<message_t> &message);
 
 };
 
 
+
 } // namespace actors
 } // namespace tegia
+
 
 #endif

@@ -10,9 +10,8 @@ RESET=`tput sgr0`
 _OK_="${GREEN}[OK]  ${RESET}"
 _ERR_="${RED}[ERR] ${RESET}"
 
-
+node_folder=$(realpath .)
 root_folder=$(realpath ../)
-
 
 echo " "
 echo "------------------------------------------------------------"
@@ -20,11 +19,10 @@ echo "TEGIA NODE: ${GREEN} DEPENDENCES ${RESET}"
 echo "------------------------------------------------------------"
 echo " "
 
-mkdir -p ${root_folder}/tegia-node/build
+mkdir -p ${node_folder}/build
 mkdir -p ${root_folder}/vendors
 mkdir -p ${root_folder}/configurations
 mkdir -p ${root_folder}/ui
-
 
 #
 # ENV
@@ -57,30 +55,43 @@ sudo apt install -y libfmt-dev
 # GNU G++
 #
 
-sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-sudo apt install -y g++-11 gcc-11
-sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 60 --slave /usr/bin/g++ g++ /usr/bin/g++-11
-
+# sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+# sudo apt install -y g++-11 gcc-11
+# sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 60 --slave /usr/bin/g++ g++ /usr/bin/g++-11
 
 #
 # MySQL
 #
 
-ismysql80="$(dpkg --get-selections | grep mysql-server-8.0)"
-if [[ "${#ismysql80}" == 0 ]]; then
+version=$(lsb_release -r | awk '{print $2}')
 
-	mkdir -p $tegia_folder/vendors/mysql
-	cd $tegia_folder/vendors/mysql
-	wget -N https://dev.mysql.com/get/mysql-apt-config_0.8.15-1_all.deb
-	sudo DEBIAN_FRONTEND=noninteractive dpkg -i mysql-apt-config_0.8.15-1_all.deb    
+# Проверяем версию ОС и выполняем соответствующие действия
+if [[ "$version" == "20.04" ]]
+then
+    echo "Версия ОС: Ubuntu 20.04"
+	ismysql80="$(dpkg --get-selections | grep mysql-server-8.0)"
+	if [[ "${#ismysql80}" == 0 ]]; then
 
-	sudo apt-get update -y
-	sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server
-	sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-client
+		mkdir -p $tegia_folder/vendors/mysql
+		cd $tegia_folder/vendors/mysql
+		wget -N https://dev.mysql.com/get/mysql-apt-config_0.8.15-1_all.deb
+		sudo DEBIAN_FRONTEND=noninteractive dpkg -i mysql-apt-config_0.8.15-1_all.deb    
 
-	echo -e "${_OK_}MySQL success installed"
+		sudo apt-get update -y
+		sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server
+		sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-client
+
+		echo -e "${_OK_}MySQL success installed"
+	else
+		echo -e "${_OK_}MySQL is already installed"
+	fi
+elif [[ "$version" == "24.04" ]]
+then
+    echo "Версия ОС: Ubuntu 24.04"
+    sudo apt install -y mysql-server
 else
-	echo -e "${_OK_}MySQL is already installed"
+    echo "Версия ОС: другая версия (или неизвестная)"
+    # Ваши действия для других версий
 fi
 
 #
@@ -174,7 +185,7 @@ fi
 # CONFIGURE
 #
 
-cd ${root_folder}/tegia-node
+cd ${node_folder}
 # cmake -B build/ -S . -DCMAKE_TOOLCHAIN_FILE=${root_folder}/vcpkg/scripts/buildsystems/vcpkg.cmake
 cmake -B build/ -S .
 
@@ -189,7 +200,7 @@ echo " "
 #
 
 tee ${root_folder}/Makefile.variable << EOF > /dev/null
-iNODE				= ${root_folder}/tegia-node/include
+iNODE				= ${node_folder}/include
 iVENDORS			= ${root_folder}/vendors
 C++VER				= -std=c++2a
 
@@ -199,7 +210,7 @@ Flag = \$(DevFlag)
 EOF
 
 
-cd ${root_folder}/tegia-node/build
+cd ${node_folder}/build
 cmake --build .
 
 
