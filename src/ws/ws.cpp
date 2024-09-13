@@ -35,6 +35,7 @@ ws_t::ws_t(
 	if(res->code != 200)
 	{
 		std::cout << _ERR_TEXT_ << "[" << res->code << "] LOAD WS " << this->name << std::endl;
+		std::cout << query << std::endl;
 		delete res;
 		this->status = 500;
 		return;
@@ -65,6 +66,20 @@ ws_t::ws_t(
 		}
 		else
 		{
+			auto user = tegia::context::user();
+			auto match = user->_roles.to_ullong() & this->creators;
+
+			std::cout << "user->_roles   = " << user->_roles.to_ullong() << std::endl;
+			std::cout << "this->creators = " << this->creators << std::endl;
+			std::cout << "match          = " << match << std::endl;
+
+			if(match == 0)
+			{
+				std::cout << _ERR_TEXT_ << "You do not have access rights" << std::endl;
+				this->status = 403;
+				return;
+			}
+
 			this->status = this->_create();
 			return;
 		}
@@ -144,24 +159,12 @@ int ws_t::_create()
 {
 	std::cout << "[RUN] CREATE WS" << std::endl;
 
-	auto user = tegia::context::user();
-	auto match = user->_roles.to_ullong() & this->creators;
-
-	std::cout << "user->_roles   = " << user->_roles.to_ullong() << std::endl;
-	std::cout << "this->creators = " << this->creators << std::endl;
-	std::cout << "match          = " << match << std::endl;
-
-	if(match == 0)
-	{
-		std::cout << _ERR_TEXT_ << "You do not have access rights" << std::endl;
-		return 403;
-	}
-
 	this->ws = this->name;
 
 	nlohmann::json members;
 	nlohmann::json member;
 
+	auto user = tegia::context::user();
 	std::string uuid = user->uuid();
 	unsigned long long int roles = tegia::user::roles(ROLES::WS::OWNER,ROLES::WS::ADMIN,ROLES::WS::MEMBER);
 

@@ -416,6 +416,7 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 
 						default:
 						{
+							
 							std::cout << _ERR_TEXT_ << _RED_TEXT_ << "send message \n" 
 										<< "      [500] ACTOR NOT CREATE\n" 
 										<< "      status = '" << _actor->status << "'\n" 
