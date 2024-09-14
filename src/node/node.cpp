@@ -125,13 +125,25 @@ int node::send_message(
 bool node::action()
 {
 	std::cout << _YELLOW_ << "\n--------------------------------------------" << _BASE_TEXT_ << std::endl;
-	std::cout << _YELLOW_ << "ACTION NODE" << _BASE_TEXT_ << std::endl;
+	std::cout << _YELLOW_ << "NODE CONFIGURATIONS" << _BASE_TEXT_ << std::endl;
 	std::cout << _YELLOW_ << "--------------------------------------------\n" << _BASE_TEXT_ << std::endl;
 
-	LNOTICE("\n--------------------------------------------\nACTION NODE\n--------------------------------------------\n")
+	LNOTICE("\n--------------------------------------------\nNODE CONFIGURATIONS\n--------------------------------------------\n")
 
 	//
-	// INIT ACTOR TYPES
+	// INIT DICTIONARES
+	//
+	
+	auto node_conf = this->_config->get("node");
+
+	if(node_conf->contains("/data/dictionaries/catalog"_json_pointer) == true)
+	{
+		auto catalog = tegia::dictionaries::catalog_t::instance();
+		catalog->_list( (*node_conf)["data"]["dictionaries"]["catalog"].get<std::string>() );
+	}
+
+	//
+	// INIT DOMAINS
 	//
 
 	this->actor_map.add_domain("base",tegia::domain::LOCAL);
@@ -152,6 +164,9 @@ bool node::action()
 	this->actor_map.add_domain("auth",tegia::domain::LOCAL);
 	this->actor_map.add_domain("user",tegia::domain::LOCAL);
 
+	//
+	// INIT ACTOR TYPES
+	//
 
 	std::vector<nlohmann::json> messages;
 
@@ -248,10 +263,10 @@ bool node::action()
 bool node::run()
 {
 	std::cout << _YELLOW_ << "\n--------------------------------------------" << _BASE_TEXT_ << std::endl;
-	std::cout << _YELLOW_ << "RUN NODE" << _BASE_TEXT_ << std::endl;
+	std::cout << _YELLOW_ << "NODE RUN" << _BASE_TEXT_ << std::endl;
 	std::cout << _YELLOW_ << "--------------------------------------------\n" << _BASE_TEXT_ << std::endl;
 
-	LNOTICE("\n--------------------------------------------\nRUN NODE\n--------------------------------------------\n")
+	LNOTICE("\n--------------------------------------------\nNODE RUN\n--------------------------------------------\n")
 
 	//
 	// Инициализируем запись журнала
@@ -265,17 +280,6 @@ bool node::run()
 
 	this->_config = new tegia::node::config();
 	this->_config->load();
-
-	//
-	// Справочники
-	//
-	
-	auto node_conf = this->_config->get("node");
-	tegia::dicts::catalog_t::instance( (*node_conf)["dictionaries"] );
-
-
-	tegia::dict_t::instance();
-
 
 	//
 	//
@@ -298,15 +302,6 @@ bool node::run()
 		std::bind(&tegia::node::node::init_thread,this,(*_conf_db)), 
 		std::bind(&tegia::node::node::action,this)
 	);
-
-	/*
-	this->_threads->init(
-		this->_config->thread_count, 
-		(*_conf_db), 
-		std::bind(&tegia::node::node::action,this)
-	);
-	*/
-
 
 	return true;
 };

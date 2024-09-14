@@ -178,7 +178,7 @@ bool config::load()
 		for(auto db = conf->data["db"]["connections"].begin(); db != conf->data["db"]["connections"].end(); ++db)
 		{
 			std::string name = db.key();
-			std::cout << "db connection name = " << name << std::endl;
+			// std::cout << "db connection name = " << name << std::endl;
 
 			/*
 			try
@@ -216,7 +216,7 @@ bool config::load()
 		for(auto db = conf->data["db"]["databases"].begin(); db != conf->data["db"]["databases"].end(); ++db)
 		{
 			std::string name = db.key();
-			std::cout << "db name = " << name << std::endl;
+			// std::cout << "db name = " << name << std::endl;
 
 			/*
 			try

@@ -1,22 +1,22 @@
-#include <tegia/dict/dict.h>
+#include <tegia/dictionares/dictionares.h>
 #include <tegia/core/const.h>
 
 #include <iostream>
 
-tegia::dicts::catalog_t * tegia::dicts::catalog_t::_catalog = nullptr;
+tegia::dictionares::catalog_t * tegia::dictionares::catalog_t::_catalog = nullptr;
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 /*
 
-	tegia::dicts::index_t
+	tegia::dictionares::index_t
 
 */
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 namespace tegia {
-namespace dicts {
+namespace dictionares {
 
 
 std::tuple<bool,nlohmann::json> index_t::find(const std::string &index)
@@ -38,14 +38,14 @@ std::tuple<bool,nlohmann::json> index_t::find(const std::string &index)
 /////////////////////////////////////////////////////////////////////////////////////////////////
 /*
 
-	tegia::dicts::catalog_t
+	tegia::dictionares::catalog_t
 
 */
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 namespace tegia {
-namespace dicts {
+namespace dictionares {
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -55,9 +55,33 @@ namespace dicts {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-catalog_t::catalog_t(nlohmann::json &data):_data(data)
-{
+catalog_t::catalog_t(){};
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+
+*/
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+int catalog_t::_list(const std::string &folder)
+{
+	this->_folder = folder;
+	std::string list_file = folder + "/list.json";
+
+	auto [code,info,data] = tegia::json::_file(list_file);
+
+	if(code != 0)
+	{
+		this->status = 500;
+		return 500;
+	}
+
+	this->_data = data;
+	this->status = 200;
+
+	return 200;
 };
 
 
@@ -88,11 +112,11 @@ bool catalog_t::init(const std::string &dict_name,const std::string &dict_file)
 	// Создаем словарь
 	//
 
-	tegia::dicts::dict_t * dict = new tegia::dicts::dict_t();
-	dict->filename = dict_file;
-	dict->_data = data;
+	tegia::dictionares::dictionare_t * dictionare = new tegia::dictionares::dictionare_t();
+	dictionare->filename = dict_file;
+	dictionare->_data = data;
 
-	this->_dictionaries.insert({dict_name,dict});
+	this->_dictionaries.insert({dict_name,dictionare});
 
 	//
 	// Создаем индексы
@@ -103,10 +127,10 @@ bool catalog_t::init(const std::string &dict_name,const std::string &dict_file)
 		// std::cout << it.key() << " = " << it.value().get<std::string>() << std::endl;
 
 		nlohmann::json::json_pointer ptr(it.value().get<std::string>());
-		tegia::dicts::index_t * index = new tegia::dicts::index_t();
+		tegia::dictionares::index_t * index = new tegia::dictionares::index_t();
 		this->_indexes.insert({dict_name + "/" + it.key(),index});
 
-		for(auto record = dict->_data["data"].begin(); record != dict->_data["data"].end(); ++record)
+		for(auto record = dictionare->_data["data"].begin(); record != dictionare->_data["data"].end(); ++record)
 		{
 			// std::cout << (*record)[ptr].get<std::string>() << std::endl;
 			index->_index.insert({(*record)[ptr].get<std::string>(),&(*record)});
@@ -124,11 +148,11 @@ bool catalog_t::init(const std::string &dict_name,const std::string &dict_file)
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-catalog_t * catalog_t::instance(nlohmann::json data)
+catalog_t * catalog_t::instance()
 {
 	if(_catalog == nullptr)
 	{
-		_catalog = new catalog_t(data);
+		_catalog = new catalog_t();
 	}
 	return _catalog;
 };
@@ -160,6 +184,8 @@ index_t * catalog_t::index(const std::string &dictionary, const std::string &ind
 		}
 	}
 
+	std::cout << _ERR_TEXT_ << "not found '" + dictionary + "/" + index + "' [1]" << std::endl;
+
 	//
 	// Проверяем загружен ли сам справочник
 	//
@@ -168,6 +194,7 @@ index_t * catalog_t::index(const std::string &dictionary, const std::string &ind
 		auto pos = _catalog->_dictionaries.find(dictionary);
 		if(pos != _catalog->_dictionaries.end())
 		{
+			std::cout << _ERR_TEXT_ << "not found '" + dictionary + "/" + index + "' [2]" << std::endl;
 			return nullptr;
 		}
 	}
@@ -178,6 +205,7 @@ index_t * catalog_t::index(const std::string &dictionary, const std::string &ind
 
 	if(_catalog->_data.contains(dictionary) == false)
 	{
+		std::cout << _ERR_TEXT_ << "not available '" + dictionary + "'" << std::endl;
 		return nullptr;
 	}
 
@@ -188,6 +216,7 @@ index_t * catalog_t::index(const std::string &dictionary, const std::string &ind
 	bool res = _catalog->init(dictionary,_catalog->_data[dictionary].get<std::string>());
 	if(res == false)
 	{
+		std::cout << _ERR_TEXT_ << "not init '" + dictionary + "'" << std::endl;
 		return nullptr;
 	}
 

@@ -2,7 +2,7 @@
 #include <tegia/types/simple/phone.h>
 #include <regex>
 
-#include <tegia/dict/dict.h>
+#include <tegia/dictionaries/index.h>
 
 namespace tegia {
 namespace types {
@@ -93,7 +93,7 @@ int phone_t::parse(const std::string &value, const nlohmann::json &validate)
 	// CHECK PHONE
 	//
 
-	auto index = tegia::dicts::catalog_t::index("ITU-T E.164","prefix");
+	auto index = tegia::dictionaries::index("ITU-T E.164","prefix");
 	if(index == nullptr)
 	{
 		std::cout << _ERR_TEXT_ << "NOT LOAD INDEX 'ITU-T E.164/prefix'" << std::endl;

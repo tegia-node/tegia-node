@@ -6,7 +6,9 @@
 #include <tuple>
 
 #include <tegia/core/json.h>
-#include <tegia/dict/dict.h>
+
+// dictionares
+#include "../dictionaries/catalog.h"
 
 #include "../actors/map.h"
 

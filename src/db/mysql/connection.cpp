@@ -82,12 +82,14 @@ namespace mysql {
 	{
 		this->_mutex.lock();
 
+		/*
 		std::cout << "name     = " << this->name << std::endl;
 		std::cout << "type     = " << this->type << std::endl;
 		std::cout << "host     = " << this->host << std::endl;
 		std::cout << "password = " << this->password << std::endl;
 		std::cout << "port     = " << this->port << std::endl;
 		std::cout << "user     = " << this->user << std::endl;
+		*/
 
 
 		if (this->hConnect == nullptr)
