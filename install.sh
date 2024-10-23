@@ -182,6 +182,16 @@ then
 fi
 
 #
+# inja
+#
+
+if ! [ -d  ${root_folder}/vendors/inja/ ]
+then
+	cd ${root_folder}/vendors
+	git clone https://github.com/pantor/inja.git --depth=1 --branch=v3.4.0
+fi
+
+#
 # CONFIGURE
 #
 
