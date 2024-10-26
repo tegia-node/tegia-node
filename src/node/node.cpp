@@ -163,6 +163,7 @@ bool node::action()
 
 	this->actor_map.add_domain("auth",tegia::domain::LOCAL);
 	this->actor_map.add_domain("user",tegia::domain::LOCAL);
+	this->actor_map.add_domain("data",tegia::domain::LOCAL);
 
 	//
 	// INIT ACTOR TYPES

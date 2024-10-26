@@ -104,11 +104,11 @@ bool router_t::add(const std::string &method, const std::string &pattern, nlohma
 		// TODO: проверять дубликаты
 		//
 
-		// std::cout << "_elm  = " << _elm << std::endl;
+		std::cout << "_elm  = " << _elm << std::endl;
 
 		if(_elm[0] == '{')
 		{
-			// std::cout << "param = " << _elm.substr(1,_elm.length() - 2) << std::endl;
+			std::cout << "param = " << _elm.substr(1,_elm.length() - 2) << std::endl;
 
 			data["params"].push_back( _elm.substr(1,_elm.length() - 2) );
 			_path = _path + "*";
@@ -159,8 +159,8 @@ void router_t::print()
 {
 	for(auto it = this->_route_map.begin(); it != this->_route_map.end(); ++it)
 	{
-		std::cout << it->first << std::endl;
-		std::cout << it->second << std::endl; 
+		std::cout << "it->first  = " << it->first << std::endl;
+		std::cout << "it->second = " << it->second << std::endl; 
 	}
 };
 

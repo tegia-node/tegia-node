@@ -21,6 +21,7 @@ enum class SIMPLE_TYPE: long long int
 	DATE                = 2862495610,    // crc32("date")
 
 	FACEBOOK_ID         = 2615737752,    // crc32("facebook_id")
+	VK                  = 3806098527,    // crc32("vk")
 	VK_ID               = 3315043922,    // crc32("vk_id")
 	VK_LINK             = 3712801537,    // crc32("vk_link")
 

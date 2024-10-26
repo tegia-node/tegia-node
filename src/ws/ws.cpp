@@ -279,6 +279,10 @@ int ws_t::router(const std::shared_ptr<message_t> &message)
 		case 404:
 		{
 			std::cout << _ERR_TEXT_ << "not found " << method << " " << action << std::endl; 
+			std::cout <<_YELLOW_ << "params" << _BASE_TEXT_ << std::endl;
+			std::cout << params << std::endl;
+			std::cout <<_YELLOW_ << "_router->print()" << _BASE_TEXT_ << std::endl;
+			_router->print();
 
 			message->http["response"]["status"] = 404;
 			message->http["response"]["type"] = "application/json";
