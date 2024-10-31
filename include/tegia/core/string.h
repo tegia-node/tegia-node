@@ -104,6 +104,15 @@ namespace string {
 
 	int levenshtein(const std::string& word1, const std::string& word2, bool u32 = false);
 
+	//
+	//
+	//
+
+	std::string to_fixed_length(int number, int length);
+	std::string to_fixed_length(long int number, int length);
+	std::string to_fixed_length(long long int number, int length);
+
+
 }	// END string NAMESPACE
 }	// END tegia  NAMESPACE
 

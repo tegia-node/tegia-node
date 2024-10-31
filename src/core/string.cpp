@@ -1,5 +1,11 @@
 #include <tegia/core/string.h>
+
+
 #include <unordered_map>
+#include <iostream>
+#include <string>
+#include <iomanip>
+#include <sstream>
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 /** 
@@ -693,11 +699,41 @@ namespace string {
 
 
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+	
+
+*/
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+namespace tegia {
+namespace string {
+
+std::string to_fixed_length(int number, int length)
+{
+	std::ostringstream oss;
+	oss << std::setw(length) << std::setfill('0') << number;
+	return oss.str();
+};
+
+std::string to_fixed_length(long int number, int length)
+{
+	std::ostringstream oss;
+	oss << std::setw(length) << std::setfill('0') << number;
+	return oss.str();
+};
+
+std::string to_fixed_length(long long int number, int length)
+{
+	std::ostringstream oss;
+	oss << std::setw(length) << std::setfill('0') << number;
+	return oss.str();
+};
 
 
-
+}	// END string NAMESPACE
+}	// END tegia  NAMESPACE
 
 
 
