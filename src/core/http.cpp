@@ -4,6 +4,84 @@ namespace tegia {
 namespace http {
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+
+
+*/
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+int url_t::parse(const std::string &url)
+{
+	this->raw = url;
+
+	CURLUcode rc;
+
+	CURLU *curl = curl_url();
+	if(!curl)
+	{
+		// error
+		return 1;
+	}
+
+	rc = curl_url_set(curl, CURLUPART_URL, this->raw.c_str(), 0);
+	if(rc)
+	{
+		// error
+		return 2;
+	}
+
+	//
+	// SCHEME
+	//
+
+	char *_scheme;
+	rc = curl_url_get(curl, CURLUPART_SCHEME, &_scheme, 0);
+	if(rc)
+	{
+		// error
+		curl_url_cleanup(curl);
+		return 3;
+	}
+	this->scheme = _scheme;
+	curl_free(_scheme);
+
+	//
+	// HOST
+	//
+
+	char *_host;
+	rc = curl_url_get(curl, CURLUPART_HOST, &_host, 0);
+	if(rc) 
+	{
+		// error
+		curl_url_cleanup(curl);
+		return 4;
+	}
+	this->host = _host;
+	curl_free(_host);
+
+	//
+	// PATH
+	//
+
+	char *_path;
+	rc = curl_url_get(curl, CURLUPART_PATH, &_path, 0);
+	if(rc) 
+	{
+		// error
+		curl_url_cleanup(curl);
+		return 5;
+	}
+	this->path = _path;
+	curl_free(_path);
+
+	curl_url_cleanup(curl);
+
+	return 0;
+};
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
