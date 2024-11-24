@@ -130,16 +130,27 @@ bool node::action()
 
 	LNOTICE("\n--------------------------------------------\nNODE CONFIGURATIONS\n--------------------------------------------\n")
 
+	auto cluster = this->_config->get("cluster");
+
+	/*
+	std::cout << _YELLOW_ << "db connections" << _BASE_TEXT_ << std::endl;
+	std::cout << this->_config->get("dbc")->dump() << std::endl;
+
+	std::cout << _YELLOW_ << "messages" << _BASE_TEXT_ << std::endl;
+	std::cout << this->_config->get("messages")->dump() << std::endl;
+
+	std::cout << _YELLOW_ << "patterns" << _BASE_TEXT_ << std::endl;
+	std::cout << (*cluster)["patterns"].dump() << std::endl;
+	*/
+
 	//
 	// INIT DICTIONARES
 	//
 	
-	auto node_conf = this->_config->get("node");
-
-	if(node_conf->contains("/data/dictionaries/catalog"_json_pointer) == true)
+	if(cluster->contains("/data/dictionaries/catalog"_json_pointer) == true)
 	{
 		auto catalog = tegia::dictionaries::catalog_t::instance();
-		catalog->_list( (*node_conf)["data"]["dictionaries"]["catalog"].get<std::string>() );
+		catalog->_list( (*cluster)["data"]["dictionaries"]["catalog"].get<std::string>() );
 	}
 
 	//
@@ -166,64 +177,13 @@ bool node::action()
 	this->actor_map.add_domain("data",tegia::domain::LOCAL);
 
 	//
-	// INIT ACTOR TYPES
+	// ADD PATTERNS
 	//
 
-	std::vector<nlohmann::json> messages;
-
-	for(auto conf = this->_config->_map.begin(); conf != this->_config->_map.end(); ++conf)
+	for(auto it = (*cluster)["patterns"].begin(); it != (*cluster)["patterns"].end(); ++it)
 	{
-		// std::cout << conf->second->data << std::endl;
-		
-		if(conf->first == "_db") continue;
-
-		if(conf->first == "node")
-		{
-			//
-			// INIT
-			//
-
-			if(conf->second->data.contains("init") == false) continue;
-			for(auto message = conf->second->data["init"].begin(); message != conf->second->data["init"].end(); ++message)
-			{
-				messages.push_back( (*message) );
-			}
-			
-			continue;
-		}
-
-		//
-		//
-		//
-
-		//
-		// TYPES
-		//
-
-		for(auto type = conf->second->data["types"].begin(); type != conf->second->data["types"].end(); ++type)
-		{
-			// std::cout << "type = " << type.key() << std::endl;
-			// std::cout << (*type) << std::endl;
-
-			this->actor_map.add_type(
-				type.key(), 										// type name
-				conf->second->data["path"].get<std::string>(),		// base path
-				&(*type)											// type config
-			);
-		}
-
-		//
-		// INIT
-		//
-
-		if(conf->second->data.contains("init") == false) continue;
-		for(auto message = conf->second->data["init"].begin(); message != conf->second->data["init"].end(); ++message)
-		{
-			messages.push_back( (*message) );
-		}
-
+		this->actor_map.add_pattern(it.key(),it->get<std::string>());
 	}
-
 
 	std::cout << _YELLOW_ << "\n--------------------------------------------" << _BASE_TEXT_ << std::endl;
 	std::cout << _YELLOW_ << "NODE INIT" << _BASE_TEXT_ << std::endl;
@@ -233,9 +193,9 @@ bool node::action()
 	// SEND MESSAGE
 	//
 	
-	for(auto message = messages.begin(); message != messages.end(); ++message)
+	auto messages = this->_config->get("messages");
+	for(auto message = messages->begin(); message != messages->end(); ++message)
 	{
-		// auto msg = std::make_shared<message_t>((*message)["data"]);
 		auto msg = tegia::message::init((*message)["data"]);
 		this->send_message(
 			(*message)["actor"].get<std::string>(),
@@ -244,8 +204,7 @@ bool node::action()
 			60
 		);
 	}
-	
-	
+		
 	return true;
 };
 
@@ -259,45 +218,54 @@ bool node::action()
 
 
 
-
-
 bool node::run()
 {
+	//
+	// INIT LOG
+	//
+
+	tegia::logger::instance("logs/");
+
+	LNOTICE("\n--------------------------------------------\nNODE RUN\n--------------------------------------------\n")
 	std::cout << _YELLOW_ << "\n--------------------------------------------" << _BASE_TEXT_ << std::endl;
 	std::cout << _YELLOW_ << "NODE RUN" << _BASE_TEXT_ << std::endl;
 	std::cout << _YELLOW_ << "--------------------------------------------\n" << _BASE_TEXT_ << std::endl;
 
-	LNOTICE("\n--------------------------------------------\nNODE RUN\n--------------------------------------------\n")
-
 	//
-	// Инициализируем запись журнала
-	//
-
-	tegia::logger::instance();
-
-	//
-	// Читаем конфигурацию
+	// INIT CONFIGURATIONS
 	//
 
 	this->_config = new tegia::node::config();
-	this->_config->load();
+	auto cluster = this->_config->cluster();
 
-	//
-	//
-	//	
-	
-	auto _conf_db = this->_config->get("_db");
-	if(_conf_db == nullptr)
+	for(auto it = (*cluster)["configurations"].begin(); it != (*cluster)["configurations"].end(); ++it)
 	{
-		std::cout << _ERR_TEXT_ << "not found '_db' config" << std::endl;
+		if(it->get<bool>() == false)
+		{
+			continue;
+		}
+		
+		auto config = this->_config->configuration(it.key());
+		std::string path = (*config)["path"].get<std::string>();
+		for(auto it = (*config)["types"].begin(); it != (*config)["types"].end(); ++it)
+		{
+			this->actor_map.add_type2(
+				it.key(), 							// type name
+				path + it->get<std::string>()		// lib path
+			);
+		}
 	}
 	
 	//
-	// Инициализируем потоки
+	// INIT THREADS
 	//
 
-	this->_threads = new tegia::threads::pool();		
+	std::cout << _YELLOW_ << std::endl;
+	std::cout << "INIT THREADS" << std::endl;
+	std::cout << _BASE_TEXT_ << std::endl;
 
+	this->_threads = new tegia::threads::pool();		
+	auto _conf_db = this->_config->get("dbc");
 	this->_threads->init(
 		this->_config->thread_count, 
 		std::bind(&tegia::node::node::init_thread,this,(*_conf_db)), 

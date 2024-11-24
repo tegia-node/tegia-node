@@ -39,10 +39,10 @@ int main(int argc, char* argv[])
 		std::cout << _GRAY_TEXT_ << "tegia llc @copyright 2018-2022" << _BASE_TEXT_ << std::endl;
 		std::cout << "Запуск платформы: tegia-node [КЛЮЧ] [АРГУМЕНТ]" << std::endl;
 		std::cout << " " << std::endl;
-		std::cout << "  --local                 Указывает, что конфигурация роли tegia-node" << std::endl;
-		std::cout << "                          располагается в текущей директории" << std::endl;
-		std::cout << "  --config [directory]    Указывает [directory] где располагается конфигурация" << std::endl;
-		std::cout << "                          роли tegia-node" << std::endl;
+		std::cout << "  --local                 Указывает, что каталог /configs с файлами конфигураций роли" << std::endl;
+		std::cout << "                          tegia-node располагается в текущей директории" << std::endl;
+		std::cout << "  --config [directory]    Указывает [directory] где располагается каталог /configs с файлами" << std::endl;
+		std::cout << "                          конфигураций роли tegia-node" << std::endl;
 		exit(0);
 	}
 
@@ -79,11 +79,22 @@ int main(int argc, char* argv[])
 	// Проверка конфигурации
 	//
 
-	std::filesystem::path file("./config.json");
-	if(!std::filesystem::is_regular_file(file))
 	{
-		std::cout << _RED_TEXT_ << "config file [" << file.string() << "] not found" << _BASE_TEXT_ << std::endl;
-		exit(0);
+		std::filesystem::path file("./configs/cluster.json");
+		if(!std::filesystem::is_regular_file(file))
+		{
+			std::cout << _RED_TEXT_ << "config file [" << file.string() << "] not found" << _BASE_TEXT_ << std::endl;
+			exit(0);
+		}
+	}
+
+	{
+		std::filesystem::path file("./configs/configurations.json");
+		if(!std::filesystem::is_regular_file(file))
+		{
+			std::cout << _RED_TEXT_ << "config file [" << file.string() << "] not found" << _BASE_TEXT_ << std::endl;
+			exit(0);
+		}
 	}
 
 

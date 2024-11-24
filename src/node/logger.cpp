@@ -3,6 +3,7 @@
 // -------------------------------------------------------------------------------------- //
 
 #include "logger.h"
+#include <tegia/core/const.h>
 
 // -------------------------------------------------------------------------------------- //
 //                                        CLASS                                           //
@@ -17,7 +18,7 @@ logger* logger::_self = NULL;
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 logger* logger::instance(const std::string &logdir, int log_level)
-{  // LOG_TRACE
+{
 	if(!_self)
 	{
 		_self = new logger(logdir, log_level);
@@ -28,34 +29,19 @@ logger* logger::instance(const std::string &logdir, int log_level)
 
 logger::logger(const std::string &logdir, int log_level)
 { 
-	try
-	{
-		std::cout << logdir + "main.log" << std::endl;
-		this->flog_all.exceptions(std::fstream::failbit | std::fstream::badbit);
-		this->flog_all.open(logdir + "main.log", std::ios::in | std::ios::app | std::ios::binary);
-		if (!this->flog_all.is_open()) // если файл не открыт
-		{
-			std::cout << "Файл main.log не может быть открыт!\n"; // сообщить об этом
-			// TODO: Тут нужно бросить критическое исключение и по-хорошему, завершить работу Платформы
-		}      
-
-		this->flog_all 
-				<< "\n-------------------------------------------------------------------------\n"
-				<< "START NODE"
-				<< "\n-------------------------------------------------------------------------\n";
-
-	}
-	catch (std::fstream::failure e)
-	{
-		std::cout << "[" << e.code() << "] " << e.what() << std::endl;   
-	}
-
+    std::string logFilePath = logdir + "main.log";
+    this->flog_all.open(logFilePath, std::ios::in | std::ios::app | std::ios::binary);
+    if (!this->flog_all.is_open()) // если файл не открыт
+    {
+        std::cout << _ERR_TEXT_ << "Файл main.log не может быть открыт!" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
 }; 
 
 /////////////////////////////////////////////////////////////////////////////////////////
 logger::~logger()
 { 
-	flog_all.close(); 
+	this->flog_all.close(); 
 };
 
 
@@ -97,6 +83,7 @@ void logger::writer(
 
 	this->log_lock.lock();
 	this->flog_all << _err_text << message << "\n" << std::endl;
+	this->flog_all.flush();
 	this->log_lock.unlock();     
 };
 

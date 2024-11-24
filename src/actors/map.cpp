@@ -147,6 +147,104 @@ int map_t::add_type(
 };
 
 
+int map_t::add_type2(
+	const std::string &name, 
+	const std::string &path)
+{
+	//
+	// CHECK TYPE
+	//
+
+	{
+		auto pos = this->_types.find(name);
+		if(pos != this->_types.end()) return 0;
+	}
+
+	//
+	// LOAD LIBRARY
+	//
+
+	void * lib;
+	lib = dlopen(path.c_str(), RTLD_LAZY);
+	if (!lib)
+	{
+		// TODO: write log
+
+		std::string message = "[" + std::string(dlerror()) + "]";
+		std::cout << _ERR_TEXT_ << "load type " << _YELLOW_ << name << _BASE_TEXT_ << " " << message << std::endl;
+		return 20;
+	}
+
+    // Получение указателя на функцию
+	auto _fn = ( tegia::actors::type_base_t * (*)(void) )dlsym(lib,"_init_type");
+    const char* dlsym_error = dlerror();
+    if (dlsym_error) {
+        std::cerr << "Cannot load symbol '_init_type': " << dlsym_error << '\n';
+        dlclose(lib);
+        return 30;
+    }
+
+	//
+	// ADD TYPE
+	//
+
+	auto _type = _fn();
+	this->_types.insert({name,_type});
+	
+	//
+	// ADD ACTIONS
+	//
+		
+	for(auto it = _type->fmap.begin(); it != _type->fmap.end(); ++it)
+	{
+		this->_actions.insert({it->first,it->second});	
+	}
+
+	std::cout << _OK_TEXT_ << "load type " << _YELLOW_ << name << _BASE_TEXT_ << std::endl;
+	return 0;
+};
+
+
+
+
+int map_t::add_pattern(
+	const std::string &pattern, 
+	const std::string &type)
+{
+	auto pos = this->_types.find(type);
+	if(pos == this->_types.end())
+	{
+		return 404;
+	}
+
+
+	std::string tmp = "";
+	for(size_t k = 0; k < pattern.size(); ++k)
+	{
+		if(pattern[k] == '/')
+		{
+			//
+			// TODO: проверять дубликаты
+			//
+
+			// std::cout << "tmp = " << tmp << std::endl;
+
+			this->_patterns.insert({tmp,nullptr});
+			tmp = tmp + pattern[k];
+		}
+		else
+		{
+			tmp = tmp + pattern[k];
+		}
+	}
+
+	// std::cout << "tmp = " << tmp << std::endl;
+
+	this->_patterns.insert(std::make_pair(tmp,pos->second));
+	return 200;
+};
+
+
 ///////////////////////////////////////////////////////////////////////////////////////
 /*
 

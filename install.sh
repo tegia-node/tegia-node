@@ -10,8 +10,7 @@ RESET=`tput sgr0`
 _OK_="${GREEN}[OK]  ${RESET}"
 _ERR_="${RED}[ERR] ${RESET}"
 
-node_folder=$(realpath .)
-root_folder=$(realpath ../)
+ROOT=$(realpath ../)
 
 echo " "
 echo "------------------------------------------------------------"
@@ -19,10 +18,10 @@ echo "TEGIA NODE: ${GREEN} DEPENDENCES ${RESET}"
 echo "------------------------------------------------------------"
 echo " "
 
-mkdir -p ${node_folder}/build
-mkdir -p ${root_folder}/vendors
-mkdir -p ${root_folder}/configurations
-mkdir -p ${root_folder}/ui
+mkdir -p ${ROOT}/tegia-node/build
+mkdir -p ${ROOT}/vendors
+mkdir -p ${ROOT}/configurations
+mkdir -p ${ROOT}/ui
 
 #
 # ENV
@@ -72,8 +71,8 @@ then
 	ismysql80="$(dpkg --get-selections | grep mysql-server-8.0)"
 	if [[ "${#ismysql80}" == 0 ]]; then
 
-		mkdir -p $tegia_folder/vendors/mysql
-		cd $tegia_folder/vendors/mysql
+		mkdir -p $ROOT/vendors/mysql
+		cd $ROOT/vendors/mysql
 		wget -N https://dev.mysql.com/get/mysql-apt-config_0.8.15-1_all.deb
 		sudo DEBIAN_FRONTEND=noninteractive dpkg -i mysql-apt-config_0.8.15-1_all.deb    
 
@@ -95,27 +94,12 @@ else
 fi
 
 #
-# VCPKG
-#
-
-# ###############
-# cd ${root_folder}
-# if ! [ -d  ${root_folder}/vcpkg/ ]
-# then
-#	git clone https://github.com/Microsoft/vcpkg.git
-#	${root_folder}/vcpkg/bootstrap-vcpkg.sh
-# fi
-
-# ${root_folder}/vcpkg/vcpkg install nlohmann-json json-schema-validator fmt vincentlaucsb-csv-parser cpp-jwt
-# ###############
-
-#
 # nlohmann json
 #
 
-if ! [ -d  ${root_folder}/vendors/json/ ]
+if ! [ -d  ${ROOT}/vendors/json/ ]
 then
-	cd ${root_folder}/vendors
+	cd ${ROOT}/vendors
 	git clone https://github.com/nlohmann/json.git
 	cd json
 	mkdir -p build
@@ -130,9 +114,9 @@ fi
 # json-schema-validator
 #
 
-if ! [ -d  ${root_folder}/vendors/json-schema-validator/ ]
+if ! [ -d  ${ROOT}/vendors/json-schema-validator/ ]
 then
-	cd ${root_folder}/vendors
+	cd ${ROOT}/vendors
 	git clone https://github.com/pboettch/json-schema-validator.git
 	cd json-schema-validator
 	mkdir -p build
@@ -147,9 +131,9 @@ fi
 # vincentlaucsb / csv-parser
 #
 
-if ! [ -d  ${root_folder}/vendors/csv-parser/ ]
+if ! [ -d  ${ROOT}/vendors/csv-parser/ ]
 then
-	cd ${root_folder}/vendors
+	cd ${ROOT}/vendors
 	git clone https://github.com/vincentlaucsb/csv-parser.git
 fi
 
@@ -157,21 +141,21 @@ fi
 # xml2json
 #
 
-if ! [ -d  ${root_folder}/vendors/xml2json/ ]
+if ! [ -d  ${ROOT}/vendors/xml2json/ ]
 then
-	cd ${root_folder}/vendors
+	cd ${ROOT}/vendors
 	git clone https://github.com/Cheedoong/xml2json
 	# TODO: переделать на более правильный вариант
-	sudo ln -fs ${root_folder}/vendors/xml2json /usr/include/xml2json
+	sudo ln -fs ${ROOT}/vendors/xml2json /usr/include/xml2json
 fi
 
 #
 # jwt
 #
 
-if ! [ -d  ${root_folder}/vendors/cpp-jwt/ ]
+if ! [ -d  ${ROOT}/vendors/cpp-jwt/ ]
 then
-	cd ${root_folder}/vendors
+	cd ${ROOT}/vendors
 	git clone https://github.com/arun11299/cpp-jwt.git
 	cd cpp-jwt
 	mkdir -p build
@@ -185,9 +169,9 @@ fi
 # inja
 #
 
-if ! [ -d  ${root_folder}/vendors/inja/ ]
+if ! [ -d  ${ROOT}/vendors/inja/ ]
 then
-	cd ${root_folder}/vendors
+	cd ${ROOT}/vendors
 	git clone https://github.com/pantor/inja.git --depth=1 --branch=v3.4.0
 fi
 
@@ -195,7 +179,7 @@ fi
 # CONFIGURE
 #
 
-cd ${node_folder}
+cd ${ROOT}/tegia-node
 # cmake -B build/ -S . -DCMAKE_TOOLCHAIN_FILE=${root_folder}/vcpkg/scripts/buildsystems/vcpkg.cmake
 cmake -B build/ -S .
 
@@ -209,9 +193,9 @@ echo " "
 # SAVE 'Makefile.variable' FILE
 #
 
-tee ${root_folder}/Makefile.variable << EOF > /dev/null
-iNODE				= ${node_folder}/include
-iVENDORS			= ${root_folder}/vendors
+tee ${ROOT}/Makefile.variable << EOF > /dev/null
+iNODE				= ${ROOT}/tegia-node/include
+iVENDORS			= ${ROOT}/vendors
 C++VER				= -std=c++2a
 
 ProdFlag			= -rdynamic -I\$(iNODE) -I\$(iVENDORS) \$(C++VER) -march=native -m64 -O2
@@ -220,7 +204,7 @@ Flag = \$(DevFlag)
 EOF
 
 
-cd ${node_folder}/build
+cd ${ROOT}/tegia-node/build
 cmake --build .
 
 
