@@ -49,7 +49,6 @@ class domain_t
 class map_t
 {
 	protected:
-		// std::unordered_map<std::string, action_fn_ptr >                  _actions;
 		std::unordered_map<std::string, tegia::actors::action_t     * >  _actions;
 		std::unordered_map<std::string, tegia::actors::actor_t      * >  _actors;
 		std::unordered_map<std::string, tegia::actors::type_base_t  * >  _types;
@@ -72,9 +71,13 @@ class map_t
 		//
 
 		int add_type(
-			const std::string &type_name, 
-			const std::string &base_path, 
-			nlohmann::json * data
+			const std::string &name, 
+			const std::string &path
+		);
+
+		int add_pattern(
+			const std::string &pattern, 
+			const std::string &type
 		);
 
 		//

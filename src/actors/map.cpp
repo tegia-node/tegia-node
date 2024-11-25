@@ -42,26 +42,16 @@ int map_t::add_domain(const std::string &name, int type)
 
 
 int map_t::add_type(
-	const std::string &type_name, 
-	const std::string &base_path, 
-	nlohmann::json * data)
+	const std::string &name, 
+	const std::string &path)
 {
 	//
 	// CHECK TYPE
 	//
 
 	{
-		auto pos = this->_types.find(type_name);
+		auto pos = this->_types.find(name);
 		if(pos != this->_types.end()) return 0;
-	}
-
-	//
-	// CHECK DATA
-	//
-
-	if(data->contains("patterns") == false || (*data)["patterns"].is_array() == false)
-	{
-		return 10;
 	}
 
 	//
@@ -69,15 +59,13 @@ int map_t::add_type(
 	//
 
 	void * lib;
-	std::string path = base_path + (*data)["path"].get<std::string>();
-
 	lib = dlopen(path.c_str(), RTLD_LAZY);
 	if (!lib)
 	{
 		// TODO: write log
 
 		std::string message = "[" + std::string(dlerror()) + "]";
-		std::cout << _ERR_TEXT_ << "load " << type_name << " " << message << std::endl;
+		std::cout << _ERR_TEXT_ << "load type " << _YELLOW_ << name << _BASE_TEXT_ << " " << message << std::endl;
 		return 20;
 	}
 
@@ -95,55 +83,59 @@ int map_t::add_type(
 	//
 
 	auto _type = _fn();
-	this->_types.insert({type_name,_type});
-
-	//
-	// ADD PATTERNS
-	//
-
-	for(auto it = (*data)["patterns"].begin(); it != (*data)["patterns"].end(); ++it)
-	{
-		std::string tmp = "";
-		std::string pattern = it->get<std::string>();
-
-		for(size_t k = 0; k < pattern.size(); ++k)
-		{
-			if(pattern[k] == '/')
-			{
-				//
-				// TODO: проверять дубликаты
-				//
-
-				// std::cout << "tmp = " << tmp << std::endl;
-
-				this->_patterns.insert({tmp,nullptr});
-				tmp = tmp + pattern[k];
-			}
-			else
-			{
-				tmp = tmp + pattern[k];
-			}
-		}
-
-		//
-		// 
-		//
-
-		this->_patterns.insert(std::make_pair(tmp,_type));
-	}
-	// END for()
-
+	this->_types.insert({name,_type});
+	
 	//
 	// ADD ACTIONS
 	//
-
+		
 	for(auto it = _type->fmap.begin(); it != _type->fmap.end(); ++it)
 	{
 		this->_actions.insert({it->first,it->second});	
 	}
-	
-	std::cout << _OK_TEXT_ << "ADD TYPE [ " << type_name << " ]" << std::endl;
+
+	std::cout << _OK_TEXT_ << "load type " << _YELLOW_ << name << _BASE_TEXT_ << std::endl;
 	return 0;
+};
+
+
+
+
+int map_t::add_pattern(
+	const std::string &pattern, 
+	const std::string &type)
+{
+	auto pos = this->_types.find(type);
+	if(pos == this->_types.end())
+	{
+		return 404;
+	}
+
+
+	std::string tmp = "";
+	for(size_t k = 0; k < pattern.size(); ++k)
+	{
+		if(pattern[k] == '/')
+		{
+			//
+			// TODO: проверять дубликаты
+			//
+
+			// std::cout << "tmp = " << tmp << std::endl;
+
+			this->_patterns.insert({tmp,nullptr});
+			tmp = tmp + pattern[k];
+		}
+		else
+		{
+			tmp = tmp + pattern[k];
+		}
+	}
+
+	// std::cout << "tmp = " << tmp << std::endl;
+
+	this->_patterns.insert(std::make_pair(tmp,pos->second));
+	return 200;
 };
 
 

@@ -6,7 +6,7 @@
 #include <tegia/core/json.h>
 
 
-struct _conf
+struct conf_t
 {
 	std::string name;
 	std::string file;
@@ -29,13 +29,22 @@ class config
 		~config();
 
 		bool load();
+		const nlohmann::json * cluster();
+		const nlohmann::json * configuration(const std::string &name);
 		const nlohmann::json * const get(const std::string &name);
 
 	private:
-		std::unordered_map<std::string, _conf *> _map;
-		std::vector<std::string> _names;
+		std::unordered_map<std::string, conf_t *> _map;
+		nlohmann::json_schema::json_validator validator_db;
+
+		nlohmann::json dbc;
+		nlohmann::json messages;
+		nlohmann::json patterns;
 
 		int thread_count = 5;
+
+		conf_t * load(const std::string &name, const std::string &file);
+
 
 };	// END class config
 

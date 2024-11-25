@@ -54,7 +54,7 @@ void _data::init(const nlohmann::json &config)
 		}
 	}
 
-	std::cout << _OK_TEXT_ << "INT THREAD " << this->tid << std::endl;
+	std::cout << _OK_TEXT_ << "INIT THREAD " << this->tid << std::endl;
 };
 
 
