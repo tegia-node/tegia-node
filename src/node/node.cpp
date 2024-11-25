@@ -180,7 +180,8 @@ bool node::action()
 	// ADD PATTERNS
 	//
 
-	for(auto it = (*cluster)["patterns"].begin(); it != (*cluster)["patterns"].end(); ++it)
+	auto patterns = this->_config->get("patterns");
+	for(auto it = patterns->begin(); it != patterns->end(); ++it)
 	{
 		this->actor_map.add_pattern(it.key(),it->get<std::string>());
 	}
@@ -249,7 +250,7 @@ bool node::run()
 		std::string path = (*config)["path"].get<std::string>();
 		for(auto it = (*config)["types"].begin(); it != (*config)["types"].end(); ++it)
 		{
-			this->actor_map.add_type2(
+			this->actor_map.add_type(
 				it.key(), 							// type name
 				path + it->get<std::string>()		// lib path
 			);

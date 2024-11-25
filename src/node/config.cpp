@@ -136,6 +136,12 @@ const nlohmann::json * config::configuration(const std::string &name)
 	auto config = this->load(name,"./configurations/" + name + ".json");
 
 	//
+	// PATH
+	//
+
+	config->path = config->data["path"].get<std::string>();
+
+	//
 	// CONNECTIONS
 	//
 
@@ -212,11 +218,14 @@ const nlohmann::json * config::configuration(const std::string &name)
 	}
 
 	//
-	// PATH
+	// PATTERNS
 	//
 
-	// std::cout << conf->data << std::endl;
-	config->path = config->data["path"].get<std::string>();
+	for(auto pattern = config->data["patterns"].begin(); pattern != config->data["patterns"].end(); ++pattern)
+	{
+		this->patterns[pattern.key()] = pattern->get<std::string>();
+	}
+
 
 	/*
 	std::cout << _OK_TEXT_ << "LOAD CONFIG" << std::endl;
@@ -514,6 +523,11 @@ const nlohmann::json * const config::get(const std::string &name)
 	if(name == "messages")
 	{
 		return const_cast<const nlohmann::json * const>(&this->messages);
+	}
+
+	if(name == "patterns")
+	{
+		return const_cast<const nlohmann::json * const>(&this->patterns);
 	}
 
 	auto pos = this->_map.find(name);

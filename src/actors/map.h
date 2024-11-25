@@ -71,12 +71,6 @@ class map_t
 		//
 
 		int add_type(
-			const std::string &type_name, 
-			const std::string &base_path, 
-			nlohmann::json * data
-		);
-
-		int add_type2(
 			const std::string &name, 
 			const std::string &path
 		);

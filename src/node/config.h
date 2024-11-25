@@ -39,6 +39,7 @@ class config
 
 		nlohmann::json dbc;
 		nlohmann::json messages;
+		nlohmann::json patterns;
 
 		int thread_count = 5;
 
