@@ -8,6 +8,20 @@
 #include <tegia/context/user.h>
 
 
+namespace tegia {
+namespace actors {
+
+struct addr_t
+{
+	bool is_addr = true;
+	std::string actor;
+	std::string action;
+};
+
+} // END namespace actors
+} // END namespace tegia
+
+
 struct addr_t
 {
 	bool is_addr = true;
