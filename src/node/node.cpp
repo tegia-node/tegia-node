@@ -147,10 +147,10 @@ bool node::action()
 	// INIT DICTIONARES
 	//
 	
-	if(cluster->contains("/data/dictionaries/catalog"_json_pointer) == true)
+	if(cluster->contains("/dictionaries"_json_pointer) == true)
 	{
 		auto catalog = tegia::dictionaries::catalog_t::instance();
-		catalog->_list( (*cluster)["data"]["dictionaries"]["catalog"].get<std::string>() );
+		catalog->_list( (*cluster)["dictionaries"].get<std::string>() );
 	}
 
 	//
