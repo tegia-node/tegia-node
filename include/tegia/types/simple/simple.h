@@ -10,6 +10,11 @@
 namespace tegia {
 namespace types {
 
+namespace format {
+	const int XX_XX_YYYYYY	= 1;
+	const int XXXX_YYYYYY	= 2;
+}
+
 enum class SIMPLE_TYPE: long long int 
 {
 	STRING              = 2663297705,    // crc32("string")

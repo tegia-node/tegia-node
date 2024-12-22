@@ -66,14 +66,22 @@ int rus_passport_t::parse(const std::string & value, const nlohmann::json &valid
 
 	if(tmp.length() == 10)
 	{
-		this->_value = tmp.substr(0,4) + " " + tmp.substr(4,6);
+		this->region = tmp.substr(0,2);
+		this->series = tmp.substr(2,2);
+		this->number = tmp.substr(4,6);
+
+		this->_value = this->region + this->series + " " + this->number;
 		this->_is_valid = true;
 		return 1;
 	}
 
 	if(tmp.length() == 9)
 	{
-		this->_value = "0" + tmp.substr(0,3) + " " + tmp.substr(3,6);
+		this->region = "0" + tmp.substr(0,1);
+		this->series = tmp.substr(1,2);
+		this->number = tmp.substr(3,6);
+
+		this->_value = this->region + this->series + " " + this->number;
 		this->_is_valid = true;
 		return 1;
 	}
@@ -87,6 +95,23 @@ int rus_passport_t::parse(const std::string & value, const nlohmann::json &valid
 	return 2;
 };
 
+
+////////////////////////////////////////////////////////////////////////////////////////////
+/**
+		
+*/   
+////////////////////////////////////////////////////////////////////////////////////////////
+
+
+std::string rus_passport_t::format(const int &format)
+{
+	switch(format)
+	{
+		case tegia::types::format::XX_XX_YYYYYY: return this->region + " " + this->series + " " + this->number; break;
+		case tegia::types::format::XXXX_YYYYYY: return this->region + this->series + " " + this->number; break;
+	}
+	return "";
+};
 
 
 }	// END namespace types
