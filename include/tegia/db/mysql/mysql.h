@@ -43,6 +43,20 @@ namespace mysql{
 
 	std::string strip(const std::string &query);
 
+
+} // END namespace mysql
+} // END namespace tegia
+
+
+namespace tegia{
+namespace mysql{
+namespace transaction{
+
+	int start(const std::string &context);
+	int commit(const std::string &context);
+	int rollback(const std::string &context);
+
+} // END namespace transaction
 } // END namespace mysql
 } // END namespace tegia
 
