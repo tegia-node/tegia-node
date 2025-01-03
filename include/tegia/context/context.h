@@ -6,11 +6,13 @@
 #include <tegia/context/user.h>
 #include <tegia/core/json.h>
 
+/*
 #define _LOG_DEBUG_     0  // Отладочные сообщения
 #define _LOG_NOTICE_    1  // Уведомления о возможных проблемах
 #define _LOG_WARNING_   2  // Важные уведомления
 #define _LOG_ERROR_     3  // Серьезные ошибки в коде или логике работы Платформы
 #define _LOG_CRITICAL_  4  // Совсем беда!
+*/
 
 namespace tegia {
 class context

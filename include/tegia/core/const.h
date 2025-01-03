@@ -34,4 +34,12 @@
 #define _ERR_TEXT_ "\033[31m[ERR]\033[0m "
 
 
+///
+
+#define _LOG_DEBUG_     0  // Отладочные сообщения
+#define _LOG_NOTICE_    1  // Уведомления о возможных проблемах
+#define _LOG_WARNING_   2  // Важные уведомления
+#define _LOG_ERROR_     3  // Серьезные ошибки в коде или логике работы Платформы
+#define _LOG_CRITICAL_  4  // Совсем беда!
+
 #endif
