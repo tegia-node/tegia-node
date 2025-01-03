@@ -27,6 +27,25 @@
 namespace tegia{
 namespace mysql{
 
+struct table_t
+{
+	std::string name = "";
+	std::string comment = "";
+	nlohmann::json data = nlohmann::json::object();
+};
+
+
+/*
+
+*/
+
+
+} // END namespace mysql
+} // END namespace tegia
+
+namespace tegia{
+namespace mysql{
+
 	/**
 	 *	\brief		Выполнение SQL-запроса
 	 *	\authors	Горячев Игорь 
@@ -42,6 +61,10 @@ namespace mysql{
 	 */
 
 	std::string strip(const std::string &query);
+
+	std::string date(const std::string &datetime);
+
+	std::tuple<int,table_t*> table(const std::string &context, const std::string &name);
 
 
 } // END namespace mysql

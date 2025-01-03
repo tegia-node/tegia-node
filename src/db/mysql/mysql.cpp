@@ -29,6 +29,35 @@ std::string strip(const std::string &input)
 };
 
 
+std::string date(const std::string &datetime)
+{
+	if(datetime == "") return "NULL";
+	return "'" + datetime + "'";
+};
+
+
+std::tuple<int,table_t*> table(const std::string &context, const std::string &name)
+{
+	std::string query = "SHOW TABLE STATUS WHERE Name = '" + tegia::mysql::strip(name) + "';";
+	auto res = tegia::threads::data->mysql_provider->query(context,query,false);
+	
+	if(res->code != 200)
+	{
+		int code = res->code;
+		delete res;	
+		return std::make_tuple(code,nullptr);
+	}
+
+	tegia::mysql::table_t * table = new tegia::mysql::table_t();
+	table->data = res->json()[0];
+	table->comment = table->data["Comment"].get<std::string>();
+	table->name = table->data["Name"].get<std::string>();
+	delete res;
+
+	return std::make_tuple(200,table);
+};
+
+
 }	// END namespace mysql
 }	// END namespace tegia
 
