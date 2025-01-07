@@ -64,3 +64,16 @@ int message::send(
 } // namespace tegia
 
 
+
+namespace tegia {
+namespace actors {
+
+int unload(const std::string &actor)
+{
+	return tegia::threads::data->node()->unload(actor);
+}
+
+}  // namespace actors
+}  // namespace tegia
+
+

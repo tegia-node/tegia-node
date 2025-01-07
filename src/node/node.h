@@ -18,6 +18,7 @@
 //
 //
 
+
 namespace tegia {
 namespace threads {
 
@@ -55,6 +56,8 @@ class node
 			const std::shared_ptr<message_t> &message,
 			std::function<int(const std::shared_ptr<message_t> &)> fn,
 			int priority);
+
+		int unload(const std::string &actor);
 
 	private:
 		tegia::threads::pool * _threads;

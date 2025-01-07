@@ -232,6 +232,23 @@ bool node::run()
 	std::cout << _YELLOW_ << "NODE RUN" << _BASE_TEXT_ << std::endl;
 	std::cout << _YELLOW_ << "--------------------------------------------\n" << _BASE_TEXT_ << std::endl;
 
+
+	
+	/*
+	d1_t * d1 = new d1_t;
+	d2_t * d2 = new d2_t;
+
+	base_t *db1 = d1;
+	base_t *db2 = d2;
+
+	std::cout << typeid( db1 ).name() << std::endl;
+	std::cout << typeid( *db1 ).name() << std::endl;
+	std::cout << typeid( db2 ).name() << std::endl;
+	std::cout << typeid( *db2 ).name() << std::endl;
+
+	exit(0);
+	*/
+
 	//
 	// INIT CONFIGURATIONS
 	//
@@ -316,6 +333,19 @@ std::string node::config_path(const std::string &name)
 	{
 		return "";
 	}	
+};
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+
+*/
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+int node::unload(const std::string &actor)
+{
+	return this->actor_map.unload(actor);
 };
 
 

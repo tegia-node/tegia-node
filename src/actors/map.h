@@ -2,9 +2,10 @@
 #define H_TEGIA_ACTORS_MAP
 
 #include <iostream>
+#include <shared_mutex>
+
 #include <tegia/core/json.h>
 #include <tegia/core/const.h>
-
 #include <tegia/actors/type.h>
 #include <tegia/actors/actor.h>
 
@@ -83,11 +84,31 @@ class map_t
 		//
 		//
 		//
-
+			
 		std::tuple<int,std::function<void()>> send_message(
 			const std::string &name, 
 			const std::string &action, 
 			const std::shared_ptr<message_t> &message);
+
+		//
+		//
+		//
+
+		int unload(const std::string &actor);
+
+	
+	private:
+
+		void action_func(
+			tegia::actors::actor_t * _actor,
+			tegia::actors::action_t * _action,
+			const std::shared_ptr<message_t> &message,
+			std::shared_ptr<tegia::user> user);
+
+		std::shared_mutex shared_mtx;
+
+		// tegia::actors::actor_t * get_actor(const std::string &name);	
+
 
 };
 

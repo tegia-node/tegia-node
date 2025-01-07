@@ -79,10 +79,16 @@ static inline const std::shared_ptr<T> init(nlohmann::json data = nlohmann::json
 	return message;
 }
 
-
 }; // struct message
 }  // namespace tegia
 
 
+namespace tegia {
+namespace actors {
+
+int unload(const std::string &actor);
+
+}  // namespace actors
+}  // namespace tegia
 
 #endif

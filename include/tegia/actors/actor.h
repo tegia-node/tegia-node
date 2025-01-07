@@ -2,6 +2,7 @@
 #define H_TEGIA_ACTOR_BASE
 
 #include <iostream>
+#include <atomic>
 #include <tegia/core.h>
 
 
@@ -33,8 +34,10 @@ class actor_t
 		std::string ws = "";
 		int status = 200;
 
+		std::atomic<int> messages{0};
+
 		actor_t(const std::string &type,const std::string &name);
-		~actor_t() = default;
+		virtual ~actor_t() = default;
 
 	public:
 		actor_t(actor_t const&) = delete;

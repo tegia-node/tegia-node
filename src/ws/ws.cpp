@@ -35,7 +35,8 @@ ws_t::ws_t(
 	if(res->code != 200)
 	{
 		std::cout << _ERR_TEXT_ << "[" << res->code << "] LOAD WS " << this->name << std::endl;
-		std::cout << query << std::endl;
+		std::cout << "connection = " << connection << std::endl;
+		std::cout << "query      = " << query << std::endl;
 		delete res;
 		this->status = 500;
 		return;
