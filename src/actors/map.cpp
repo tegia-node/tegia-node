@@ -212,7 +212,7 @@ int map_t::unload(const std::string &actor)
 {
 	std::unique_lock<std::shared_mutex> lock(this->shared_mtx); // Захват unique-блокировки
 
-	std::cout << _RED_TEXT_ << "actors count = " << this->_actors.size() << _BASE_TEXT_ << std::endl;
+	// std::cout << _RED_TEXT_ << "actors count = " << this->_actors.size() << _BASE_TEXT_ << std::endl;
 
 	auto pos = this->_actors.find(actor);
 	if(pos != this->_actors.end())
@@ -223,8 +223,8 @@ int map_t::unload(const std::string &actor)
 			delete pos->second;
 			this->_actors.erase(actor);
 
-			std::cout << _YELLOW_ << "UNLOAD ACTOR '" << actor << "'" << _BASE_TEXT_ << std::endl;
-			std::cout << _RED_TEXT_ << "actors count = " << this->_actors.size() << _BASE_TEXT_ << std::endl;
+			// std::cout << _YELLOW_ << "UNLOAD ACTOR '" << actor << "'" << _BASE_TEXT_ << std::endl;
+			// std::cout << _RED_TEXT_ << "actors count = " << this->_actors.size() << _BASE_TEXT_ << std::endl;
 			
 			return 200;
 		}

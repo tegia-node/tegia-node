@@ -16,6 +16,7 @@
 namespace tegia {
 namespace actors {
 
+
 class map_t;
 template <typename actor_type, typename Enable> class type_t;
 
