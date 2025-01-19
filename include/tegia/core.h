@@ -8,6 +8,7 @@
 #include <tegia/core/cast.h>
 #include <tegia/core/json.h>
 #include <tegia/actors/message_t.h>
+#include <tegia/context/user.h>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
@@ -30,6 +31,19 @@ const nlohmann::json * const get(const std::string &name);
 } // namespace tegia
 
 
+
+namespace tegia {
+namespace configuration {
+
+const nlohmann::json * const get(const std::string &name);
+
+
+} // namespace configuration
+} // namespace tegia
+
+
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
 
@@ -40,7 +54,9 @@ const nlohmann::json * const get(const std::string &name);
 */
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
 class message_t;
+
 
 namespace tegia {
 struct message {
@@ -83,6 +99,9 @@ static inline const std::shared_ptr<T> init(nlohmann::json data = nlohmann::json
 }  // namespace tegia
 
 
+
+
+
 namespace tegia {
 namespace actors {
 
@@ -90,5 +109,21 @@ int unload(const std::string &actor);
 
 }  // namespace actors
 }  // namespace tegia
+
+
+
+
+namespace tegia {
+namespace threads {
+
+const std::shared_ptr<tegia::user> user();
+
+int run(std::function<void()> _fn);
+
+// static std::string tid();
+
+}
+}
+
 
 #endif

@@ -8,7 +8,7 @@
 #include <iostream>
 
 #include <tegia/core/crypt.h>
-#include <tegia/context/context.h>
+#include <tegia/core.h>
 
 //
 //

@@ -1,4 +1,5 @@
-#include "../threads/data.h"
+#include "../threads/thread_t.h"
+
 #include <tegia/tegia.h>
 #include <tegia/actors/message_t.h>
 
@@ -27,12 +28,7 @@ callback_t& callback_t::operator= (const callback_t &callback)
 
 int callback_t::add(const std::string &_actor, const std::string &_action)
 {
-	//int res = tegia::message::resolve(_actor);
-	//if(res == 200)
-	//{
-		this->callback.push({true,_actor,_action});
-	//}
-	//return res;
+	this->callback.push({true,_actor,_action});
 	return 200;
 };
 
@@ -76,14 +72,14 @@ addr_t callback_t::get()
 message_t::message_t(nlohmann::json _data):
 	data(_data),
 	uuid(tegia::random::uuid()),
-	user(tegia::threads::data->user)
+	user(tegia::threads::thread->_user)
 {};
 
 
 message_t::message_t():
 	data(nlohmann::json::object()),
 	uuid(tegia::random::uuid()),
-	user(tegia::threads::data->user)
+	user(tegia::threads::thread->_user)
 {};
 
 

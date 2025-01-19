@@ -1,5 +1,9 @@
 #include <tegia/db/mysql/mysql.h>
-#include "../../threads/data.h"
+// #include "../../threads/data.h"
+#include "../../threads/thread_t.h"
+
+#include <mysql/mysql.h>
+#include <mysql/errmsg.h>
 
 namespace tegia {
 namespace mysql {
@@ -14,18 +18,27 @@ namespace mysql {
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 
-tegia::mysql::records * query(const std::string &context, const std::string &query, bool trace)
+void init()
 {
-	// return tegia::threads::data->query(context,query,trace);
-	return tegia::threads::data->mysql_provider->query(context,query,trace);
+	if (mysql_library_init(0, nullptr, nullptr)) 
+	{
+		std::cerr << "Could not initialize MySQL library!" << std::endl;
+		exit(1);
+	}
 };
 
 
 
+tegia::mysql::records * query(const std::string &context, const std::string &query, bool trace)
+{
+	// std::cout << "mysql query run" << std::endl;
+	return tegia::threads::thread->mysql_provider()->query(context,query,trace);
+};
+
+
 std::string strip(const std::string &input)
 {
-	// return tegia::threads::data->mysql_strip(input);
-	return tegia::threads::data->mysql_provider->strip(input);
+	return tegia::threads::thread->mysql_provider()->strip(input);
 };
 
 
@@ -39,7 +52,7 @@ std::string date(const std::string &datetime)
 std::tuple<int,table_t*> table(const std::string &context, const std::string &name)
 {
 	std::string query = "SHOW TABLE STATUS WHERE Name = '" + tegia::mysql::strip(name) + "';";
-	auto res = tegia::threads::data->mysql_provider->query(context,query,false);
+	auto res = tegia::threads::thread->mysql_provider()->query(context,query,false);
 	
 	if(res->code != 200)
 	{
@@ -76,7 +89,7 @@ namespace transaction{
 
 int start(const std::string &context)
 {
-	auto res = tegia::threads::data->mysql_provider->query(context,"START TRANSACTION;");
+	auto res = tegia::threads::thread->mysql_provider()->query(context,"START TRANSACTION;");
 	auto code = res->code;
 	delete res;
 	return code;
@@ -85,7 +98,7 @@ int start(const std::string &context)
 
 int commit(const std::string &context)
 {
-	auto res = tegia::threads::data->mysql_provider->query(context,"COMMIT;");
+	auto res = tegia::threads::thread->mysql_provider()->query(context,"COMMIT;");
 	auto code = res->code;
 	delete res;
 	return code;
@@ -94,7 +107,7 @@ int commit(const std::string &context)
 
 int rollback(const std::string &context)
 {
-	auto res = tegia::threads::data->mysql_provider->query(context,"ROLLBACK;");
+	auto res = tegia::threads::thread->mysql_provider()->query(context,"ROLLBACK;");
 	auto code = res->code;
 	delete res;
 	return code;

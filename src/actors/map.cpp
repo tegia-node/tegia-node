@@ -3,8 +3,8 @@
 
 #include <tegia/core/const.h>
 #include <tegia/context/context.h>
-#include "../threads/data.h"
 
+#include "../threads/thread_t.h"
 #include "map.h"
 
 namespace tegia {
@@ -149,7 +149,7 @@ void map_t::action_func(
 	/*
 	std::cout << _YELLOW_ << "run action " << _actor->name << " " << _action->action << _BASE_TEXT_<< std::endl;
 	std::cout << "   tid           = " << tegia::context::tid() << std::endl;
-	std::cout << "   context  user = " << tegia::context::user()->uuid() << std::endl;
+	std::cout << "   context  user = " << tegia::threads::user()->uuid() << std::endl;
 	std::cout << "   function user = " << user->uuid() << std::endl;
 	std::cout << "   actor ws ws   = " << _actor->ws << std::endl;
 	std::cout << "   actor ws name = " << _actor->name << std::endl;
@@ -174,12 +174,14 @@ void map_t::action_func(
 	}
 	else if(_match <= 6)
 	{
-		tegia::threads::data->user = user;
+		// tegia::threads::data->user = user;
+		tegia::threads::thread->_user = user;
 		(_actor->*_action->fn)(message);
 	}
 	else if(_match > 6 && _actor->ws == user->_ws)
 	{
-		tegia::threads::data->user = user;
+		// tegia::threads::data->user = user;
+		tegia::threads::thread->_user = user;
 		(_actor->*_action->fn)(message);
 	}
 	else
@@ -212,8 +214,6 @@ int map_t::unload(const std::string &actor)
 {
 	std::unique_lock<std::shared_mutex> lock(this->shared_mtx); // Захват unique-блокировки
 
-	// std::cout << _RED_TEXT_ << "actors count = " << this->_actors.size() << _BASE_TEXT_ << std::endl;
-
 	auto pos = this->_actors.find(actor);
 	if(pos != this->_actors.end())
 	{
@@ -222,10 +222,7 @@ int map_t::unload(const std::string &actor)
 		{
 			delete pos->second;
 			this->_actors.erase(actor);
-
-			// std::cout << _YELLOW_ << "UNLOAD ACTOR '" << actor << "'" << _BASE_TEXT_ << std::endl;
-			// std::cout << _RED_TEXT_ << "actors count = " << this->_actors.size() << _BASE_TEXT_ << std::endl;
-			
+		
 			return 200;
 		}
 	}
@@ -246,10 +243,11 @@ int map_t::unload(const std::string &actor)
 ///////////////////////////////////////////////////////////////////////////////////////
 
 
-std::tuple<int,std::function<void()>> map_t::send_message(
+int map_t::send_message(
 	const std::string &name, 
 	const std::string &action, 
-	const std::shared_ptr<message_t> &message)
+	const std::shared_ptr<message_t> &message,
+	int priority)
 {
 	std::cout << _YELLOW_ << "send message " << name << " " << action << _BASE_TEXT_<< std::endl;
 
@@ -272,12 +270,7 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 			*/
 
 			pos->second->messages.fetch_add(1);
-
-			return std::move(
-				std::make_tuple(
-					200,std::bind(&map_t::action_func,this,pos->second,_action,message,tegia::threads::data->user)
-				)
-			);
+			return this->pool->add_task(std::bind(&map_t::action_func,this,pos->second,_action,message,tegia::threads::thread->_user),priority);
 		}
 	}
 
@@ -371,7 +364,7 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 								<< "      actor  = '" << name << "'\n" 
 								<< "      action = '" << action << "'\n"
 								<< "      domain = '" << domain->_name << "'" << _BASE_TEXT_ << std::endl;
-					return std::make_tuple(100,nullptr);
+					return 404; // std::make_tuple(100,nullptr);
 				}
 
 				actor_name = name.substr(0, index);
@@ -451,7 +444,7 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 							// std::cout << tegia::user::roles(ROLES::GLOBAL::ADMIN,ROLES::GLOBAL::USER) << std::endl;
 
 							delete _actor;
-							return std::make_tuple(403,nullptr);
+							return 403; //std::make_tuple(403,nullptr);
 						}
 						break;
 
@@ -469,7 +462,7 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 							message->http["response"]["type"] = "application/json";
 
 							delete _actor;
-							return std::make_tuple(500,nullptr);
+							return 500; //std::make_tuple(500,nullptr);
 						}
 						break;
 					} // END switch(_actor->status)
@@ -490,7 +483,7 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 										<< "      actor  = '" << name << "'\n" 
 										<< "      action = '" << action << "'\n"
 										<< "      domain = '" << domain->_name << "'" << _BASE_TEXT_ << std::endl;
-							return std::make_tuple(500,nullptr);							
+							return 500; //std::make_tuple(500,nullptr);							
 						}
 
 						_action = _pos->second;
@@ -503,12 +496,7 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 					//
 
 					_actor->messages.fetch_add(1);
-					
-					return std::move(
-						std::make_tuple(
-							200,std::bind(&map_t::action_func,this,_actor,_action,message,tegia::threads::data->user)
-						)
-					);
+					return this->pool->add_task(std::bind(&map_t::action_func,this,_actor,_action,message,tegia::threads::thread->_user), priority);
 
 					// END return
 				}
@@ -539,7 +527,7 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 								<< "      actor  = '" << name << "'\n" 
 								<< "      action = '" << action << "'\n"
 								<< "      domain = '" << domain->_name << "'" << _BASE_TEXT_ << std::endl;
-					return std::make_tuple(404,nullptr);
+					return 404; //std::make_tuple(404,nullptr);
 				}
 			}
 			break;
@@ -560,7 +548,7 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 						<< "      [404] NOT FOUND ACTOR DOMAIN\n" 
 						<< "      actor  = '" << name << "'\n" 
 						<< "      action = '" << action << "'" << _BASE_TEXT_ << std::endl;
-			return std::make_tuple(404,nullptr);
+			return 404; //std::make_tuple(404,nullptr);
 		}
 		break;
 
@@ -571,20 +559,19 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 						<< "      actor  = '" << name << "'\n" 
 						<< "      action = '" << action << "'\n"
 						<< "      domain = '" << domain->_name << "'" << _BASE_TEXT_ << std::endl;
-			return std::make_tuple(404,nullptr);
+			return 404; //std::make_tuple(404,nullptr);
 		}
 		break;
 
 		default:
 		{
 			std::cout << _ERR_TEXT_ << "404 | NOT FOUND STATE = '" << state << "'" << std::endl;
-			return std::make_tuple(404,nullptr);
+			return 404; //std::make_tuple(404,nullptr);
 		}
 		break;
 	}
 
 };
-
 
 
 /*

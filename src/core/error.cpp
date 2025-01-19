@@ -17,7 +17,7 @@ error_t::error_t(
 	type(type),
 	code(code),
 	info(info),
-	user(tegia::context::user()->uuid())
+	user(tegia::threads::user()->uuid())
 {
 
 };

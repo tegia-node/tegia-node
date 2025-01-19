@@ -20,7 +20,7 @@ class context
 	public:
 		static std::string tid();
 		// static ::tegia::user * const user();
-		static const std::shared_ptr<tegia::user> user();
+		// static const std::shared_ptr<tegia::user> user();
 
 		// static const nlohmann::json * const config(const std::string &name);
 

@@ -9,7 +9,7 @@
 #include <tegia/actors/type.h>
 #include <tegia/actors/actor.h>
 
-
+#include "../threads/pool_t.h"
 
 //
 //
@@ -58,6 +58,10 @@ class map_t
 
 	public:
 
+		std::string test = "test";
+		
+		tegia::threads::pool_t * pool;
+
 		map_t() = default;
 		~map_t() = default;
 
@@ -84,11 +88,13 @@ class map_t
 		//
 		//
 		//
-			
-		std::tuple<int,std::function<void()>> send_message(
+
+		int send_message(
 			const std::string &name, 
 			const std::string &action, 
-			const std::shared_ptr<message_t> &message);
+			const std::shared_ptr<message_t> &message,
+			int priority);
+
 
 		//
 		//

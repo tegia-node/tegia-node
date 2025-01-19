@@ -4,7 +4,7 @@
 #include <tegia/app/auth.h>
 #include <jwt/jwt.hpp>
 
-#include "../threads/data.h"
+#include "../threads/thread_t.h"
 
 
 
@@ -123,7 +123,7 @@ std::string auth::key(const std::string &filename)
 	{
 		_user->_roles.set(ROLES::SESSION::PUBLIC);
 		_jwt->_status = 6;
-		tegia::threads::data->user = _user;
+		tegia::threads::thread->_user = _user;
 		return _jwt;		
 	}
 
@@ -165,7 +165,7 @@ std::string auth::key(const std::string &filename)
 		std::cout << _YELLOW_ << "AUTH" << _BASE_TEXT_ << std::endl;
 		_user->print();
 		 
-		tegia::threads::data->user = _user;
+		tegia::threads::thread->_user = _user;
 		return _jwt;
 	}
 
@@ -174,7 +174,7 @@ std::string auth::key(const std::string &filename)
 		_user->_roles.set(ROLES::SESSION::PUBLIC);
 		//Handle Token expired exception here
 		_jwt->_status = 1;
-		tegia::threads::data->user = _user;
+		tegia::threads::thread->_user = _user;
 		return _jwt;
 	} 
 
@@ -183,7 +183,7 @@ std::string auth::key(const std::string &filename)
 		_user->_roles.set(ROLES::SESSION::PUBLIC);
 		//Handle invalid signature format error
 		_jwt->_status = 2;
-		tegia::threads::data->user = _user;
+		tegia::threads::thread->_user = _user;
 		return _jwt;
 	}
 
@@ -192,7 +192,7 @@ std::string auth::key(const std::string &filename)
 		_user->_roles.set(ROLES::SESSION::PUBLIC);
 		//Handle all kinds of other decode errors
 		_jwt->_status = 3;
-		tegia::threads::data->user = _user;
+		tegia::threads::thread->_user = _user;
 		return _jwt;
 	} 
 
@@ -203,7 +203,7 @@ std::string auth::key(const std::string &filename)
 		//NOTE: There are other derived types of verification errors
 		// which will be discussed in next topic.
 		_jwt->_status = 4;
-		tegia::threads::data->user = _user;
+		tegia::threads::thread->_user = _user;
 		return _jwt;
 	}
 
@@ -211,7 +211,7 @@ std::string auth::key(const std::string &filename)
 	{
 		_user->_roles.set(ROLES::SESSION::PUBLIC);
 		_jwt->_status = 5;
-		tegia::threads::data->user = _user;
+		tegia::threads::thread->_user = _user;
 		return _jwt;
 	}	
 };

@@ -46,6 +46,8 @@ struct table_t
 namespace tegia{
 namespace mysql{
 
+	void init();
+
 	/**
 	 *	\brief		Выполнение SQL-запроса
 	 *	\authors	Горячев Игорь 
@@ -53,6 +55,7 @@ namespace mysql{
 	 */
 
 	tegia::mysql::records *query(const std::string &context, const std::string &query, bool trace = false);
+	// tegia::mysql::records *query2(const std::string &context, const std::string &query, bool trace = false);
 
 	/**
 	 *	\brief		Выполняет экранирование строки для SQL-запроса

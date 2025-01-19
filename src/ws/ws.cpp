@@ -58,7 +58,7 @@ ws_t::ws_t(
 
 		if(this->type == "USER::PERSONAL")
 		{
-			auto pos = this->name.find(tegia::context::user()->uuid());
+			auto pos = this->name.find(tegia::threads::user()->uuid());
 			if(pos != std::string::npos)
 			{
 				this->status = this->_create();
@@ -67,7 +67,7 @@ ws_t::ws_t(
 		}
 		else
 		{
-			auto user = tegia::context::user();
+			auto user = tegia::threads::user();
 			auto match = user->_roles.to_ullong() & this->creators;
 
 			std::cout << "user->_roles   = " << user->_roles.to_ullong() << std::endl;
@@ -165,7 +165,7 @@ int ws_t::_create()
 	nlohmann::json members;
 	nlohmann::json member;
 
-	auto user = tegia::context::user();
+	auto user = tegia::threads::user();
 	std::string uuid = user->uuid();
 	unsigned long long int roles = tegia::user::roles(ROLES::WS::OWNER,ROLES::WS::ADMIN,ROLES::WS::MEMBER);
 
@@ -204,14 +204,14 @@ int ws_t::router(const std::shared_ptr<message_t> &message)
 {
 	std::cout << _YELLOW_ << "ws_t::router" << _BASE_TEXT_ << std::endl;
 	std::cout << "tid = " << tegia::context::tid() << std::endl;
-	tegia::context::user()->print();
+	tegia::threads::user()->print();
 
 	//
 	// SET USER ROLES
 	//
 
 	long long int role = 0;
-	auto user = tegia::context::user();
+	auto user = tegia::threads::user();
 	std::string uuid = user->uuid();
 
 	std::cout << "roles old = " << user->_roles.to_ullong() << std::endl;
@@ -229,7 +229,7 @@ int ws_t::router(const std::shared_ptr<message_t> &message)
 	//
 
 	user->_ws = this->name;	
-	tegia::context::user()->print();
+	tegia::threads::user()->print();
 
 	// std::cout << _OK_TEXT_ << "USER '" << uuid << "' IS MEMBER WS" << std::endl;
 
