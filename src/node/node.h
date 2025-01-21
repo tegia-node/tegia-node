@@ -2,29 +2,19 @@
 #define H_TEGIA_NODE
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <tuple>
+// STL
+   #include <iostream>
+   #include <tuple>
 
-#include <tegia/core/json.h>
+// PUBLIC
+   #include <tegia/core/json.h>
+   #include <tegia/core.h>
+   #include <tegia/db/mysql/mysql.h>
 
-// dictionares
-#include "../dictionaries/catalog.h"
-
-#include "../actors/map.h"
-
-#include "config.h"
-
-//
-//
-//
-
-namespace tegia {
-namespace threads {
-
-class pool;
-
-}
-}
+// PRIVATE
+   #include "../actors/map.h"
+   #include "../threads/manager_t.h"
+   #include "../threads/pool_t.h"
 
 //
 //
@@ -32,6 +22,7 @@ class pool;
 
 namespace tegia {
 namespace node {
+
 
 class node
 {
@@ -45,26 +36,20 @@ class node
 		bool run();
 		bool action();
 
-		int send_message(
-			const std::string &actor, 
-			const std::string &action, 
-			const std::shared_ptr<message_t> &message,
-			int priority);
-
-		int send_message(
+	
+		int send_message(	// TODO: исключить
 			const std::shared_ptr<message_t> &message,
 			std::function<int(const std::shared_ptr<message_t> &)> fn,
 			int priority);
-
+		
 	private:
-		tegia::threads::pool * _threads;
-		tegia::node::config  * _config;
-
-		tegia::actors::map_t actor_map;
-
-		void init_thread(const nlohmann::json &config);
+		tegia::threads::pool_t    * _pool;  // TODO перенести в actor_map
+		tegia::node::config       * _config;
+		tegia::actors::map_t      * _actor_map;
+		tegia::threads::manager_t * _manager;
 
 };	// END class node
+
 
 }	// END namespace node
 }	// EMD namespace tegia

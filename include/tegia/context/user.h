@@ -19,6 +19,7 @@ namespace tegia
 namespace tegia::threads
 {
 	class _data;
+	class thread_t;
 }
 
 namespace tegia::actors
@@ -64,6 +65,7 @@ namespace tegia {
 class user
 {
 	friend class ::tegia::threads::_data;
+	friend class ::tegia::threads::thread_t;
 	friend class ::tegia::auth;
 	friend class ::tegia::actors::ws_t;
 	friend class ::tegia::actors::map_t;

@@ -91,26 +91,6 @@ class type_t<actor_type, std::enable_if_t<std::is_base_of_v<tegia::actors::ws_t,
 		{
 			std::cout << _YELLOW_ << "[create ws] " << this->type << " " << name << _BASE_TEXT_<< std::endl;
 			return new actor_type(name);
-
-			/*
-			auto actor = new actor_type(name);
-
-			std::cout << _OK_TEXT_ << std::endl;
-			std::cout << "status = " << actor->status << std::endl;
-
-			if(actor->status == 200)
-			{
-				return actor;
-			}
-
-			std::cout << _ERR_TEXT_ << std::endl;
-			std::cout << "status = " << actor->status << std::endl;
-			std::cout << "type   = " << actor->type << std::endl;
-			std::cout << "name   = " << actor->name << std::endl;
-
-			delete actor;
-			return nullptr;
-			*/
 		};
 };
 

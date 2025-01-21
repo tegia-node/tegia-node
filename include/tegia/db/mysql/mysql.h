@@ -27,6 +27,27 @@
 namespace tegia{
 namespace mysql{
 
+struct table_t
+{
+	std::string name = "";
+	std::string comment = "";
+	nlohmann::json data = nlohmann::json::object();
+};
+
+
+/*
+
+*/
+
+
+} // END namespace mysql
+} // END namespace tegia
+
+namespace tegia{
+namespace mysql{
+
+	void init();
+
 	/**
 	 *	\brief		Выполнение SQL-запроса
 	 *	\authors	Горячев Игорь 
@@ -34,6 +55,7 @@ namespace mysql{
 	 */
 
 	tegia::mysql::records *query(const std::string &context, const std::string &query, bool trace = false);
+	// tegia::mysql::records *query2(const std::string &context, const std::string &query, bool trace = false);
 
 	/**
 	 *	\brief		Выполняет экранирование строки для SQL-запроса
@@ -43,6 +65,24 @@ namespace mysql{
 
 	std::string strip(const std::string &query);
 
+	std::string date(const std::string &datetime);
+
+	std::tuple<int,table_t*> table(const std::string &context, const std::string &name);
+
+
+} // END namespace mysql
+} // END namespace tegia
+
+
+namespace tegia{
+namespace mysql{
+namespace transaction{
+
+	int start(const std::string &context);
+	int commit(const std::string &context);
+	int rollback(const std::string &context);
+
+} // END namespace transaction
 } // END namespace mysql
 } // END namespace tegia
 

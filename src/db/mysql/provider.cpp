@@ -119,7 +119,7 @@ bool provider::add_connection(const std::string &name, nlohmann::json config)
 		{
 			this->_connections.insert({name,connection});
 			
-			std::cout << _OK_TEXT_ << "connection " << name << " init" << std::endl;
+			// std::cout << _OK_TEXT_ << "connection " << name << " init" << std::endl;
 			LNOTICE("connection '" + name + "' init");
 		}
 

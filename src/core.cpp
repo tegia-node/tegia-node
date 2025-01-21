@@ -1,11 +1,10 @@
 
 #include <tegia/core.h>
-
-#include "node/node.h"
-#include "threads/data.h"
-
 #include <tegia/actors/actor.h>
 #include <tegia/actors/type.h>
+
+#include "node/node.h"
+
 
 
 
@@ -14,13 +13,13 @@ namespace conf {
 
 std::string path(const std::string &name)
 {
-	return tegia::threads::data->node()->config_path(name);
+	return tegia::threads::thread->node()->config_path(name);
 };
 
 
 const nlohmann::json * const get(const std::string &name)
 {
-	return tegia::threads::data->node()->config(name);
+	return tegia::threads::thread->node()->config(name);
 };
 
 
@@ -28,6 +27,25 @@ const nlohmann::json * const get(const std::string &name)
 } // namespace tegia
 
 
+//
+//
+//
+
+namespace tegia {
+namespace configuration {
+
+const nlohmann::json * const get(const std::string &name)
+{
+	return tegia::threads::thread->config(name);
+};
+
+
+} // namespace configuration
+} // namespace tegia
+
+//
+//
+//
 
 namespace tegia {
 
@@ -38,7 +56,7 @@ int message::send(
 	int priority)
 {
 	auto _message = tegia::message::init(std::move(data));
-	return tegia::threads::data->node()->send_message(name,action,_message,priority);
+	return tegia::threads::thread->_actor_map->send_message(name,action,_message,priority);
 };
 
 
@@ -48,7 +66,7 @@ int message::send(
 	const std::shared_ptr<message_t> &message,
 	int priority)
 {
-	return tegia::threads::data->node()->send_message(name,action,message,priority);
+	return tegia::threads::thread->_actor_map->send_message(name,action,message,priority);
 };
 
 
@@ -57,10 +75,42 @@ int message::send(
 	std::function<int(const std::shared_ptr<message_t> &)> fn,
 	int priority)
 {
-	return tegia::threads::data->node()->send_message(message,fn,priority);
+	return tegia::threads::thread->node()->send_message(message,fn,priority);
 };
 
 
 } // namespace tegia
 
 
+
+namespace tegia {
+namespace actors {
+
+int unload(const std::string &actor)
+{
+	return tegia::threads::thread->actor_map()->unload(actor);
+}
+
+}  // namespace actors
+}  // namespace tegia
+
+
+
+namespace tegia {
+namespace threads {
+
+int run(std::function<void()> _fn)
+{
+	return tegia::threads::thread->thread(_fn);
+};
+
+
+const std::shared_ptr<tegia::user> user()
+{
+    return tegia::threads::thread->user();
+};
+
+
+
+}
+}

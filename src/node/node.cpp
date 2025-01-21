@@ -4,9 +4,10 @@
 #include <tegia/core/json.h> 
 
 #include "node.h"
-#include "../threads/pool.h"
-#include "../threads/data.h"
-#include "../fn.h"
+
+// dictionares
+#include "../dictionaries/catalog.h"
+
 
 // LOGGER
 #include "logger.h"
@@ -26,55 +27,17 @@ node::node()
 
 };
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+
+*/
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 node::~node()
 {
-	delete this->_threads;
-	delete this->_config;
-};
 
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-
-*/
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-void node::init_thread(const nlohmann::json &config)
-{
-	::tegia::threads::data->init(config);
-	::tegia::threads::data->_node = this;
-};
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-
-*/
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-int node::send_message(const std::string &actor, const std::string &action, const std::shared_ptr<message_t> &message, int priority)
-{
-	// auto start_time = std::chrono::high_resolution_clock::now();
-
-	auto [result,_fn] = this->actor_map.send_message(
-		actor,
-		action,
-		message
-	);
-
-	// auto end_time = std::chrono::high_resolution_clock::now();
-	// auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
-	// std::cout << "[CORE] Время упаковки: " << duration.count() << " наносекунд" << std::endl;
-
-	if(result == 200)
-	{
-		this->_threads->add_task(_fn,priority);
-	}
-
-
-	return result;
 };
 
 
@@ -109,8 +72,6 @@ int node::send_message(
 			exit(0);
 		}
 	};
-
-	this->_threads->add_task(_fn,priority);
 	return 200;
 };
 
@@ -132,17 +93,6 @@ bool node::action()
 
 	auto cluster = this->_config->get("cluster");
 
-	/*
-	std::cout << _YELLOW_ << "db connections" << _BASE_TEXT_ << std::endl;
-	std::cout << this->_config->get("dbc")->dump() << std::endl;
-
-	std::cout << _YELLOW_ << "messages" << _BASE_TEXT_ << std::endl;
-	std::cout << this->_config->get("messages")->dump() << std::endl;
-
-	std::cout << _YELLOW_ << "patterns" << _BASE_TEXT_ << std::endl;
-	std::cout << (*cluster)["patterns"].dump() << std::endl;
-	*/
-
 	//
 	// INIT DICTIONARES
 	//
@@ -157,24 +107,24 @@ bool node::action()
 	// INIT DOMAINS
 	//
 
-	this->actor_map.add_domain("base",tegia::domain::LOCAL);
-	this->actor_map.add_domain("parsers",tegia::domain::LOCAL);
-	this->actor_map.add_domain("http",tegia::domain::LOCAL);
-	this->actor_map.add_domain("test",tegia::domain::LOCAL);
-	this->actor_map.add_domain("app",tegia::domain::LOCAL);
+	this->_actor_map->add_domain("base",tegia::domain::LOCAL);
+	this->_actor_map->add_domain("parsers",tegia::domain::LOCAL);
+	this->_actor_map->add_domain("http",tegia::domain::LOCAL);
+	this->_actor_map->add_domain("test",tegia::domain::LOCAL);
+	this->_actor_map->add_domain("app",tegia::domain::LOCAL);
 
-	this->actor_map.add_domain("ws",tegia::domain::LOCAL);
-	this->actor_map.add_domain("task",tegia::domain::LOCAL);
+	this->_actor_map->add_domain("ws",tegia::domain::LOCAL);
+	this->_actor_map->add_domain("task",tegia::domain::LOCAL);
 	
-	this->actor_map.add_domain("enrichment",tegia::domain::LOCAL);
-	this->actor_map.add_domain("models",tegia::domain::LOCAL);
-	this->actor_map.add_domain("growth",tegia::domain::LOCAL);
-	this->actor_map.add_domain("leaks",tegia::domain::LOCAL);
-	this->actor_map.add_domain("example",tegia::domain::LOCAL);
+	this->_actor_map->add_domain("enrichment",tegia::domain::LOCAL);
+	this->_actor_map->add_domain("models",tegia::domain::LOCAL);
+	this->_actor_map->add_domain("growth",tegia::domain::LOCAL);
+	this->_actor_map->add_domain("leaks",tegia::domain::LOCAL);
+	this->_actor_map->add_domain("example",tegia::domain::LOCAL);
 
-	this->actor_map.add_domain("auth",tegia::domain::LOCAL);
-	this->actor_map.add_domain("user",tegia::domain::LOCAL);
-	this->actor_map.add_domain("data",tegia::domain::LOCAL);
+	this->_actor_map->add_domain("auth",tegia::domain::LOCAL);
+	this->_actor_map->add_domain("user",tegia::domain::LOCAL);
+	this->_actor_map->add_domain("data",tegia::domain::LOCAL);
 
 	//
 	// ADD PATTERNS
@@ -183,7 +133,7 @@ bool node::action()
 	auto patterns = this->_config->get("patterns");
 	for(auto it = patterns->begin(); it != patterns->end(); ++it)
 	{
-		this->actor_map.add_pattern(it.key(),it->get<std::string>());
+		this->_actor_map->add_pattern(it.key(),it->get<std::string>());
 	}
 
 	std::cout << _YELLOW_ << "\n--------------------------------------------" << _BASE_TEXT_ << std::endl;
@@ -198,7 +148,7 @@ bool node::action()
 	for(auto message = messages->begin(); message != messages->end(); ++message)
 	{
 		auto msg = tegia::message::init((*message)["data"]);
-		this->send_message(
+		this->_actor_map->send_message(
 			(*message)["actor"].get<std::string>(),
 			(*message)["action"].get<std::string>(),
 			msg,
@@ -232,11 +182,15 @@ bool node::run()
 	std::cout << _YELLOW_ << "NODE RUN" << _BASE_TEXT_ << std::endl;
 	std::cout << _YELLOW_ << "--------------------------------------------\n" << _BASE_TEXT_ << std::endl;
 
+
 	//
 	// INIT CONFIGURATIONS
 	//
 
-	this->_config = new tegia::node::config();
+	this->_config    = new tegia::node::config();
+	this->_manager   = new tegia::threads::manager_t();
+	this->_actor_map = new tegia::actors::map_t();
+
 	auto cluster = this->_config->cluster();
 
 	for(auto it = (*cluster)["configurations"].begin(); it != (*cluster)["configurations"].end(); ++it)
@@ -250,7 +204,7 @@ bool node::run()
 		std::string path = (*config)["path"].get<std::string>();
 		for(auto it = (*config)["types"].begin(); it != (*config)["types"].end(); ++it)
 		{
-			this->actor_map.add_type(
+			this->_actor_map->add_type(
 				it.key(), 							// type name
 				path + it->get<std::string>()		// lib path
 			);
@@ -261,17 +215,16 @@ bool node::run()
 	// INIT THREADS
 	//
 
+	tegia::mysql::init();
+
 	std::cout << _YELLOW_ << std::endl;
 	std::cout << "INIT THREADS" << std::endl;
 	std::cout << _BASE_TEXT_ << std::endl;
 
-	this->_threads = new tegia::threads::pool();		
-	auto _conf_db = this->_config->get("dbc");
-	this->_threads->init(
-		this->_config->thread_count, 
-		std::bind(&tegia::node::node::init_thread,this,(*_conf_db)), 
-		std::bind(&tegia::node::node::action,this)
-	);
+	this->_manager->init(this,this->_config, this->_actor_map);
+	this->_actor_map->pool = new tegia::threads::pool_t();
+	this->_actor_map->pool->_callback = std::bind(&tegia::node::node::action,this);
+	this->_actor_map->pool->run(8);
 
 	return true;
 };
@@ -286,15 +239,7 @@ bool node::run()
 
 const nlohmann::json * const node::config(const std::string &name)
 {
-	auto pos = this->_config->_map.find(name);
-	if(pos != this->_config->_map.end())
-	{
-		return const_cast<const nlohmann::json * const>(&pos->second->data);
-	}
-	else
-	{
-		return nullptr;
-	}
+	return this->_config->get(name);
 };
 
 
@@ -317,6 +262,13 @@ std::string node::config_path(const std::string &name)
 		return "";
 	}	
 };
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+
+*/
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 

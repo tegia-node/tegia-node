@@ -9,6 +9,8 @@
 #include <mutex>
 #include <condition_variable>
 #include <chrono>
+#include <bitset>
+#include <strings.h>
 
 using namespace std::chrono_literals;
 
@@ -24,7 +26,7 @@ namespace threads {
    // #define _PLOW_       2 
 
 class worker;
-
+class worker_t;
 
 struct task
 {
@@ -46,6 +48,7 @@ struct task
 class queue
 {
 	friend class tegia::threads::worker;
+	friend class tegia::threads::worker_t;
 
 	protected:
 

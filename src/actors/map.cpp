@@ -3,8 +3,8 @@
 
 #include <tegia/core/const.h>
 #include <tegia/context/context.h>
-#include "../threads/data.h"
 
+#include "../threads/thread_t.h"
 #include "map.h"
 
 namespace tegia {
@@ -139,6 +139,98 @@ int map_t::add_pattern(
 };
 
 
+
+void map_t::action_func(
+	tegia::actors::actor_t * _actor,
+	tegia::actors::action_t * _action,
+	const std::shared_ptr<message_t> &message,
+	std::shared_ptr<tegia::user> user)
+{
+	/*
+	std::cout << _YELLOW_ << "run action " << _actor->name << " " << _action->action << _BASE_TEXT_<< std::endl;
+	std::cout << "   tid           = " << tegia::context::tid() << std::endl;
+	std::cout << "   context  user = " << tegia::threads::user()->uuid() << std::endl;
+	std::cout << "   function user = " << user->uuid() << std::endl;
+	std::cout << "   actor ws ws   = " << _actor->ws << std::endl;
+	std::cout << "   actor ws name = " << _actor->name << std::endl;
+	std::cout << "   user ws       = " << user->_ws << std::endl;
+	std::cout << "   user roles    = " << user->_roles.to_ullong() << std::endl;
+	std::cout << "   action roles  = " << _action->roles << std::endl;
+	std::cout << "   &             = " << (user->_roles.to_ullong() & _action->roles) << std::endl;
+	*/
+	
+	auto _match = user->_roles.to_ullong() & _action->roles;
+
+	if(_match == 0)
+	{
+		std::cout << _ERR_TEXT_ << _RED_TEXT_ << "send message \n" 
+					<< "      [403] YOU DO NOT HAVE ACCCESS RIGHTS\n" 
+					<< "      status = '" << _actor->status << "'\n" 
+					<< "      actor  = '" << _actor->name << "'\n"
+					<< "      action = '" << _action << "'" << _BASE_TEXT_ << std::endl;
+
+		message->http["response"]["status"] = 403;
+		message->http["response"]["type"] = "application/json";
+	}
+	else if(_match <= 6)
+	{
+		// tegia::threads::data->user = user;
+		tegia::threads::thread->_user = user;
+		(_actor->*_action->fn)(message);
+	}
+	else if(_match > 6 && _actor->ws == user->_ws)
+	{
+		// tegia::threads::data->user = user;
+		tegia::threads::thread->_user = user;
+		(_actor->*_action->fn)(message);
+	}
+	else
+	{
+		std::cout << _ERR_TEXT_ << _RED_TEXT_ << "send message \n" 
+					<< "      [403] YOU DO NOT HAVE ACCCESS RIGHTS\n" 
+					<< "      status = '" << _actor->status << "'\n" 
+					<< "      actor  = '" << _actor->name << "'\n"
+					<< "      action = '" << _action << "'" << _BASE_TEXT_ << std::endl;
+
+		message->http["response"]["status"] = 403;
+		message->http["response"]["type"] = "application/json";
+	}
+
+	_actor->messages.fetch_sub(1);
+
+	auto callback = message->callback.get();
+	if(callback.is_addr == true)
+	{
+		tegia::message::send(callback.actor, callback.action, message);
+	}
+};
+
+//
+//
+//
+
+
+int map_t::unload(const std::string &actor)
+{
+	std::unique_lock<std::shared_mutex> lock(this->shared_mtx); // Захват unique-блокировки
+
+	auto pos = this->_actors.find(actor);
+	if(pos != this->_actors.end())
+	{
+		int curr_msg = pos->second->messages.load();
+		if(curr_msg == 0)
+		{
+			delete pos->second;
+			this->_actors.erase(actor);
+		
+			return 200;
+		}
+	}
+
+	return 100;
+};
+
+
 ///////////////////////////////////////////////////////////////////////////////////////
 /*
 
@@ -151,13 +243,12 @@ int map_t::add_pattern(
 ///////////////////////////////////////////////////////////////////////////////////////
 
 
-std::tuple<int,std::function<void()>> map_t::send_message(
+int map_t::send_message(
 	const std::string &name, 
 	const std::string &action, 
-	const std::shared_ptr<message_t> &message)
+	const std::shared_ptr<message_t> &message,
+	int priority)
 {
-	// auto start_sendmessage_time = std::chrono::high_resolution_clock::now();
-
 	std::cout << _YELLOW_ << "send message " << name << " " << action << _BASE_TEXT_<< std::endl;
 
 	///////////////////////////////////////////////////////////////////////////////////////
@@ -167,77 +258,20 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 	///////////////////////////////////////////////////////////////////////////////////////
 
 	{
+		std::shared_lock<std::shared_mutex> lock(this->shared_mtx); // Захват shared-блокировки
+
 		auto pos = this->_actors.find(name);
 		if(pos != this->_actors.end())
 		{
-			// tegia::actors::action_fn_ptr _fn = this->_actions[pos->second->type + action];
 			auto _action = this->_actions[pos->second->type + action];
 
-			return std::move(std::make_tuple(200,
-				[
-					_actor = pos->second,
-					_action,
-					message,
-					user = tegia::threads::data->user
-				]()
-				{
-					/*
-					std::cout << _YELLOW_ << "run action " << _actor->name << " " << _action->action << _BASE_TEXT_<< std::endl;
-					std::cout << "   tid           = " << tegia::context::tid() << std::endl;
-					std::cout << "   context  user = " << tegia::context::user()->uuid() << std::endl;
-					std::cout << "   function user = " << user->uuid() << std::endl;
-					std::cout << "   actor ws ws   = " << _actor->ws << std::endl;
-					std::cout << "   actor ws name = " << _actor->name << std::endl;
-					std::cout << "   user ws       = " << user->_ws << std::endl;
-					std::cout << "   user roles    = " << user->_roles.to_ullong() << std::endl;
-					std::cout << "   action roles  = " << _action->roles << std::endl;
-					std::cout << "   &             = " << (user->_roles.to_ullong() & _action->roles) << std::endl;
-					*/
+			/*
+				TODO: Проверку прав делать до добавления задачи в пул
+			*/
 
-					auto _match = user->_roles.to_ullong() & _action->roles;
-
-					if(_match == 0)
-					{
-						std::cout << _ERR_TEXT_ << _RED_TEXT_ << "send message \n" 
-									<< "      [403] YOU DO NOT HAVE ACCCESS RIGHTS\n" 
-									<< "      status = '" << _actor->status << "'\n" 
-									<< "      actor  = '" << _actor->name << "'\n"
-									<< "      action = '" << _action << "'" << _BASE_TEXT_ << std::endl;
-
-						message->http["response"]["status"] = 403;
-						message->http["response"]["type"] = "application/json";
-					}
-					else if(_match <= 6)
-					{
-						tegia::threads::data->user = user;
-						(_actor->*_action->fn)(message);
-					}
-					else if(_match > 6 && _actor->ws == user->_ws)
-					{
-						tegia::threads::data->user = user;
-						(_actor->*_action->fn)(message);
-					}
-					else
-					{
-						std::cout << _ERR_TEXT_ << _RED_TEXT_ << "send message \n" 
-									<< "      [403] YOU DO NOT HAVE ACCCESS RIGHTS\n" 
-									<< "      status = '" << _actor->status << "'\n" 
-									<< "      actor  = '" << _actor->name << "'\n"
-									<< "      action = '" << _action << "'" << _BASE_TEXT_ << std::endl;
-
-						message->http["response"]["status"] = 403;
-						message->http["response"]["type"] = "application/json";
-					}
-				
-					auto callback = message->callback.get();
-					if(callback.is_addr == true)
-					{
-						tegia::message::send(callback.actor, callback.action, message);
-					}
-				}
-			));
+			pos->second->messages.fetch_add(1);
+			return this->pool->add_task(std::bind(&map_t::action_func,this,pos->second,_action,message,tegia::threads::thread->_user),priority);
 		}
-	
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////
@@ -246,6 +280,7 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 	//
 	///////////////////////////////////////////////////////////////////////////////////////
 
+	std::unique_lock<std::shared_mutex> lock(this->shared_mtx); // Захват unique-блокировки
 
 	tegia::actors::domain_t * domain = nullptr;
 
@@ -329,7 +364,7 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 								<< "      actor  = '" << name << "'\n" 
 								<< "      action = '" << action << "'\n"
 								<< "      domain = '" << domain->_name << "'" << _BASE_TEXT_ << std::endl;
-					return std::make_tuple(100,nullptr);
+					return 404; // std::make_tuple(100,nullptr);
 				}
 
 				actor_name = name.substr(0, index);
@@ -379,6 +414,13 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 					}
 					
 					auto _actor = pos->second->create_actor(name);
+
+					/* -DEL-
+					std::cout << typeid( _actor ).name() << std::endl;
+					std::cout << typeid( *_actor ).name() << std::endl;
+					exit(0);
+					*/
+
 					switch(_actor->status)
 					{
 						case 200:
@@ -402,7 +444,7 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 							// std::cout << tegia::user::roles(ROLES::GLOBAL::ADMIN,ROLES::GLOBAL::USER) << std::endl;
 
 							delete _actor;
-							return std::make_tuple(403,nullptr);
+							return 403; //std::make_tuple(403,nullptr);
 						}
 						break;
 
@@ -420,7 +462,7 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 							message->http["response"]["type"] = "application/json";
 
 							delete _actor;
-							return std::make_tuple(500,nullptr);
+							return 500; //std::make_tuple(500,nullptr);
 						}
 						break;
 					} // END switch(_actor->status)
@@ -429,7 +471,7 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 					// std::cout << _YELLOW_ << name << _BASE_TEXT_ << std::endl;
 
 					this->_actors.insert({name,_actor});
-					
+										
 					tegia::actors::action_t * _action = nullptr;
 
 					{
@@ -441,81 +483,21 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 										<< "      actor  = '" << name << "'\n" 
 										<< "      action = '" << action << "'\n"
 										<< "      domain = '" << domain->_name << "'" << _BASE_TEXT_ << std::endl;
-							return std::make_tuple(500,nullptr);							
+							return 500; //std::make_tuple(500,nullptr);							
 						}
 
 						_action = _pos->second;
 					}
 
+					
+
 					//
 					// GENERATE TASK FUNCTION
 					//
 
-					return std::move(std::make_tuple(200,
-						[
-							_actor,
-							_action,
-							message,
-							user = tegia::threads::data->user
-						]()
-						{
-							/*
-							std::cout << _YELLOW_ << "run action " << _actor->name << " " << _action->action << _BASE_TEXT_<< std::endl;
-							std::cout << "   tid           = " << tegia::context::tid() << std::endl;
-							std::cout << "   context  user = " << tegia::context::user()->uuid() << std::endl;
-							std::cout << "   function user = " << user->uuid() << std::endl;
-							std::cout << "   actor ws ws   = " << _actor->ws << std::endl;
-							std::cout << "   actor ws name = " << _actor->name << std::endl;
-							std::cout << "   user ws       = " << user->_ws << std::endl;
-							std::cout << "   user roles    = " << user->_roles.to_ullong() << std::endl;
-							std::cout << "   action roles  = " << _action->roles << std::endl;
-							std::cout << "   &             = " << (user->_roles.to_ullong() & _action->roles) << std::endl;
-							*/
+					_actor->messages.fetch_add(1);
+					return this->pool->add_task(std::bind(&map_t::action_func,this,_actor,_action,message,tegia::threads::thread->_user), priority);
 
-							auto _match = user->_roles.to_ullong() & _action->roles;
-
-							// std::cout << "min = " << tegia::user::roles(ROLES::PUBLIC, ROLES::USER) << std::endl;
-
-							if(_match == 0)
-							{
-								std::cout << _ERR_TEXT_ << _RED_TEXT_ << "send message \n" 
-											<< "      [403] YOU DO NOT HAVE ACCCESS RIGHTS\n" 
-											<< "      status = '" << _actor->status << "'\n" 
-											<< "      actor  = '" << _actor->name << "'\n"
-											<< "      action = '" << _action << "'" << _BASE_TEXT_ << std::endl;
-
-								message->http["response"]["status"] = 403;
-								message->http["response"]["type"] = "application/json";
-							}
-							else if(_match <= 6)
-							{
-								tegia::threads::data->user = user;
-								(_actor->*_action->fn)(message);
-							}
-							else if(_match > 6 && _actor->ws == user->_ws)
-							{
-								tegia::threads::data->user = user;
-								(_actor->*_action->fn)(message);
-							}
-							else
-							{
-								std::cout << _ERR_TEXT_ << _RED_TEXT_ << "send message \n" 
-											<< "      [403] YOU DO NOT HAVE ACCCESS RIGHTS\n" 
-											<< "      status = '" << _actor->status << "'\n" 
-											<< "      actor  = '" << _actor->name << "'\n"
-											<< "      action = '" << _action << "'" << _BASE_TEXT_ << std::endl;
-
-								message->http["response"]["status"] = 403;
-								message->http["response"]["type"] = "application/json";
-							}
-						
-							auto callback = message->callback.get();
-							if(callback.is_addr == true)
-							{
-								tegia::message::send(callback.actor, callback.action, message);
-							}
-						}
-					)); 
 					// END return
 				}
 			}
@@ -545,7 +527,7 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 								<< "      actor  = '" << name << "'\n" 
 								<< "      action = '" << action << "'\n"
 								<< "      domain = '" << domain->_name << "'" << _BASE_TEXT_ << std::endl;
-					return std::make_tuple(404,nullptr);
+					return 404; //std::make_tuple(404,nullptr);
 				}
 			}
 			break;
@@ -566,7 +548,7 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 						<< "      [404] NOT FOUND ACTOR DOMAIN\n" 
 						<< "      actor  = '" << name << "'\n" 
 						<< "      action = '" << action << "'" << _BASE_TEXT_ << std::endl;
-			return std::make_tuple(404,nullptr);
+			return 404; //std::make_tuple(404,nullptr);
 		}
 		break;
 
@@ -577,20 +559,19 @@ std::tuple<int,std::function<void()>> map_t::send_message(
 						<< "      actor  = '" << name << "'\n" 
 						<< "      action = '" << action << "'\n"
 						<< "      domain = '" << domain->_name << "'" << _BASE_TEXT_ << std::endl;
-			return std::make_tuple(404,nullptr);
+			return 404; //std::make_tuple(404,nullptr);
 		}
 		break;
 
 		default:
 		{
 			std::cout << _ERR_TEXT_ << "404 | NOT FOUND STATE = '" << state << "'" << std::endl;
-			return std::make_tuple(404,nullptr);
+			return 404; //std::make_tuple(404,nullptr);
 		}
 		break;
 	}
 
 };
-
 
 
 /*
