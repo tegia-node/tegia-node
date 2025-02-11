@@ -203,7 +203,7 @@ int records::count()
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-int records::getLastInsertId() const
+long long int records::getLastInsertId() const
 {
 	return _last_insert_id;
 };

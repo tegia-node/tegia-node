@@ -1,3 +1,4 @@
+#include <format>
 #include <tegia/core/error.h>
 
 //
@@ -5,6 +6,7 @@
 #define _LOG_LEVEL_ _LOG_WARNING_
 #include <tegia/context/log.h>
 //
+
 
 namespace tegia {
 
@@ -44,4 +46,44 @@ void error_t::print()
 
 
 }
+
+
+
+namespace tegia {
+namespace log {
+
+event_t::event_t():
+	uuid(tegia::random::uuid()),
+	user(tegia::threads::user()->uuid())
+{
+
+};
+
+}
+}
+
+
+
+
+
+namespace tegia {
+namespace errors {
+
+tegia::log::event_t open_file(std::error_code ec, const std::string &filename)
+{
+	tegia::log::event_t event;
+	event.level = "error";
+	event.info = std::format(
+			"UUID:{} File '{}' is not open. Reason: [{}] {}",
+			event.uuid,
+			filename,
+			ec.value(),
+			ec.message()
+		);
+	LLERROR(1, event.info);
+	return std::move(event);
+};
+
+} // END namespace errors
+} // END namespace tegia
 

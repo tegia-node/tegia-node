@@ -25,48 +25,71 @@
 //                                                                                        //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-#define _LOG_DEBUG_     0  // Отладочные сообщения
-#define _LOG_NOTICE_    1  // Уведомления о возможных проблемах
-#define _LOG_WARNING_   2  // Важные уведомления
-#define _LOG_ERROR_     3  // Серьезные ошибки в коде или логике работы Платформы
-#define _LOG_CRITICAL_  4  // Совсем беда!
+/*
+	# Уровни логирования
 
+	- debug   - нужен разработчикам, отключается в продакшене.
+	- info    - логирует нормальную работу приложения.
+	- warning - предупреждения о потенциальных проблемах.
+	- error   - ошибки, но приложение продолжает работать.
+	- critical - фатальные ошибки, угрожающие работе системы.
+
+	# Почему принято решение отказаться от логирования функции / файла / строки
+
+	1. Любой из этих параметров может поменяться. Особенно срока. Из-за этого 
+	для ранее зарегистрированных событий информация об источнике события может быть неактуальна
+	2. Использованием макросов __FILE__, __FUNCTION__, __LINE__ либо порождает использование 
+	макросов для вызова функции логирования, либо указание этих параметров явням образом. Это 
+	тоже не является удобным 
+
+	Вместо этого предлагается ввести "тип события" в виде строки. Это может быть как понятная 
+	человеку строка, так и просто случайным образом сгенерированная строка, по которой можно 
+	легко найти место возникновения ошибки
+
+*/
+
+#define _LOG_DEBUG_     0
+#define _LOG_NOTICE_    1
+#define _LOG_WARNING_   2
+#define _LOG_ERROR_     3
+#define _LOG_CRITICAL_  4
 
 
 namespace tegia {
+namespace node {
 
 class logger
 {
-	protected:  
-
-		std::ofstream flog_all;     // Файл для всего журнала
-		std::mutex  log_lock; 
-
-		static logger* _self;
-
-	public: 
-
-		logger(const std::string &logdir, int log_level); 
+	public:
+		logger(const std::string &logdir); 
 		~logger();
 
-		void writer(
-			const int level,
-			const std::chrono::high_resolution_clock::time_point now,
-			const std::string &filename, 
-			const std::string &function, 
-			const int line,			
-			const std::string &message
-		);
-		
-		static logger* instance(const std::string &logdir = "", int log_level = 0);
-
 		logger(logger &other) = delete;
-
 		void operator=(const logger &) = delete;
 
-}; // end class logger
+		void write(
+			const std::string &level,
+			const std::string &filename, 
+			const std::string &function, 
+			const int line,
+			const std::chrono::high_resolution_clock::time_point now,
+			const std::string &thread,
+			int code, 
+			const std::string &message);
+			
+	private:
+		std::ofstream f_main_log;     // Файл для всего журнала
+		std::mutex  log_lock;
+};
 
-}  // end namespace tegia
+} // END namespace node
+} // END namespace tegia
+
+
+//
+//
+//
+
 
 
 #endif

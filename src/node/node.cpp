@@ -9,12 +9,12 @@
 #include "../dictionaries/catalog.h"
 
 
-// LOGGER
+//	LOGGER
 #include "logger.h"
 #undef _LOG_LEVEL_
 #define _LOG_LEVEL_ _LOG_NOTICE_
-#include "log.h"
-
+#include <tegia/context/log.h>
+//	LOGGER
 
 
 
@@ -172,24 +172,17 @@ bool node::action()
 bool node::run()
 {
 	//
-	// INIT LOG
+	// INIT
 	//
-
-	tegia::logger::instance("logs/");
-
-	LNOTICE("\n--------------------------------------------\nNODE RUN\n--------------------------------------------\n")
-	std::cout << _YELLOW_ << "\n--------------------------------------------" << _BASE_TEXT_ << std::endl;
-	std::cout << _YELLOW_ << "NODE RUN" << _BASE_TEXT_ << std::endl;
-	std::cout << _YELLOW_ << "--------------------------------------------\n" << _BASE_TEXT_ << std::endl;
-
+	
+	this->_logger    = new tegia::node::logger("logs/");
+	this->_config    = new tegia::node::config();
+	this->_manager   = new tegia::threads::manager_t();
+	this->_actor_map = new tegia::actors::map_t();
 
 	//
 	// INIT CONFIGURATIONS
 	//
-
-	this->_config    = new tegia::node::config();
-	this->_manager   = new tegia::threads::manager_t();
-	this->_actor_map = new tegia::actors::map_t();
 
 	auto cluster = this->_config->cluster();
 
@@ -221,7 +214,7 @@ bool node::run()
 	std::cout << "INIT THREADS" << std::endl;
 	std::cout << _BASE_TEXT_ << std::endl;
 
-	this->_manager->init(this,this->_config, this->_actor_map);
+	this->_manager->init(this, this->_config, this->_logger, this->_actor_map);
 	this->_actor_map->pool = new tegia::threads::pool_t();
 	this->_actor_map->pool->_callback = std::bind(&tegia::node::node::action,this);
 	this->_actor_map->pool->run(8);

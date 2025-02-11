@@ -6,6 +6,7 @@
 //
 
 #include <iostream>
+#include <format>
 
 #include <tegia/core/crypt.h>
 #include <tegia/core.h>
@@ -37,8 +38,45 @@ class error_t
 		void print();
 };
 
-}
+} // END namespace tegia
 
+//
+//
+//
+
+
+
+namespace tegia {
+namespace log {
+
+class event_t
+{
+	public:
+		event_t();
+		~event_t() = default;
+
+		std::string uuid;
+		int status;
+
+		std::string level;
+		std::string user;
+		std::string info;
+
+	private:
+
+};
+
+} // END namespace log
+} // END namespace tegia
+
+
+namespace tegia {
+namespace errors {
+
+tegia::log::event_t open_file(std::error_code ec, const std::string &filename);
+
+} // END namespace errors
+} // END namespace tegia
 
 
 #endif

@@ -1,7 +1,6 @@
 #include <tegia/tegia.h>
 #include <tegia/core/const.h>
 #include <tegia/ws/ws.h>
-#include <tegia/context/context.h>
 
 namespace tegia {
 namespace actors {
@@ -203,7 +202,7 @@ int ws_t::_create()
 int ws_t::router(const std::shared_ptr<message_t> &message)
 {
 	std::cout << _YELLOW_ << "ws_t::router" << _BASE_TEXT_ << std::endl;
-	std::cout << "tid = " << tegia::context::tid() << std::endl;
+	std::cout << "tid = " << tegia::threads::tid() << std::endl;
 	tegia::threads::user()->print();
 
 	//
