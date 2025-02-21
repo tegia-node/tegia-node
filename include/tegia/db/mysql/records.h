@@ -92,7 +92,7 @@ namespace mysql {
 			std::map<int, record_info*> fields_offset;
 
 			std::string query = "";
-			int _last_insert_id = 0;
+			long long int _last_insert_id = 0;
 			int _affected_rows = 0;
 
 			records(const std::string& query, const int& last_insert_id);
@@ -109,7 +109,7 @@ namespace mysql {
 			std::string get(const std::string &key, const int offset);
 			nlohmann::json json();
 			int count();
-			int getLastInsertId() const;
+			long long int getLastInsertId() const;
 			int get_affected_rows() const;
 
 

@@ -42,6 +42,32 @@ const nlohmann::json * const get(const std::string &name);
 } // namespace tegia
 
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+
+	tegia::conf::*
+
+	Доступ к конфигурационным файлам кластера
+
+*/
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+namespace tegia {
+struct logger {
+
+static void event(
+	const std::string &level,
+	const std::string &filename, 
+	const std::string &function, 
+	const int line,
+	const std::chrono::high_resolution_clock::time_point now,
+	const std::string &thread, 
+	int code, 
+	const std::string &message);
+
+}; // END struct logger
+}  // END namespace tegia
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -116,11 +142,9 @@ int unload(const std::string &actor);
 namespace tegia {
 namespace threads {
 
+std::string tid();
 const std::shared_ptr<tegia::user> user();
-
 int run(std::function<void()> _fn);
-
-// static std::string tid();
 
 }
 }

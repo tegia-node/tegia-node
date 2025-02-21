@@ -1,16 +1,16 @@
-#include <tegia/context/context.h>
+#include <tegia/core.h>
 
 #undef __LOCATION__
 #undef LDEBUG
-#undef LSDEBUG
+#undef LLDEBUG
 #undef LNOTICE
-#undef LSNOTICE
+#undef LLNOTICE
 #undef LWARNING
-#undef LSWARNING
+#undef LLWARNING
 #undef LERROR
-#undef LSERROR
+#undef LLERROR
 #undef LCRITICAL
-#undef LSCRITICAL
+#undef LLCRITICAL
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                        //
@@ -18,12 +18,11 @@
 //                                                                                        //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-
 //
 // Макросы логирвоания для разных уровней логирования
 //
 
-#define __LOCATION__   __FILE__,__FUNCTION__,__LINE__
+#define __LOCATION__   __FILE__,__PRETTY_FUNCTION__,__LINE__
 
 #ifndef _LOG_PRINT_
 #define _LOG_PRINT_ false
@@ -34,29 +33,29 @@
 //
 
 #if _LOG_LEVEL_ == _LOG_DEBUG_ && _LOG_PRINT_ == true
-#define LDEBUG(text)      ::tegia::context::log( _LOG_DEBUG_,    std::chrono::high_resolution_clock::now(), __LOCATION__, text ); std::cout << text << std::endl;
-#define LSDEBUG(text)     ::tegia::context::log( _LOG_DEBUG_,    std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() ); std::cout << text << std::endl;
-#define LNOTICE(text)     ::tegia::context::log( _LOG_NOTICE_,   std::chrono::high_resolution_clock::now(), __LOCATION__, text ); std::cout << text << std::endl;    
-#define LSNOTICE(text)    ::tegia::context::log( _LOG_NOTICE_,   std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() ); std::cout << text << std::endl;
-#define LWARNING(text)    ::tegia::context::log( _LOG_WARNING_,  std::chrono::high_resolution_clock::now(), __LOCATION__, text ); std::cout << text << std::endl;
-#define LSWARNING(text)   ::tegia::context::log( _LOG_WARNING_,  std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() ); std::cout << text << std::endl;
-#define LERROR(text)      ::tegia::context::log( _LOG_ERROR_,    std::chrono::high_resolution_clock::now(), __LOCATION__, text ); std::cout << text << std::endl; 
-#define LSERROR(text)     ::tegia::context::log( _LOG_ERROR_,    std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() ); std::cout << text << std::endl; 
-#define LCRITICAL(text)   ::tegia::context::log( _LOG_CRITICAL_, std::chrono::high_resolution_clock::now(), __LOCATION__, text ); std::cout << text << std::endl; 
-#define LSCRITICAL(text)  ::tegia::context::log( _LOG_CRITICAL_, std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() ); std::cout << text << std::endl; 
+#define LDEBUG(message)            ::tegia::logger::event("debug",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message); std::cout << message << std::endl;
+#define LLDEBUG(code, message)     ::tegia::logger::event("debug",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message); std::cout << message << std::endl;
+#define LNOTICE(message)           ::tegia::logger::event("notice",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message); std::cout << message << std::endl;
+#define LLNOTICE(code, message)    ::tegia::logger::event("notice",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message); std::cout << message << std::endl;
+#define LWARNING(message)          ::tegia::logger::event("warning",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message); std::cout << message << std::endl;
+#define LLWARNING(code, message)   ::tegia::logger::event("warning",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message); std::cout << message << std::endl;
+#define LERROR(message)            ::tegia::logger::event("error",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message); std::cout << message << std::endl;
+#define LLERROR(code, message)     ::tegia::logger::event("error",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message); std::cout << message << std::endl;
+#define LCRITICAL(message)         ::tegia::logger::event("critical",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message); std::cout << message << std::endl;
+#define LLCRITICAL(code, message)  ::tegia::logger::event("critical",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message); std::cout << message << std::endl;
 #endif
 
 #if _LOG_LEVEL_ == _LOG_DEBUG_ && _LOG_PRINT_ == false
-#define LDEBUG(text)      ::tegia::context::log( _LOG_DEBUG_,    std::chrono::high_resolution_clock::now(), __LOCATION__, text );    
-#define LSDEBUG(text)     ::tegia::context::log( _LOG_DEBUG_,    std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() );    
-#define LNOTICE(text)     ::tegia::context::log( _LOG_NOTICE_,   std::chrono::high_resolution_clock::now(), __LOCATION__, text );    
-#define LSNOTICE(text)    ::tegia::context::log( _LOG_NOTICE_,   std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() );    
-#define LWARNING(text)    ::tegia::context::log( _LOG_WARNING_,  std::chrono::high_resolution_clock::now(), __LOCATION__, text ); 
-#define LSWARNING(text)   ::tegia::context::log( _LOG_WARNING_,  std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() ); 
-#define LERROR(text)      ::tegia::context::log( _LOG_ERROR_,    std::chrono::high_resolution_clock::now(), __LOCATION__, text );    
-#define LSERROR(text)     ::tegia::context::log( _LOG_ERROR_,    std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() );    
-#define LCRITICAL(text)   ::tegia::context::log( _LOG_CRITICAL_, std::chrono::high_resolution_clock::now(), __LOCATION__, text );  
-#define LSCRITICAL(text)  ::tegia::context::log( _LOG_CRITICAL_, std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() );  
+#define LDEBUG(message)            ::tegia::logger::event("debug",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message);
+#define LLDEBUG(code, message)     ::tegia::logger::event("debug",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message);
+#define LNOTICE(message)           ::tegia::logger::event("notice",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message);
+#define LLNOTICE(code, message)    ::tegia::logger::event("notice",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message);
+#define LWARNING(message)          ::tegia::logger::event("warning",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message);
+#define LLWARNING(code, message)   ::tegia::logger::event("warning",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message);
+#define LERROR(message)            ::tegia::logger::event("error",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message);
+#define LLERROR(code, message)     ::tegia::logger::event("error",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message);
+#define LCRITICAL(message)         ::tegia::logger::event("critical",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message);
+#define LLCRITICAL(code, message)  ::tegia::logger::event("critical",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message);
 #endif
 
 //
@@ -64,29 +63,29 @@
 //
 
 #if _LOG_LEVEL_ == _LOG_NOTICE_ && _LOG_PRINT_ == true
-#define LDEBUG(text)     
-#define LSDEBUG(text)     
-#define LNOTICE(text)     ::tegia::context::log( _LOG_NOTICE_,   std::chrono::high_resolution_clock::now(), __LOCATION__, text ); std::cout << text << std::endl;    
-#define LSNOTICE(text)    ::tegia::context::log( _LOG_NOTICE_,   std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() ); std::cout << text << std::endl;
-#define LWARNING(text)    ::tegia::context::log( _LOG_WARNING_,  std::chrono::high_resolution_clock::now(), __LOCATION__, text ); std::cout << text << std::endl;
-#define LSWARNING(text)   ::tegia::context::log( _LOG_WARNING_,  std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() ); std::cout << text << std::endl;
-#define LERROR(text)      ::tegia::context::log( _LOG_ERROR_,    std::chrono::high_resolution_clock::now(), __LOCATION__, text ); std::cout << text << std::endl; 
-#define LSERROR(text)     ::tegia::context::log( _LOG_ERROR_,    std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() ); std::cout << text << std::endl; 
-#define LCRITICAL(text)   ::tegia::context::log( _LOG_CRITICAL_, std::chrono::high_resolution_clock::now(), __LOCATION__, text ); std::cout << text << std::endl; 
-#define LSCRITICAL(text)  ::tegia::context::log( _LOG_CRITICAL_, std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() ); std::cout << text << std::endl; 
+#define LDEBUG(message)
+#define LLDEBUG(code, message)
+#define LNOTICE(message)           ::tegia::logger::event("notice",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message); std::cout << message << std::endl;
+#define LLNOTICE(code, message)    ::tegia::logger::event("notice",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message); std::cout << message << std::endl;
+#define LWARNING(message)          ::tegia::logger::event("warning",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message); std::cout << message << std::endl;
+#define LLWARNING(code, message)   ::tegia::logger::event("warning",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message); std::cout << message << std::endl;
+#define LERROR(message)            ::tegia::logger::event("error",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message); std::cout << message << std::endl;
+#define LLERROR(code, message)     ::tegia::logger::event("error",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message); std::cout << message << std::endl;
+#define LCRITICAL(message)         ::tegia::logger::event("critical",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message); std::cout << message << std::endl;
+#define LLCRITICAL(code, message)  ::tegia::logger::event("critical",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message); std::cout << message << std::endl;
 #endif
 
 #if _LOG_LEVEL_ == _LOG_NOTICE_ && _LOG_PRINT_ == false
-#define LDEBUG(text)     
-#define LSDEBUG(text)     
-#define LNOTICE(text)     ::tegia::context::log( _LOG_NOTICE_,   std::chrono::high_resolution_clock::now(), __LOCATION__, text );    
-#define LSNOTICE(text)    ::tegia::context::log( _LOG_NOTICE_,   std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() );    
-#define LWARNING(text)    ::tegia::context::log( _LOG_WARNING_,  std::chrono::high_resolution_clock::now(), __LOCATION__, text ); 
-#define LSWARNING(text)   ::tegia::context::log( _LOG_WARNING_,  std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() ); 
-#define LERROR(text)      ::tegia::context::log( _LOG_ERROR_,    std::chrono::high_resolution_clock::now(), __LOCATION__, text );    
-#define LSERROR(text)     ::tegia::context::log( _LOG_ERROR_,    std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() );    
-#define LCRITICAL(text)   ::tegia::context::log( _LOG_CRITICAL_, std::chrono::high_resolution_clock::now(), __LOCATION__, text );  
-#define LSCRITICAL(text)  ::tegia::context::log( _LOG_CRITICAL_, std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() );  
+#define LDEBUG(message)
+#define LLDEBUG(code, message)
+#define LNOTICE(message)           ::tegia::logger::event("notice",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message);
+#define LLNOTICE(code, message)    ::tegia::logger::event("notice",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message);
+#define LWARNING(message)          ::tegia::logger::event("warning",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message);
+#define LLWARNING(code, message)   ::tegia::logger::event("warning",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message);
+#define LERROR(message)            ::tegia::logger::event("error",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message);
+#define LLERROR(code, message)     ::tegia::logger::event("error",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message);
+#define LCRITICAL(message)         ::tegia::logger::event("critical",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message);
+#define LLCRITICAL(code, message)  ::tegia::logger::event("critical",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message);
 #endif
 
 //
@@ -94,29 +93,29 @@
 //
 
 #if _LOG_LEVEL_ == _LOG_WARNING_ && _LOG_PRINT_ == true
-#define LDEBUG(text)     
-#define LSDEBUG(text)     
-#define LNOTICE(text)
-#define LSNOTICE(text)
-#define LWARNING(text)    ::tegia::context::log( _LOG_WARNING_,  std::chrono::high_resolution_clock::now(), __LOCATION__, text ); std::cout << text << std::endl;
-#define LSWARNING(text)   ::tegia::context::log( _LOG_WARNING_,  std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() ); std::cout << text << std::endl;
-#define LERROR(text)      ::tegia::context::log( _LOG_ERROR_,    std::chrono::high_resolution_clock::now(), __LOCATION__, text ); std::cout << text << std::endl; 
-#define LSERROR(text)     ::tegia::context::log( _LOG_ERROR_,    std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() ); std::cout << text << std::endl; 
-#define LCRITICAL(text)   ::tegia::context::log( _LOG_CRITICAL_, std::chrono::high_resolution_clock::now(), __LOCATION__, text ); std::cout << text << std::endl; 
-#define LSCRITICAL(text)  ::tegia::context::log( _LOG_CRITICAL_, std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() ); std::cout << text << std::endl; 
+#define LDEBUG(message)
+#define LLDEBUG(code, message)
+#define LNOTICE(message)
+#define LLNOTICE(code, message)
+#define LWARNING(message)          ::tegia::logger::event("warning",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message); std::cout << message << std::endl;
+#define LLWARNING(code, message)   ::tegia::logger::event("warning",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message); std::cout << message << std::endl;
+#define LERROR(message)            ::tegia::logger::event("error",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message); std::cout << message << std::endl;
+#define LLERROR(code, message)     ::tegia::logger::event("error",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message); std::cout << message << std::endl;
+#define LCRITICAL(message)         ::tegia::logger::event("critical",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message); std::cout << message << std::endl;
+#define LLCRITICAL(code, message)  ::tegia::logger::event("critical",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message); std::cout << message << std::endl;
 #endif
 
 #if _LOG_LEVEL_ == _LOG_WARNING_ && _LOG_PRINT_ == false
-#define LDEBUG(text)     
-#define LSDEBUG(text)     
-#define LNOTICE(text)
-#define LSNOTICE(text)
-#define LWARNING(text)    ::tegia::context::log( _LOG_WARNING_,  std::chrono::high_resolution_clock::now(), __LOCATION__, text ); 
-#define LSWARNING(text)   ::tegia::context::log( _LOG_WARNING_,  std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() ); 
-#define LERROR(text)      ::tegia::context::log( _LOG_ERROR_,    std::chrono::high_resolution_clock::now(), __LOCATION__, text );    
-#define LSERROR(text)     ::tegia::context::log( _LOG_ERROR_,    std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() );    
-#define LCRITICAL(text)   ::tegia::context::log( _LOG_CRITICAL_, std::chrono::high_resolution_clock::now(), __LOCATION__, text );  
-#define LSCRITICAL(text)  ::tegia::context::log( _LOG_CRITICAL_, std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() );  
+#define LDEBUG(message)
+#define LLDEBUG(code, message)
+#define LNOTICE(message)
+#define LLNOTICE(code, message)
+#define LWARNING(message)          ::tegia::logger::event("warning",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message);
+#define LLWARNING(code, message)   ::tegia::logger::event("warning",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message);
+#define LERROR(message)            ::tegia::logger::event("error",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message);
+#define LLERROR(code, message)     ::tegia::logger::event("error",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message);
+#define LCRITICAL(message)         ::tegia::logger::event("critical",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message);
+#define LLCRITICAL(code, message)  ::tegia::logger::event("critical",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message);
 #endif
 
 //
@@ -124,29 +123,29 @@
 //
 
 #if _LOG_LEVEL_ == _LOG_ERROR_ && _LOG_PRINT_ == true
-#define LDEBUG(text)     
-#define LSDEBUG(text)     
-#define LNOTICE(text)
-#define LSNOTICE(text)
-#define LWARNING(text)
-#define LSWARNING(text)
-#define LERROR(text)      ::tegia::context::log( _LOG_ERROR_,    std::chrono::high_resolution_clock::now(), __LOCATION__, text ); std::cout << text << std::endl;   
-#define LSERROR(text)     ::tegia::context::log( _LOG_ERROR_,    std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() ); std::cout << text << std::endl;   
-#define LCRITICAL(text)   ::tegia::context::log( _LOG_CRITICAL_, std::chrono::high_resolution_clock::now(), __LOCATION__, text ); std::cout << text << std::endl; 
-#define LSCRITICAL(text)  ::tegia::context::log( _LOG_CRITICAL_, std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() ); std::cout << text << std::endl; 
+#define LDEBUG(message)
+#define LLDEBUG(code, message)
+#define LNOTICE(message)
+#define LLNOTICE(code, message)
+#define LWARNING(message)
+#define LLWARNING(code, message)
+#define LERROR(message)            ::tegia::logger::event("error",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message); std::cout << message << std::endl;
+#define LLERROR(code, message)     ::tegia::logger::event("error",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message); std::cout << message << std::endl;
+#define LCRITICAL(message)         ::tegia::logger::event("critical",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message); std::cout << message << std::endl;
+#define LLCRITICAL(code, message)  ::tegia::logger::event("critical",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message); std::cout << message << std::endl;
 #endif
 
 #if _LOG_LEVEL_ == _LOG_ERROR_ && _LOG_PRINT_ == false
-#define LDEBUG(text)     
-#define LSDEBUG(text)     
-#define LNOTICE(text)
-#define LSNOTICE(text)
-#define LWARNING(text)
-#define LSWARNING(text)
-#define LERROR(text)      ::tegia::context::log( _LOG_ERROR_,    std::chrono::high_resolution_clock::now(), __LOCATION__, text );    
-#define LSERROR(text)     ::tegia::context::log( _LOG_ERROR_,    std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() );    
-#define LCRITICAL(text)   ::tegia::context::log( _LOG_CRITICAL_, std::chrono::high_resolution_clock::now(), __LOCATION__, text );  
-#define LSCRITICAL(text)  ::tegia::context::log( _LOG_CRITICAL_, std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() );  
+#define LDEBUG(message)
+#define LLDEBUG(code, message)
+#define LNOTICE(message)
+#define LLNOTICE(code, message)
+#define LWARNING(message)
+#define LLWARNING(code, message)
+#define LERROR(message)            ::tegia::logger::event("error",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message);
+#define LLERROR(code, message)     ::tegia::logger::event("error",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message);
+#define LCRITICAL(message)         ::tegia::logger::event("critical",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message);
+#define LLCRITICAL(code, message)  ::tegia::logger::event("critical",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message);
 #endif
 
 //
@@ -154,27 +153,29 @@
 //
 
 #if _LOG_LEVEL_ == _LOG_CRITICAL_ && _LOG_PRINT_ == true
-#define LDEBUG(text)     
-#define LSDEBUG(text)     
-#define LNOTICE(text)
-#define LSNOTICE(text)
-#define LWARNING(text)
-#define LSWARNING(text)
-#define LERROR(text)
-#define LSERROR(text)
-#define LCRITICAL(text)   ::tegia::context::log( _LOG_CRITICAL_, std::chrono::high_resolution_clock::now(), __LOCATION__, text ); std::cout << text << std::endl; 
-#define LSCRITICAL(text)  ::tegia::context::log( _LOG_CRITICAL_, std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() ); std::cout << text << std::endl; 
+#define LDEBUG(message)
+#define LLDEBUG(code, message)
+#define LNOTICE(message)
+#define LLNOTICE(code, message)
+#define LWARNING(message)
+#define LLWARNING(code, message)
+#define LERROR(message)
+#define LLERROR(code, message)
+#define LCRITICAL(message)         ::tegia::logger::event("critical",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message); std::cout << message << std::endl;
+#define LLCRITICAL(code, message)  ::tegia::logger::event("critical",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message); std::cout << message << std::endl;
 #endif
 
 #if _LOG_LEVEL_ == _LOG_CRITICAL_ && _LOG_PRINT_ == false
-#define LDEBUG(text)     
-#define LSDEBUG(text)     
-#define LNOTICE(text)
-#define LSNOTICE(text)
-#define LWARNING(text)
-#define LSWARNING(text)
-#define LERROR(text)
-#define LSERROR(text)
-#define LCRITICAL(text)   ::tegia::context::log( _LOG_CRITICAL_, std::chrono::high_resolution_clock::now(), __LOCATION__, text );  
-#define LSCRITICAL(text)  ::tegia::context::log( _LOG_CRITICAL_, std::chrono::high_resolution_clock::now(), __LOCATION__, (std::ostringstream{} << text).str() );  
+#define LDEBUG(message)
+#define LLDEBUG(code, message)
+#define LNOTICE(message)
+#define LLNOTICE(code, message)
+#define LWARNING(message)
+#define LLWARNING(code, message)
+#define LERROR(message)
+#define LLERROR(code, message)
+#define LCRITICAL(message)         ::tegia::logger::event("critical",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), 0, message);
+#define LLCRITICAL(code, message)  ::tegia::logger::event("critical",__LOCATION__,std::chrono::high_resolution_clock::now(), tegia::threads::tid(), code, message);
 #endif
+
+

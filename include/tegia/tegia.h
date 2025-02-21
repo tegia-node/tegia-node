@@ -11,9 +11,6 @@
 #include <tegia/actors/type.h>
 #include <tegia/actors/actor.h>
 
-#include <tegia/context/context.h>
-
-
 #include <tegia/core/error.h>
 
 #endif

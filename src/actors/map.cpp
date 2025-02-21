@@ -2,7 +2,6 @@
 #include <utility>
 
 #include <tegia/core/const.h>
-#include <tegia/context/context.h>
 
 #include "../threads/thread_t.h"
 #include "map.h"

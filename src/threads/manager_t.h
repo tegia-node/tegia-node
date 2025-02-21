@@ -6,6 +6,7 @@
 
 #include "../db/mysql/provider.h"
 #include "../node/config.h"
+#include "../node/logger.h"
 
 #include "thread_t.h"
 
@@ -29,12 +30,14 @@ class manager_t
 		void init(
 			::tegia::node::node     * _node, 
 			::tegia::node::config   * _config,
+			::tegia::node::logger   * _logger,
 			::tegia::actors::map_t  * _actor_map);
 		int thread(std::function<void()> _fn);
 
 	private:
 		::tegia::node::node     * _node;
 		::tegia::node::config   * _config;
+		::tegia::node::logger   * _logger;
 		::tegia::actors::map_t  * _actor_map;
 
 };

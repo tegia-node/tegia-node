@@ -15,6 +15,7 @@
    #include "../actors/map.h"
    #include "../threads/manager_t.h"
    #include "../threads/pool_t.h"
+   #include "logger.h"
 
 //
 //
@@ -45,6 +46,7 @@ class node
 	private:
 		tegia::threads::pool_t    * _pool;  // TODO перенести в actor_map
 		tegia::node::config       * _config;
+		tegia::node::logger       * _logger;
 		tegia::actors::map_t      * _actor_map;
 		tegia::threads::manager_t * _manager;
 

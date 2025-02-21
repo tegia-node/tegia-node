@@ -6,6 +6,7 @@
 
 #include "../db/mysql/provider.h"
 #include "../node/config.h"
+#include "../node/logger.h"
 
 
 namespace tegia::node 
@@ -21,6 +22,7 @@ namespace tegia::actors
 namespace tegia 
 {
 	struct message;
+	struct logger;
 	class auth;
 	class context;
 }
@@ -46,7 +48,9 @@ class thread_t
 	friend class ::message_t;
 	friend class ::tegia::actors::map_t;
 	friend class ::tegia::threads::manager_t;
+
 	friend struct ::tegia::message;
+	friend struct ::tegia::logger;
 
 	public:
 		thread_t();
@@ -66,6 +70,7 @@ class thread_t
 		std::thread::id _tid;
 		::tegia::node::node          * _node;
 		::tegia::node::config        * _config;
+		::tegia::node::logger        * _logger;
 		::tegia::threads::manager_t  * _manager;
 		::tegia::actors::map_t       * _actor_map;
 		::tegia::mysql::provider     * _mysql_provider;
