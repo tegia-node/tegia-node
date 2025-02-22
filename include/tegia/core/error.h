@@ -53,6 +53,7 @@ class event_t
 {
 	public:
 		event_t();
+		event_t(const std::string &level);
 		~event_t() = default;
 
 		std::string uuid;
@@ -61,6 +62,9 @@ class event_t
 		std::string level;
 		std::string user;
 		std::string info;
+
+		nlohmann::json _data;
+		std::string log();
 
 	private:
 

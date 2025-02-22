@@ -90,23 +90,6 @@ void logger::write(
 	int code, 
 	const std::string &message)
 {
-	// [event code: 2] function part_102() in ../src/actors/COMMONCRAWL/actions/part.cpp::250
-	
-	/*
-	std::string _log_ = std::format(
-		"[{}] [thread: {}] [{}] [code: {}] [{}] [function {}() in {}::{}]\n{}", 
-		std::chrono::time_point_cast<std::chrono::milliseconds>(now).time_since_epoch().count(),
-		thread,
-		level,
-		code, 
-		modul,
-		function, 
-		filename, 
-		line,
-		message
-	);
-	*/
-
 	std::string _log_ = std::format(
 		"[{}] [{}] [thread: {}] [code: {}] [{}]\n{}", 
 		std::chrono::time_point_cast<std::chrono::milliseconds>(now).time_since_epoch().count(),
@@ -117,6 +100,33 @@ void logger::write(
 		message
 	);
 
+	// std::cout << _log_ << "\n" << std::endl;	
+
+	this->log_lock.lock();
+	this->f_main_log << _log_ << "\n" << std::endl;
+	this->f_main_log.flush();
+	this->log_lock.unlock(); 	
+};
+
+
+
+void logger::write2(
+	const std::string &level,
+	const std::string &function, 
+	const std::chrono::high_resolution_clock::time_point now,
+	const std::string &thread,
+	const std::string &code, 
+	const std::string &message)
+{
+	std::string _log_ = std::format(
+		"[{}] [{}] [thread: {}] [code: {}] [{}]\n{}", 
+		std::chrono::time_point_cast<std::chrono::milliseconds>(now).time_since_epoch().count(),
+		level,
+		thread,
+		code,
+		function, 
+		message
+	);
 
 	// std::cout << _log_ << "\n" << std::endl;	
 
@@ -125,6 +135,7 @@ void logger::write(
 	this->f_main_log.flush();
 	this->log_lock.unlock(); 	
 };
+
 
 
 } // END namespace node

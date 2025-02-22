@@ -77,6 +77,14 @@ class logger
 			int code, 
 			const std::string &message);
 			
+		void write2(
+			const std::string &level,
+			const std::string &function, 
+			const std::chrono::high_resolution_clock::time_point now,
+			const std::string &thread,
+			const std::string &code, 
+			const std::string &message);
+
 	private:
 		std::ofstream f_main_log;     // Файл для всего журнала
 		std::mutex  log_lock;

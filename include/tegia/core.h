@@ -66,6 +66,14 @@ static void event(
 	int code, 
 	const std::string &message);
 
+static void event2(
+	const std::string &level,
+	const std::string &function, 
+	const std::chrono::high_resolution_clock::time_point now,
+	const std::string &thread, 
+	const std::string &code, 
+	const std::string &message);
+
 }; // END struct logger
 }  // END namespace tegia
 
