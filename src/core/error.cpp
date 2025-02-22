@@ -59,6 +59,19 @@ event_t::event_t():
 
 };
 
+event_t::event_t(const std::string &level):
+	uuid(tegia::random::uuid()),
+	user(tegia::threads::user()->uuid()),
+	level(level)
+{
+
+};
+
+std::string event_t::log()
+{
+	return std::format("UUID: {}\nUSER: {}\nDATA: ", this->uuid, this->user) + this->info; 
+};
+
 }
 }
 

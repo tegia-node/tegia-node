@@ -72,6 +72,23 @@ void logger::event(
 		message);
 };
 
+void logger::event2(
+	const std::string &level,
+	const std::string &function, 
+	const std::chrono::high_resolution_clock::time_point now,
+	const std::string &thread, 
+	const std::string &code, 
+	const std::string &message)
+{
+	tegia::threads::thread->_logger->write2(
+		level,
+		function,
+		now,
+		thread,
+		code,
+		message);
+};
+
 } // namespace tegia
 
 //
