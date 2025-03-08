@@ -8,6 +8,8 @@
 // dictionares
 #include "../dictionaries/catalog.h"
 
+#include <sys/prctl.h>
+#include <csignal>
 
 //	LOGGER
 #include "logger.h"
@@ -204,6 +206,29 @@ bool node::run()
 		}
 	}
 	
+	//
+	// RUN MANTICORE
+	//
+
+	std::system("searchd -c ./configs/manticore.conf");
+
+	auto signal_handler = 
+		[](int)
+		{
+			std::system("searchd -c ./configs/manticore.conf --stopwait");
+		};
+	auto atexit_handler =
+		[]()
+		{
+			std::system("searchd -c ./configs/manticore.conf --stopwait");
+		};
+
+	std::signal(SIGINT, signal_handler);
+	std::signal(SIGTERM, signal_handler);
+	std::signal(SIGQUIT, signal_handler);
+	std::signal(SIGHUP, signal_handler);
+	std::atexit(atexit_handler);
+
 	//
 	// INIT THREADS
 	//
