@@ -206,10 +206,12 @@ echo " "
 tee ${ROOT}/Makefile.variable << EOF > /dev/null
 iNODE				= ${ROOT}/tegia-node/include
 iVENDORS			= ${ROOT}/vendors
+VENDOR_NAMES        = \$(notdir \$(wildcard ${ROOT}/vendors/*))
+iVENDORSINCLUDE     = \$(foreach name,\$(VENDOR_NAMES),\$(wildcard ${ROOT}/vendors/\$(name)/include/\$(name)/))
 C++VER				= -std=c++2a
 
-ProdFlag			= -rdynamic -I\$(iNODE) -I\$(iVENDORS) \$(C++VER) -march=native -m64 -O2
-DevFlag				= -rdynamic -I\$(iNODE) -I\$(iVENDORS) \$(C++VER) -march=native -m64 -Og -g -Wpedantic -Wshadow=compatible-local -Wl,--no-as-needed 
+ProdFlag			= -rdynamic -I\$(iNODE) -I\$(iVENDORS) \$(addprefix -I,\$(iVENDORSINCLUDE)) \$(C++VER) -march=native -m64 -O2
+DevFlag				= -rdynamic -I\$(iNODE) -I\$(iVENDORS) \$(addprefix -I,\$(iVENDORSINCLUDE)) \$(C++VER) -march=native -m64 -Og -g -Wpedantic -Wshadow=compatible-local -Wl,--no-as-needed 
 Flag = \$(DevFlag)
 EOF
 
