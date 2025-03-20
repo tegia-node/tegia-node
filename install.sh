@@ -186,6 +186,17 @@ then
 fi
 
 #
+# magic_enum
+#
+
+if ! [ -d  ${ROOT}/vendors/magic_enum/ ]
+then
+	cd ${ROOT}/vendors
+	git clone https://github.com/Neargye/magic_enum.git --depth=1 --branch=v0.9.7
+fi
+
+
+#
 # CONFIGURE
 #
 
