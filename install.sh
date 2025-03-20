@@ -186,6 +186,17 @@ then
 fi
 
 #
+# magic_enum
+#
+
+if ! [ -d  ${ROOT}/vendors/magic_enum/ ]
+then
+	cd ${ROOT}/vendors
+	git clone https://github.com/Neargye/magic_enum.git --depth=1 --branch=v0.9.7
+fi
+
+
+#
 # CONFIGURE
 #
 
@@ -206,10 +217,12 @@ echo " "
 tee ${ROOT}/Makefile.variable << EOF > /dev/null
 iNODE				= ${ROOT}/tegia-node/include
 iVENDORS			= ${ROOT}/vendors
+VENDOR_NAMES        = \$(notdir \$(wildcard ${ROOT}/vendors/*))
+iVENDORSINCLUDE     = \$(foreach name,\$(VENDOR_NAMES),\$(wildcard ${ROOT}/vendors/\$(name)/include/\$(name)/))
 C++VER				= -std=c++2a
 
-ProdFlag			= -rdynamic -I\$(iNODE) -I\$(iVENDORS) \$(C++VER) -march=native -m64 -O2
-DevFlag				= -rdynamic -I\$(iNODE) -I\$(iVENDORS) \$(C++VER) -march=native -m64 -Og -g -Wpedantic -Wshadow=compatible-local -Wl,--no-as-needed 
+ProdFlag			= -rdynamic -I\$(iNODE) -I\$(iVENDORS) \$(addprefix -I,\$(iVENDORSINCLUDE)) \$(C++VER) -march=native -m64 -O2
+DevFlag				= -rdynamic -I\$(iNODE) -I\$(iVENDORS) \$(addprefix -I,\$(iVENDORSINCLUDE)) \$(C++VER) -march=native -m64 -Og -g -Wpedantic -Wshadow=compatible-local -Wl,--no-as-needed 
 Flag = \$(DevFlag)
 EOF
 
