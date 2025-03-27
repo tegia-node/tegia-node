@@ -29,7 +29,6 @@ mkdir -p ${ROOT}/ui
 
 sudo apt install -y mc
 sudo apt install -y screen
-sudo apt install -y jq
 sudo apt install -y zip
 sudo apt install -y python
 sudo apt install -y build-essential
@@ -47,7 +46,7 @@ sudo apt install -y default-libmysqlclient-dev
 sudo apt install -y uuid-dev
 sudo apt install -y libxml2-dev
 sudo apt install -y libcurl4-openssl-dev libssl-dev
-sudo apt install -y zlibc libbz2-dev libzip-dev unzip
+sudo apt install -y libbz2-dev libzip-dev unzip
 sudo apt install -y libfmt-dev
 
 #
