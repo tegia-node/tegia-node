@@ -121,8 +121,7 @@ namespace http {
 
 
 class client;
-//class stream_client;
-class stream_client_v1;
+class stream_client;
 
 struct cookie
 {
@@ -166,8 +165,7 @@ struct proxy
 class request
 {
 	friend class client;
-	//friend class stream_client;
-	friend class stream_client_v1;
+	friend class stream_client;
 
 	private:
 		std::unordered_map<std::string,std::string> headers;
@@ -195,7 +193,6 @@ class request
 class response
 {
 	friend class client;
-	//friend class stream_client;
 
 	private:
 		int step = 0; // Этап загрузки данных
@@ -220,11 +217,10 @@ class response
 };
 
 
-class stream_response_v1
+class stream_response
 {
 	friend class client;
-	friend class stream_client_v1;
-	//friend class stream_client;
+	friend class stream_client;
 
 	private:
 		int step = 0; // Этап загрузки данных
@@ -278,93 +274,6 @@ class stream_response_v1
 		std::unordered_map<std::string,std::string> headers;
 };
 
-// class stream_response 
-// {
-// 	friend class client;
-// 	//friend class stream_client;
-
-// 	private:
-// 		int step = 0; // Этап загрузки данных
-
-// 		std::unordered_map<std::string,cookie> cookielist;
-		
-// 		long long int total = 1;
-// 		long long int current = 1;
-// 		bool is_file = false;		// Сохранять результаты в файл или нет
-// 									// is_file = true  - данные сохраняются в файл
-// 									// is_file = false - данные сохраняются в data 
-// 		std::string filename;
-// 		std::ofstream file;
-
-// 		std::string raw_headers;
-
-// 		std::queue<std::string> queue;
-// 		std::mutex mtx;
-// 		//std::condition_variable cv;
-// 		std::atomic<bool> stopped = false;
-
-// 	public:
-// 		int status;
-// 		std::unordered_map<std::string,std::string> headers;
-		
-// 		// void push(const std::string& data) {
-// 		// 	std::lock_guard<std::mutex> lock(mtx);
-// 		// 	queue.push(data);
-// 		// 	cv.notify_one(); // Оповещаем поток, что появились новые данные
-// 		// }
-
-// 		// bool pop(std::string& out) {
-// 		// 	std::unique_lock<std::mutex> lock(mtx);
-// 		// 	cv.wait(lock, [this] { return !queue.empty() || finished; });
-
-// 		// 	if (queue.empty()) return false; // Выход, если данных больше нет
-
-// 		// 	out = queue.front();
-// 		// 	queue.pop();
-// 		// 	return true;
-// 		// }
-
-// 		// void set_finished() {
-// 		// 	std::lock_guard<std::mutex> lock(mtx);
-// 		// 	finished = true;
-// 		// 	cv.notify_all();
-// 		// }
-
-
-// 		void push(const std::string& data) {
-// 			std::lock_guard<std::mutex> lock(mtx);
-// 			queue.push(data);
-// 			std::lock_guard<std::mutex> open(mtx);
-// 		}
-
-// 		bool pop(std::string& out) {
-// 			std::unique_lock<std::mutex> lock(mtx);
-
-// 			if (queue.empty()) return false; // Выход, если данных больше нет
-
-// 			out = queue.front();
-// 			queue.pop();
-// 			std::lock_guard<std::mutex> open(mtx);
-// 			return true;
-// 		}
-
-// 		bool clear() {
-// 			std::unique_lock<std::mutex> lock(mtx);
-
-// 			while(!queue.empty())
-// 			{
-// 				queue.pop();
-// 			}
-// 			std::lock_guard<std::mutex> open(mtx);
-// 			return true;
-// 		}
-
-// 		void set_stopped() {
-// 			std::lock_guard<std::mutex> lock(mtx);
-// 			stopped = true;
-// 			std::lock_guard<std::mutex> open(mtx);
-// 		}
-// };
 
 
 /**
@@ -482,11 +391,10 @@ class client
 };
 
 
-class stream_client_v1
+class stream_client
 {
 	private:
 		CURL *curl;
-		// std::string useragent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36";
 		std::unordered_map<std::string,cookie> cookielist;
 
 		bool verbose = false;
@@ -505,14 +413,14 @@ class stream_client_v1
 		
 
 	public:
-		stream_client_v1();
-		~stream_client_v1();
+		stream_client();
+		~stream_client();
 		int get(const std::string &_url, const std::string &_filename = "");
 		void stop_streaming();
 
 		
 		tegia::http::request * request;
-		tegia::http::stream_response_v1 * response;
+		tegia::http::stream_response * response;
 
 
 		bool set_timeout(long seconds);
@@ -538,7 +446,7 @@ class stream_client_v1
 				void* out)
 		{
 			const std::size_t totalBytes(size * num);
-			tegia::http::stream_response_v1 * _response = reinterpret_cast<tegia::http::stream_response_v1*>(out);
+			tegia::http::stream_response * _response = reinterpret_cast<tegia::http::stream_response*>(out);
 
 			if(_response->step == 1)
 			{
@@ -552,11 +460,9 @@ class stream_client_v1
 				_response->current = _response->current + totalBytes;
 				_response->file.write(in, totalBytes);
 				_response->file.flush();
-				//std::cout << "\rloaded [" << floor( ((double) _response->current / (double) _response->total) * 100) << "%] [" << _response->current << "/" << _response->total << "] bytes" << std::flush;
 			}
 			else
 			{
-				//std::cerr<< std::string(in, totalBytes);
 				_response->push(std::string(in, totalBytes));
 			}
 			
@@ -576,12 +482,11 @@ class stream_client_v1
 			void* out)
 	{
 		const std::size_t totalBytes(size * num);
-		tegia::http::stream_response_v1 * _response = reinterpret_cast<tegia::http::stream_response_v1*>(out);
+		tegia::http::stream_response * _response = reinterpret_cast<tegia::http::stream_response*>(out);
 		_response->raw_headers.append(in, totalBytes);
 
 		if(_response->step == 0)
 		{
-			// std::cout << _OK_TEXT_ << "start load header" << std::endl;
 			_response->step = 1;
 		}
 
@@ -590,19 +495,6 @@ class stream_client_v1
 		{
 			_response->headers.insert({ tegia::string::to_lower(vhead[0]),core::string::trim(vhead[1])});
 		}
-
-		/*
-		else
-		{
-			if(vhead[0] == "\r\n" || vhead[0] == "\r\n\r\n")
-			{
-				std::cout << _OK_TEXT_ << "END HEADER\n";
-			}
-			else
-			{
-				_response->headers.insert({vhead[0],""});
-			}
-		}*/
 		
 		return totalBytes;
 	};
@@ -610,138 +502,6 @@ class stream_client_v1
 
 
 };
-
-// class stream_client
-// {
-// 	private:
-// 		CURL *curl;
-// 		// std::string useragent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36";
-// 		std::unordered_map<std::string,cookie> cookielist;
-
-// 		bool verbose = false;
-// 		std::atomic<bool> cancel_flag; // Для остановки
-// 		//int run();
-// 		std::thread worker_thread;
-// 		int still_running = 0;  // Добавляем переменную-член
-//     	int epoll_fd = -1;
-// 		std::atomic<bool> running{false};
-// 		CURLM* multi_handle = nullptr;
-
-// 		void process_messages();
-// 		static int socket_callback(CURL* easy, curl_socket_t s, int action, 
-// 								void* userp, void* socketp);
-// 		static int timer_callback(CURLM* multi, long timeout_ms, void* userp);
-
-// 	public:
-// 		stream_client();
-// 		~stream_client();
-// 		int get(const std::string &_url, const std::string &_filename = "");
-// 		void stop() {cancel_flag.store(true);}
-
-		
-// 		tegia::http::request * request;
-// 		tegia::http::stream_response_v1 * response;
-
-
-// 		bool set_timeout(long seconds);
-// 		bool set_verbose(bool flag);
-// 		bool set_header(const std::string &header, const std::string &value);
-// 		bool set_ssl(const std::string &ssl_key_path,const std::string &ssl_sert_path,bool is_check);
-// 		bool set_sslp12(const std::string &ssl_sert_path,const std::string &ssl_sert_password,bool is_check);
-// 		bool set_proxy(const std::string &_addr,const std::string &_port);
-// 		bool set_proxy(const tegia::http::proxy &_proxy);
-// 		bool set_useragent(const std::string &_useragent);
-// 		bool set_cookie(const std::string &_name, const std::string &_value, const std::string &_path);
-
-
-// 		std::string get_redirect_url();
-
-
-
-
-// 		static std::size_t writedata(const char* in, std::size_t size, std::size_t nmemb, void* userdata) {
-// 			std::size_t totalBytes = size * nmemb;
-// 			// Приводим userdata к нужному типу
-// 			// auto response = reinterpret_cast<tegia::http::stream_response_v1*>(userdata);
-			
-// 			// // Отладочный вывод вызова функции
-// 			// std::cerr << "writedata called with " << totalBytes << " bytes\n";
-			
-// 			// // Собираем данные в строку
-// 			// std::string data(in, totalBytes);
-// 			// std::cerr << "Data received:\n" << data << "\n";
-			
-// 			// // Передаём данные в объект ответа
-// 			// response->data.append(data);
-			
-// 			return totalBytes;
-// 		}
-
-
-// 		static std::size_t writeheader(
-// 			const char* in,
-// 			std::size_t size,
-// 			std::size_t num,
-// 			void* out)
-// 		{
-// 			const std::size_t totalBytes(size * num);
-// 			tegia::http::stream_response_v1 * _response = reinterpret_cast<tegia::http::stream_response_v1*>(out);
-// 			_response->raw_headers.append(in, totalBytes);
-
-// 			if(_response->step == 0)
-// 			{
-// 				// std::cout << _OK_TEXT_ << "start load header" << std::endl;
-// 				_response->step = 1;
-// 			}
-
-// 			auto vhead = tegia::string::explode( std::string(in,totalBytes),": ",false);
-// 			if(vhead.size() == 2)
-// 			{
-// 				_response->headers.insert({ tegia::string::to_lower(vhead[0]),core::string::trim(vhead[1])});
-// 			}
-
-// 			/*
-// 			else
-// 			{
-// 				if(vhead[0] == "\r\n" || vhead[0] == "\r\n\r\n")
-// 				{
-// 					std::cout << _OK_TEXT_ << "END HEADER\n";
-// 				}
-// 				else
-// 				{
-// 					_response->headers.insert({vhead[0],""});
-// 				}
-// 			}*/
-			
-// 			return totalBytes;
-// 		};
-
-// 		// static std::size_t writeheader(const char* in, std::size_t size, std::size_t nmemb, void* userdata) {
-// 		// 	std::size_t totalBytes = size * nmemb;
-// 		// 	// // Приводим userdata к нужному типу (здесь предполагается, что userdata - это указатель на tegia::http::response)
-// 		// 	// auto response = reinterpret_cast<tegia::http::response*>(userdata);
-			
-// 		// 	// // Добавляем полученные заголовки в raw_headers
-// 		// 	// response->raw_headers.append(in, totalBytes);
-			
-// 		// 	// // Отладочный вывод заголовка
-// 		// 	// std::cerr << "Header received (" << totalBytes << " bytes): " << std::string(in, totalBytes) << "\n";
-			
-// 		// 	// // Первое получение заголовков – переключаем состояние
-// 		// 	// if(response->step == 0) {
-// 		// 	// 	response->step = 1;
-// 		// 	// }
-			
-// 		// 	// // Разбиваем строку на ключ и значение
-// 		// 	// std::string headerLine(in, totalBytes);
-// 		// 	// auto vhead = tegia::string::explode(headerLine, ": ", false);
-// 		// 	// if(vhead.size() == 2) {
-// 		// 	// 	response->headers.insert({ tegia::string::to_lower(vhead[0]), core::string::trim(vhead[1]) });
-// 		// 	// }
-			
-// 		// 	return totalBytes;
-// 		// }
-// };
 
 }  // END namespace http
 }  // END namespace tegia
