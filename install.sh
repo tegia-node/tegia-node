@@ -29,7 +29,6 @@ mkdir -p ${ROOT}/ui
 
 sudo apt install -y mc
 sudo apt install -y screen
-sudo apt install -y jq
 sudo apt install -y zip
 sudo apt install -y python
 sudo apt install -y build-essential
@@ -47,7 +46,7 @@ sudo apt install -y default-libmysqlclient-dev
 sudo apt install -y uuid-dev
 sudo apt install -y libxml2-dev
 sudo apt install -y libcurl4-openssl-dev libssl-dev
-sudo apt install -y zlibc libbz2-dev libzip-dev unzip
+sudo apt install -y libbz2-dev libzip-dev unzip
 sudo apt install -y libfmt-dev
 
 #
@@ -92,6 +91,16 @@ else
     echo "Версия ОС: другая версия (или неизвестная)"
     # Ваши действия для других версий
 fi
+
+#
+# Manticore
+#
+
+wget https://repo.manticoresearch.com/manticore-repo.noarch.deb
+sudo dpkg -i manticore-repo.noarch.deb
+sudo apt update
+sudo apt install manticore manticore-extra -y
+rm manticore-repo.noarch.deb
 
 #
 # nlohmann json
@@ -176,6 +185,17 @@ then
 fi
 
 #
+# magic_enum
+#
+
+if ! [ -d  ${ROOT}/vendors/magic_enum/ ]
+then
+	cd ${ROOT}/vendors
+	git clone https://github.com/Neargye/magic_enum.git --depth=1 --branch=v0.9.7
+fi
+
+
+#
 # CONFIGURE
 #
 
@@ -196,10 +216,12 @@ echo " "
 tee ${ROOT}/Makefile.variable << EOF > /dev/null
 iNODE				= ${ROOT}/tegia-node/include
 iVENDORS			= ${ROOT}/vendors
+VENDOR_NAMES        = \$(notdir \$(wildcard ${ROOT}/vendors/*))
+iVENDORSINCLUDE     = \$(foreach name,\$(VENDOR_NAMES),\$(wildcard ${ROOT}/vendors/\$(name)/include/\$(name)/))
 C++VER				= -std=c++2a
 
-ProdFlag			= -rdynamic -I\$(iNODE) -I\$(iVENDORS) \$(C++VER) -march=native -m64 -O2
-DevFlag				= -rdynamic -I\$(iNODE) -I\$(iVENDORS) \$(C++VER) -march=native -m64 -Og -g -Wpedantic -Wshadow=compatible-local -Wl,--no-as-needed 
+ProdFlag			= -rdynamic -I\$(iNODE) -I\$(iVENDORS) \$(addprefix -I,\$(iVENDORSINCLUDE)) \$(C++VER) -march=native -m64 -O2
+DevFlag				= -rdynamic -I\$(iNODE) -I\$(iVENDORS) \$(addprefix -I,\$(iVENDORSINCLUDE)) \$(C++VER) -march=native -m64 -Og -g -Wpedantic -Wshadow=compatible-local -Wl,--no-as-needed 
 Flag = \$(DevFlag)
 EOF
 

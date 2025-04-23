@@ -1,8 +1,6 @@
 #include <string>
 
 #include <tegia/ws/router.h>
-#include <tegia/context/context.h>
-
 
 namespace tegia {
 namespace app {

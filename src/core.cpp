@@ -43,6 +43,54 @@ const nlohmann::json * const get(const std::string &name)
 } // namespace configuration
 } // namespace tegia
 
+
+//
+//
+//
+
+
+namespace tegia {
+
+void logger::event(
+	const std::string &level,
+	const std::string &filename, 
+	const std::string &function, 
+	const int line,
+	const std::chrono::high_resolution_clock::time_point now,
+	const std::string &thread, 
+	int code, 
+	const std::string &message)
+{
+	tegia::threads::thread->_logger->write(
+		level,
+		filename,
+		function,
+		line,
+		now,
+		thread,
+		code,
+		message);
+};
+
+void logger::event2(
+	const std::string &level,
+	const std::string &function, 
+	const std::chrono::high_resolution_clock::time_point now,
+	const std::string &thread, 
+	const std::string &code, 
+	const std::string &message)
+{
+	tegia::threads::thread->_logger->write2(
+		level,
+		function,
+		now,
+		thread,
+		code,
+		message);
+};
+
+} // namespace tegia
+
 //
 //
 //
@@ -98,6 +146,12 @@ int unload(const std::string &actor)
 
 namespace tegia {
 namespace threads {
+
+std::string tid()
+{
+	return tegia::threads::thread->tid();
+};
+
 
 int run(std::function<void()> _fn)
 {

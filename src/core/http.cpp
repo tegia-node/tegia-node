@@ -396,7 +396,47 @@ bool client::set_proxy(const std::string &_addr,const std::string &_port)
 
 
 bool client::set_proxy(const tegia::http::proxy &_proxy = tegia::http::proxy())
-{
+{	
+	if (!curl)
+	return false;
+
+	// Базовые настройки прокси
+	if (!_proxy.addr.empty())
+	{
+		curl_easy_setopt(curl, CURLOPT_PROXY, _proxy.addr.c_str());
+		curl_easy_setopt(curl, CURLOPT_PROXYPORT, _proxy.port);
+		curl_easy_setopt(curl, CURLOPT_PROXYTYPE, _proxy.type);
+
+		// Настройка аутентификации
+		if (!_proxy.usr.empty() || !_proxy.pwd.empty())
+		{
+			curl_easy_setopt(curl, CURLOPT_PROXYUSERNAME, _proxy.usr.c_str());
+			curl_easy_setopt(curl, CURLOPT_PROXYPASSWORD, _proxy.pwd.c_str());
+		}
+
+		// Метод аутентификации для HTTP прокси
+		if (_proxy.http_auth != CURLAUTH_NONE)
+		{
+			curl_easy_setopt(curl, CURLOPT_PROXYAUTH, _proxy.http_auth);
+		}
+
+		// Дополнительные настройки для SOCKS5
+		if (_proxy.type == CURLPROXY_SOCKS5)
+		{
+	#ifdef CURLOPT_SOCKS5_AUTH
+			curl_easy_setopt(curl, CURLOPT_SOCKS5_AUTH, _proxy.socks5_auth);
+	#endif
+		}
+
+		// Настройка туннелирования
+		curl_easy_setopt(curl, CURLOPT_HTTPPROXYTUNNEL, _proxy.use_tunnel ? 1L : 0L);
+	}
+	else
+	{
+		// Отключение прокси, если адрес пустой
+		curl_easy_setopt(curl, CURLOPT_PROXY, "");
+	}
+
 	return true;
 };
 

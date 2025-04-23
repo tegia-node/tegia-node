@@ -4,7 +4,8 @@
 #include "../../node/logger.h"
 #undef _LOG_LEVEL_
 #define _LOG_LEVEL_ _LOG_DEBUG_
-#include "../../node/log.h"
+#include <tegia/context/log.h>
+//	LOGGER
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -19,7 +20,7 @@ namespace mysql {
 
 provider::provider()
 {
-	LDEBUG("INTI MYSQL PROVIDER");
+	// LDEBUG("INTI MYSQL PROVIDER");
 };
 
 provider::~provider()
