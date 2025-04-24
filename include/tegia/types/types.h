@@ -12,14 +12,10 @@
 #include "simple/vk.h"
 
 #include "simple/rus_passport.h"
-#include "simple/rus_inn.h"
+#include "simple/rus_person_inn.h"
+#include "simple/rus_company_inn.h"
 #include "simple/rus_snils.h"
 
-
-
-
-
-#include "fio.h"		// fio
-
+#include "fio.h"
 
 #endif
