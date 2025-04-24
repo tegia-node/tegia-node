@@ -55,7 +55,8 @@ enum class TYPE: long long int {
 	VK_LINK             = 3712801537,    // crc32("vk_link")
 
 	RUS_PASSPORT        = 1556358888,    // crc32("rus_passport")
-	RUS_INN             = 2249915708,    // crc32("rus_inn")
+	RUS_PERSON_INN      = 1275541496,    // crc32("rus_person_inn")
+	RUS_COMPANY_INN     = 3629348490,    // crc32("rus_company_inn")
 	SNILS               = 3840612784,    // crc32("snils")
 	RUS_SNILS           = 3840612784,    // crc32("rus_snils")
 
