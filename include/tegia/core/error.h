@@ -78,6 +78,7 @@ namespace tegia {
 namespace errors {
 
 tegia::log::event_t open_file(std::error_code ec, const std::string &filename);
+tegia::log::event_t mysql(int code, const std::string &connection, const std::string &query);
 
 } // END namespace errors
 } // END namespace tegia

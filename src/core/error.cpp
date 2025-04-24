@@ -97,6 +97,25 @@ tegia::log::event_t open_file(std::error_code ec, const std::string &filename)
 	return std::move(event);
 };
 
+tegia::log::event_t mysql(int code, const std::string &connection, const std::string &query)
+{
+	tegia::log::event_t event;
+	event.level = "error";
+
+	nlohmann::json _info;
+	_info["code"] = code;
+	_info["connection"] = connection;
+	_info["query"] = query;
+
+	event.info = std::format(
+			"UUID:{}, {}",
+			event.uuid,
+			_info.dump()
+		);
+		
+	return std::move(event);
+};
+
 } // END namespace errors
 } // END namespace tegia
 
