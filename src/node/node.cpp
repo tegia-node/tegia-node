@@ -127,6 +127,7 @@ bool node::action()
 	this->_actor_map->add_domain("auth",tegia::domain::LOCAL);
 	this->_actor_map->add_domain("user",tegia::domain::LOCAL);
 	this->_actor_map->add_domain("data",tegia::domain::LOCAL);
+	this->_actor_map->add_domain("enrich",tegia::domain::LOCAL);
 
 	//
 	// ADD PATTERNS

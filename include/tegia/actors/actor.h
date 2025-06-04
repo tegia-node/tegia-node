@@ -33,7 +33,7 @@ class actor_t
 		std::string name = "";
 		std::string type = "";
 		std::string ws = "";
-		int status = 200;
+		int status = 100;
 
 		std::atomic<int> messages{0};
 

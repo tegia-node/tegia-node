@@ -40,6 +40,7 @@ class ws_t: public actor_t
 		// ACTION FUNCTIONS
 		// ----------------------------------------------------------------------------------   
 
+		int init(const std::shared_ptr<message_t> &message);
 		int router(const std::shared_ptr<message_t> &message);
 		int member_add(const std::shared_ptr<message_t> &message);
 		int member_remove(const std::shared_ptr<message_t> &message);
@@ -68,6 +69,12 @@ class type_t<actor_type, std::enable_if_t<std::is_base_of_v<tegia::actors::ws_t,
 	public:
 		type_t(const std::string &type): type_base_t(type)
 		{
+			this->add_action(
+				"/init",
+				static_cast<tegia::actors::action_fn_ptr>(&tegia::actors::ws_t::init),
+				tegia::user::roles(ROLES::WS::OWNER)
+			);
+
 			this->add_action(
 				"/router",
 				static_cast<tegia::actors::action_fn_ptr>(&tegia::actors::ws_t::router),
