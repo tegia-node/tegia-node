@@ -23,130 +23,130 @@ class time
 	friend bool operator< (const tegia::time &lh, const tegia::time &rh);
 
 	private:
-		std::tm * tm;
+		std::tm tm;
+
+		inline void init_now() 
+		{
+			std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+			std::tm* t = localtime_r(&now, &this->tm);
+		};
+
+		bool parse_from_string(const std::string& str, const std::string& format) 
+		{
+			std::tm tmp = {};
+			if (strptime(str.c_str(), format.c_str(), &tmp) != nullptr) 
+			{
+				this->tm = tmp;
+				return true;
+			}
+			return false;
+		};
 
 	public:
 
-		time()
+		// Конструктор по умолчанию
+		time() 
 		{
-			std::time_t now_c = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-			this->tm = localtime ( &now_c );
-		};
+			init_now();
+		}
 
-		time(const std::time_t &_time)
+		// Конструктор по time_t
+		explicit time(const std::time_t& _time) 
 		{
-			this->tm = localtime ( &_time );
-		};
-		
-		time(const std::string &_time, const std::string &format = "%Y-%m-%d %H:%M:%S")
+			std::tm* t = localtime_r(&_time, &this->tm);
+		}
+
+		// Конструктор по строке
+		time(const std::string& _time, const std::string& format = "%Y-%m-%d %H:%M:%S") 
 		{
-			// https://en.cppreference.com/w/cpp/io/manip/get_time
+			if (!parse_from_string(_time, format)) 
+			{
+				init_now(); // если строка некорректна — устанавливаем текущее время
+			}
+		}
 
-			this->tm = new std::tm();
-			memset(this->tm, 0, sizeof(this->tm));
-			strptime(_time.c_str(), format.c_str(), this->tm);
-		};
+		~time() = default;
 
-		~time()
-		{};
-
-		bool set()
+		// Установить текущее время
+		bool set() 
 		{
-			std::time_t now_c = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-			this->tm = localtime ( &now_c );
+			init_now();
 			return true;
-		};
+		}
 
-		bool set(const std::time_t &_time)
+		// Установить время по time_t
+		bool set(const std::time_t& _time) 
 		{
-			this->tm = localtime ( &_time );
+			this->tm = *std::localtime(&_time);
 			return true;
-		};
-		
-		bool set(const std::string &_time, const std::string &format = "%Y-%m-%d %H:%M:%S")
+		}
+
+		// Установить время по строке
+		bool set(const std::string& _time, const std::string& format = "%Y-%m-%d %H:%M:%S") 
 		{
-			// https://en.cppreference.com/w/cpp/io/manip/get_time
+			return parse_from_string(_time, format);
+		}
+				
 
-			memset(this->tm, 0, sizeof(this->tm));
-			strptime(_time.c_str(), format.c_str(), this->tm);
-			return true;
-		};
-
-
-		std::time_t timestamp()
+		std::time_t timestamp() const
 		{
-			return mktime(this->tm);
+			std::tm tmp = tm; // mktime может изменять поля
+			return std::mktime(&tmp);
 		};
 
 		bool next_day()
 		{
-			this->tm->tm_mday++;
-			std::mktime(this->tm);
+			this->tm.tm_mday++;
+			std::mktime(&this->tm);
 			return true;
 		};
 
 		bool hour(int _hour)
 		{
-			this->tm->tm_hour = _hour;
-			std::mktime(this->tm);
+			this->tm.tm_hour = _hour;
+			std::mktime(&this->tm);
 			return true;
 		};
 
 		bool min(int _min)
 		{
-			this->tm->tm_min = _min;
-			std::mktime(this->tm);
+			this->tm.tm_min = _min;
+			std::mktime(&this->tm);
 			return true;
 		};
 
 		bool sec(int _sec)
 		{
-			this->tm->tm_sec = _sec;
-			std::mktime(this->tm);
+			this->tm.tm_sec = _sec;
+			std::mktime(&this->tm);
 			return true;
 		};
 
-		std::string format(const std::string &format = "%Y-%m-%d %H:%M:%S")
+		std::string format(const std::string &format = "%Y-%m-%d %H:%M:%S") const
 		{
 			char buf[255];
-			strftime(buf, sizeof(buf), format.c_str(), this->tm);
-			//std::string out = (const char*)buf;
-			return std::string((const char*)buf);
+			std::memset(buf, 0, sizeof(buf));
+			std::strftime(buf, sizeof(buf), format.c_str(), &this->tm);
+			return std::string(buf);
 		};
 };
 
-inline bool operator==(const tegia::time &lh, const tegia::time &rh)
+
+// Сравнение
+inline bool operator==(const time& lh, const time& rh) 
 {
-	//std::cout << lh.timestamp() << std::endl; 
-	//if(lh.timestamp() == rh.timestamp()) return true;
+	return lh.timestamp() == rh.timestamp();
+}
 
-	auto lh_tm = mktime(lh.tm);
-	auto rh_tm = mktime(rh.tm);
-	if(lh_tm == rh_tm) return true;
-	return false;
-};
-
-inline bool operator>(const tegia::time &lh, const tegia::time &rh)
+inline bool operator>(const time& lh, const time& rh) 
 {
-	//std::cout << lh.timestamp() << std::endl; 
-	//if(lh.timestamp() > rh.timestamp()) return true;
+	return lh.timestamp() > rh.timestamp();
+}
 
-	auto lh_tm = mktime(lh.tm);
-	auto rh_tm = mktime(rh.tm);
-	if(lh_tm > rh_tm) return true;
-	return false;
-};
-
-inline bool operator<(const tegia::time &lh, const tegia::time &rh)
+inline bool operator<(const time& lh, const time& rh) 
 {
-	//std::cout << lh.timestamp() << std::endl; 
-	//if(lh.timestamp() > rh.timestamp()) return true;
-
-	auto lh_tm = mktime(lh.tm);
-	auto rh_tm = mktime(rh.tm);
-	if(lh_tm < rh_tm) return true;
-	return false;
-};
+	return lh.timestamp() < rh.timestamp();
+}
 
 
 } // END namespace tegia
