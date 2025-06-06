@@ -106,7 +106,7 @@ tegia::log::event_t mysql(int code, const std::string &connection, const std::st
 	event._data["connection"] = connection;
 	event._data["query"] = query;
 
-	if(additional != nullptr)
+	if(additional.size() != 0)
 	{
 		event._data["additional"] = additional;
 	}
