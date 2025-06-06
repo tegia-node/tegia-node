@@ -97,20 +97,24 @@ tegia::log::event_t open_file(std::error_code ec, const std::string &filename)
 	return std::move(event);
 };
 
-tegia::log::event_t mysql(int code, const std::string &connection, const std::string &query)
+tegia::log::event_t mysql(int code, const std::string &connection, const std::string &query, nlohmann::json additional)
 {
 	tegia::log::event_t event;
 	event.level = "error";
 
-	nlohmann::json _info;
-	_info["code"] = code;
-	_info["connection"] = connection;
-	_info["query"] = query;
+	event._data["code"] = code;
+	event._data["connection"] = connection;
+	event._data["query"] = query;
+
+	if(additional != nullptr)
+	{
+		event._data["additional"] = additional;
+	}
 
 	event.info = std::format(
 			"UUID:{}, {}",
 			event.uuid,
-			_info.dump()
+			event._data.dump()
 		);
 		
 	return std::move(event);
