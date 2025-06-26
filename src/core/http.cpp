@@ -293,7 +293,7 @@ bool client::set_ssl(const std::string &ssl_key_path,const std::string &ssl_sert
 	std::cout << "ssl_sert_path = [" << ssl_sert_path << "]" << std::endl;
 	std::cout << "ssl_key_path  = [" << ssl_key_path << "]" << std::endl;
 
-	res = curl_easy_setopt(this->curl, CURLOPT_SSLCERT, ssl_sert_path);
+	res = curl_easy_setopt(this->curl, CURLOPT_SSLCERT, ssl_sert_path.c_str());
 	if(res != CURLE_OK)
 	{
 		std::cout << "CURLOPT_SSLCERT res = " << res << std::endl;
