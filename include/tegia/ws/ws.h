@@ -71,24 +71,28 @@ class type_t<actor_type, std::enable_if_t<std::is_base_of_v<tegia::actors::ws_t,
 		{
 			this->add_action(
 				"/init",
+				"",
 				static_cast<tegia::actors::action_fn_ptr>(&tegia::actors::ws_t::init),
 				tegia::user::roles(ROLES::WS::OWNER)
 			);
 
 			this->add_action(
 				"/router",
+				"",
 				static_cast<tegia::actors::action_fn_ptr>(&tegia::actors::ws_t::router),
 				tegia::user::roles(ROLES::SESSION::PUBLIC, ROLES::SESSION::USER)
 			);
 
 			this->add_action(
 				"/member/add",
+				"",
 				static_cast<tegia::actors::action_fn_ptr>(&tegia::actors::ws_t::member_add),
 				tegia::user::roles(ROLES::WS::OWNER, ROLES::WS::ADMIN)
 			);
 
 			this->add_action(
 				"/member/remove",
+				"",
 				static_cast<tegia::actors::action_fn_ptr>(&tegia::actors::ws_t::member_remove),
 				tegia::user::roles(ROLES::WS::OWNER, ROLES::WS::ADMIN)
 			);

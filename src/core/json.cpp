@@ -1,8 +1,10 @@
 #include <regex>
 
+#include <tegia/tegia.h>
 #include <tegia/core/const.h>
 #include <tegia/core/json.h>
 #include <xml2json/include/xml2json.hpp>
+#include <tegia/types/types.h>
 
 namespace tegia {
 namespace json {
@@ -185,14 +187,142 @@ namespace tegia {
 namespace json {
 
 
+//
+//
+//
+
+validator::validator()
+	: _validator(), 
+	_is_init(false)
+{
+
+};
+
+
+//
+//
+//
+
+
+validator::~validator()
+{
+
+};
+
+
+//
+//
+//
+
+
+void validator::format_check(const std::string &format, const std::string &value)
+{
+	/*
+	if (format == "uuid") 
+	{
+		// tegia::types::
+		// if (!check_value_for_something(value))
+		{
+
+		}
+		throw std::invalid_argument("value is not a good something");
+	} 
+	else
+	*/
+
+	{
+		throw std::logic_error("Don't know how to validate " + format);
+	}
+};
+
+
+//
+//
+//
+
+
+void validator::loader(const nlohmann::json_uri& uri, nlohmann::json& schema)
+{
+	std::cout << uri.url() << std::endl;
+	std::cout << uri.path() << std::endl;
+	std::cout << uri.to_string() << std::endl;
+	
+	std::string url = uri.url();
+	auto start = url.find("file://[@");
+	if(start != std::string::npos)
+	{
+		auto end = url.find("]/");
+		std::string conf = url.substr(start + 9, end - start - 9);
+		std::cout << conf << std::endl;
+		std::cout << tegia::conf::path(conf) << std::endl;
+	}
+	// std::cout << tegia::conf::path();
+
+	std::cout << std::filesystem::current_path().string() << std::endl;
+	
+	std::ifstream file(uri.url());
+
+	if (!file)
+		throw std::runtime_error("Не удалось открыть файл: " + uri.url());
+
+	file >> schema;
+}
+
+
+//
+//
+//
+
+
+validator::validator(const validator& other)
+	: _filename(other._filename),
+	  _schema(other._schema),
+	  _validator(),
+	  _err(),
+	  _is_init(other._is_init)
+{
+	if (this->_is_init) 
+	{
+		this->_validator.set_root_schema(this->_schema);
+	}
+};
+
+
+//
+//
+//
+
+
+validator::validator(validator&& other) noexcept
+	: _filename(std::move(other._filename)),
+	  _schema(std::move(other._schema)),
+	  _validator(),
+	  _err(),
+	  _is_init(other._is_init)
+{
+	if (this->_is_init) 
+	{
+		this->_validator.set_root_schema(this->_schema);
+	}
+}
+
+
+//
+//
+//
+
+
 bool validator::load(const std::string &filename)
 {
+	this->_filename = filename;
+
 	int res = 0;
 	std::string info = "";
 	std::tie(res,info,this->_schema) = tegia::json::_file(filename);
 
 	if(res != 0)
 	{
+		this->_is_init = false;
 		return false;
 	}
 
@@ -202,13 +332,25 @@ bool validator::load(const std::string &filename)
 };
 
 
+//
+//
+//
+
+
 bool validator::load(nlohmann::json schema)
 {
+	this->_filename = "";
+
 	this->_schema = schema;
 	this->_validator.set_root_schema(this->_schema); 
 	this->_is_init = true;
 	return true;
 };
+
+
+//
+//
+//
 
 
 bool validator::validate(nlohmann::json data)
@@ -230,14 +372,19 @@ bool validator::validate(nlohmann::json data)
 };
 
 
+//
+//
+//
 
-/*
-bool validator::is_load()
+
+bool validator::is_init()
 {
-	return this->_is_load;
+	return this->_is_init;
 };
 
 
+
+/*
 int validator::load(const std::string &filename)
 {
 	this->_filename = filename;

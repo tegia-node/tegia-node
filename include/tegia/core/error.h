@@ -57,6 +57,7 @@ class event_t
 		~event_t() = default;
 
 		std::string uuid;
+		std::string code;
 		int status;
 
 		std::string level;

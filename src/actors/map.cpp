@@ -6,6 +6,15 @@
 #include "../threads/thread_t.h"
 #include "map.h"
 
+
+////
+#undef _LOG_LEVEL_
+#define _LOG_LEVEL_ _LOG_WARNING_
+#define _LOG_PRINT_ true
+#include <tegia/context/log.h>
+////
+
+
 namespace tegia {
 namespace actors {
 
@@ -264,6 +273,26 @@ int map_t::send_message(
 		{
 			auto _action = this->_actions[pos->second->type + action];
 
+			if(_action->validator.is_init() == true)
+			{
+				if(_action->validator.validate(message->data) == false)
+				{
+					// ERROR
+
+					tegia::log::event_t event;
+					event.code = "rBKqKResEvsS";
+					event._data = {
+						{ "info", "message not valid"},
+						{ "actor", name },
+						{ "action", action },
+						{ "message", message->data }
+					};
+
+					L3ERROR(event);
+					exit(0);					
+				}
+			}
+
 			/*
 				TODO: Проверку прав делать до добавления задачи в пул
 			*/
@@ -493,6 +522,26 @@ int map_t::send_message(
 					//
 					// GENERATE TASK FUNCTION
 					//
+
+					if(_action->validator.is_init() == true)
+					{
+						if(_action->validator.validate(message->data) == false)
+						{
+							// ERROR
+
+							tegia::log::event_t event;
+							event.code = "HOdFuCNudyYQ";
+							event._data = {
+								{ "info", "message not valid"},
+								{ "actor", _actor->name },
+								{ "action", _action->type },
+								{ "message", message->data }
+							};
+
+							L3ERROR(event);
+							exit(0);					
+						}
+					}
 
 					_actor->messages.fetch_add(1);
 					return this->pool->add_task(std::bind(&map_t::action_func,this,_actor,_action,message,tegia::threads::thread->_user), priority);

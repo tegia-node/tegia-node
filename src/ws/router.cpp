@@ -62,7 +62,7 @@ void router_t::actor_name(nlohmann::json * _params)
 				if(_actor_name_old[i] == '}')
 				{
 					std::string path = "/params" + _actor_name_old.substr(start,i-start);
-					std::cout << "path = '" << path << "'" << std::endl;
+					// std::cout << "path = '" << path << "'" << std::endl;
 
 					nlohmann::json::json_pointer ptr(path);
 					// std::cout << (*_params)[ptr].get<std::string>() << std::endl;
@@ -102,11 +102,11 @@ bool router_t::add(const std::string &method, const std::string &pattern, nlohma
 		// TODO: проверять дубликаты
 		//
 
-		std::cout << "_elm  = " << _elm << std::endl;
+		// std::cout << "_elm  = " << _elm << std::endl;
 
 		if(_elm[0] == '{')
 		{
-			std::cout << "param = " << _elm.substr(1,_elm.length() - 2) << std::endl;
+			// std::cout << "param = " << _elm.substr(1,_elm.length() - 2) << std::endl;
 
 			data["params"].push_back( _elm.substr(1,_elm.length() - 2) );
 			_path = _path + "*";
