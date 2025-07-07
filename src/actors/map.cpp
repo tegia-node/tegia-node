@@ -145,18 +145,18 @@ void map_t::action_func(
 	const std::shared_ptr<message_t> &message,
 	std::shared_ptr<tegia::user> user)
 {
-	/*
+
 	std::cout << _YELLOW_ << "run action " << _actor->name << " " << _action->action << _BASE_TEXT_<< std::endl;
-	std::cout << "   tid           = " << tegia::context::tid() << std::endl;
+	std::cout << "   tid           = " << tegia::threads::tid() << std::endl;
 	std::cout << "   context  user = " << tegia::threads::user()->uuid() << std::endl;
 	std::cout << "   function user = " << user->uuid() << std::endl;
 	std::cout << "   actor ws ws   = " << _actor->ws << std::endl;
-	std::cout << "   actor ws name = " << _actor->name << std::endl;
+	std::cout << "   actor name    = " << _actor->name << std::endl;
 	std::cout << "   user ws       = " << user->_ws << std::endl;
 	std::cout << "   user roles    = " << user->_roles.to_ullong() << std::endl;
 	std::cout << "   action roles  = " << _action->roles << std::endl;
 	std::cout << "   &             = " << (user->_roles.to_ullong() & _action->roles) << std::endl;
-	*/
+
 	
 	auto _match = user->_roles.to_ullong() & _action->roles;
 
@@ -166,20 +166,19 @@ void map_t::action_func(
 					<< "      [403] YOU DO NOT HAVE ACCCESS RIGHTS\n" 
 					<< "      status = '" << _actor->status << "'\n" 
 					<< "      actor  = '" << _actor->name << "'\n"
-					<< "      action = '" << _action << "'" << _BASE_TEXT_ << std::endl;
+					<< "      action = '" << _action->action << "'\n"
+					<< "      _match = " << _match << _BASE_TEXT_ << std::endl;
 
 		message->http["response"]["status"] = 403;
 		message->http["response"]["type"] = "application/json";
 	}
 	else if(_match <= 6)
 	{
-		// tegia::threads::data->user = user;
 		tegia::threads::thread->_user = user;
 		(_actor->*_action->fn)(message);
 	}
 	else if(_match > 6 && _actor->ws == user->_ws)
 	{
-		// tegia::threads::data->user = user;
 		tegia::threads::thread->_user = user;
 		(_actor->*_action->fn)(message);
 	}
@@ -189,7 +188,8 @@ void map_t::action_func(
 					<< "      [403] YOU DO NOT HAVE ACCCESS RIGHTS\n" 
 					<< "      status = '" << _actor->status << "'\n" 
 					<< "      actor  = '" << _actor->name << "'\n"
-					<< "      action = '" << _action << "'" << _BASE_TEXT_ << std::endl;
+					<< "      action = '" << _action->action << "'\n"
+					<< "      _match = " << _match << _BASE_TEXT_ << std::endl;
 
 		message->http["response"]["status"] = 403;
 		message->http["response"]["type"] = "application/json";
