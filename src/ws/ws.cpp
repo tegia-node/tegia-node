@@ -1,6 +1,7 @@
 #include <tegia/tegia.h>
 #include <tegia/core/const.h>
 #include <tegia/ws/ws.h>
+#include <tegia/core/time.h>
 
 namespace tegia {
 namespace actors {
@@ -19,10 +20,16 @@ ws_t::ws_t(
 	const std::string &connection,
 	const std::string &table,
 	unsigned long long int creators)
-:actor_t(type,name),connection(connection),table(table),creators(creators)
+: actor_t(type,name),
+connection(connection),
+table(table),
+creators(creators)
 {
 	std::cout << "[RUN] create tegia::actors::ws_t " << name << std::endl;
+
 	this->_router = new tegia::app::router_t(this->name);
+	this->_system = new tegia::ws::system_t(connection,table,name);
+
 
 	auto query = "SELECT * FROM `" + table + "` WHERE `name` = '" + name + "'";
 	auto res = tegia::mysql::query(connection,query);
@@ -94,20 +101,31 @@ ws_t::ws_t(
 	this->data = nlohmann::json::parse(res->get(table + "::data",0));
 
 	//
-	// MEMBERS
+	// SYSTEM
 	//
 
-	auto _members = nlohmann::json::parse(res->get(table + "::members",0));
-	for(auto it = _members.begin(); it != _members.end(); ++it)
-	{
-		this->members.insert({ (*it)["uuid"].get<std::string>(),(*it)["roles"].get<long long unsigned int>() });
-		std::cout << it->dump() << std::endl;
-	}
-
-	this->ws = this->name; // res->get(table + "::wsid",0);
+	auto __system = nlohmann::json::parse(res->get(table + "::members",0));
+	this->_system->init(__system);
+	this->_system->commit();
+	this->ws = this->name;
 	this->status = 200;
 
 	delete res;
+
+	//
+	// ADD ROUTERS
+	//
+
+	this->_router->add("POST", "/member/add",
+	nlohmann::json::parse(R"({
+		"actor": "{/this}",
+		"action":"/member/add",
+		"mapping": 
+		{
+			"": "/post/data"
+		}
+	})"));
+	
 
 	std::cout << "[END] create tegia::actors::ws_t " << name << std::endl;
 };
@@ -125,6 +143,7 @@ ws_t::~ws_t()
 	if(this->_router != nullptr)
 	{
 		delete this->_router;
+		delete this->_system;
 	}
 };
 
@@ -155,23 +174,43 @@ int ws_t::commit()
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+unsigned long long int ws_t::roles(const std::string &uuid)
+{
+	std::cout << _YELLOW_ << "RUN ws_t::roles()" << _BASE_TEXT_ << std::endl;
+	
+	auto pos = this->_system->_members.find(uuid);
+	if(pos != this->_system->_members.end())
+	{
+		return pos->second.roles;
+	}
+
+	return 0;
+};
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+
+*/
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 int ws_t::_create()
 {
 	std::cout << "[RUN] CREATE WS" << std::endl;
 
 	this->ws = this->name;
-
-	nlohmann::json members;
-	nlohmann::json member;
-
 	auto user = tegia::threads::user();
 	std::string uuid = user->uuid();
 	unsigned long long int roles = tegia::user::roles(ROLES::WS::OWNER,ROLES::WS::ADMIN,ROLES::WS::MEMBER);
 
-	member["uuid"] = uuid;
-	member["roles"] = roles;
-	members.push_back(member);
-	this->members.insert({ uuid, roles });
+	tegia::ws::member_t _member;
+	_member.uuid = uuid;
+	_member.roles = roles;
+	_member.key = "";
+	_member.t_add = core::time::current();
+	_member.status = 200;
+	this->_system->_members.insert({_member.uuid,_member});
 
 	//
 	//
@@ -181,11 +220,26 @@ int ws_t::_create()
 		std::string query = "INSERT INTO `" + this->table + "` (`name`,`data`,`members`) VALUES ("
 			"'" + this->name + "',"
 			"'{}',"
-			"'" + tegia::mysql::strip(members.dump()) + "');";
+			"'" + tegia::mysql::strip(this->_system->dump()) + "');";
 
 		auto res = tegia::mysql::query(this->connection,query);
 		delete res;
 	}
+
+	//
+	// ADD ROUTERS
+	//
+
+	this->_router->add("POST", "/member/add",
+	nlohmann::json::parse(R"({
+		"actor": "{/this}",
+		"action":"/member/add",
+		"mapping": 
+		{
+			"": "/post/data"
+		}
+	})"));	
+
 
 	std::cout << "[END] CREATE WS" << std::endl;
 	return 100;
@@ -209,16 +263,16 @@ int ws_t::router(const std::shared_ptr<message_t> &message)
 	// SET USER ROLES
 	//
 
-	long long int role = 0;
+	unsigned long long int role = 0;
 	auto user = tegia::threads::user();
 	std::string uuid = user->uuid();
 
 	std::cout << "roles old = " << user->_roles.to_ullong() << std::endl;
 
-	auto pos = this->members.find(uuid);
-	if(pos != this->members.end())
+	auto pos = this->_system->_members.find(uuid);
+	if(pos != this->_system->_members.end())
 	{
-		user->_roles = std::bitset<64>{user->_roles.to_ullong() | pos->second};
+		user->_roles = std::bitset<64>{user->_roles.to_ullong() | pos->second.roles};
 	}
 
 	std::cout << "roles new = " << user->_roles.to_ullong() << std::endl;
@@ -311,12 +365,30 @@ int ws_t::router(const std::shared_ptr<message_t> &message)
 int ws_t::init(const std::shared_ptr<message_t> &message)
 {
 	std::cout << _YELLOW_ << "ws_t::init" << _BASE_TEXT_ << std::endl;
+
+	std::cout << _YELLOW_ << std::endl;
+	std::cout << "==============================================================" << std::endl;
+	std::cout << message->data << std::endl;
+	std::cout << "==============================================================" << std::endl;
+	std::cout << _BASE_TEXT_ << std::endl;
+
+
+	this->_system->title = message->data["title"].get<std::string>();
+	this->_system->prefix = message->data["prefix"].get<std::string>();
+	this->_system->wsid = message->data["wsid"].get<std::string>();
+
+	this->_system->commit();
+
 	return 200;
 };
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
+
+	{
+		"user": "<uuid>"
+	}
 
 */
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -325,7 +397,78 @@ int ws_t::init(const std::shared_ptr<message_t> &message)
 int ws_t::member_add(const std::shared_ptr<message_t> &message)
 {
 	std::cout << _YELLOW_ << "ws_t::member_add" << _BASE_TEXT_ << std::endl;
+
+	//
+	// Добавляем участника с ролью "приглашенный"
+	//
+
+	this->_system->_mutex.lock();
+
+	tegia::ws::member_t _member;
+	_member.uuid = message->data["user"].get<std::string>();
+	_member.roles = tegia::user::roles(ROLES::WS::CANDIDAT);
+	_member.key = tegia::random::string(15);
+	_member.t_add = core::time::current();
+	
+	this->_system->_members.insert({_member.uuid,_member});
+	this->_system->commit();
+
+	this->_system->_mutex.unlock();
+
+	//
+	//
+	//
+	
+	auto msg = tegia::message::init();
+	msg->data["key"] = _member.key;
+	msg->data["title"] = this->_system->title;
+	msg->data["prefix"] = this->_system->prefix;
+	msg->data["wsid"] = this->_system->wsid;
+
+	tegia::message::send("user/" + _member.uuid, "/ws/add", msg);
+
 	return 200;
+};
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+	{
+		"user": "<uuid>",
+		"key": "<string>"
+	}
+
+*/
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+int ws_t::member_accept(const std::shared_ptr<message_t> &message)
+{
+	std::cout << _YELLOW_ << "ws_t::member_accept" << _BASE_TEXT_ << std::endl;
+	std::cout << message->data << std::endl;
+
+	std::string user = message->data["user"].get<std::string>();
+	std::string key  = message->data["key"].get<std::string>();
+
+	this->_system->_mutex.lock();
+
+	auto pos = this->_system->_members.find(user);
+	if(pos == this->_system->_members.end())
+	{
+		return 404;
+	}
+
+	if(key == pos->second.key)
+	{
+		this->_system->_members[user].roles = tegia::user::roles(ROLES::WS::MEMBER);
+		this->_system->_members[user].key = "";
+		this->_system->commit();
+		this->_system->_mutex.unlock();
+		return 200;
+	}
+
+	this->_system->_mutex.unlock();
+	return 400;
 };
 
 

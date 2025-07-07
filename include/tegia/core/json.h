@@ -78,11 +78,22 @@ class custom_error_handler : public nlohmann::json_schema::basic_error_handler
 class validator
 {
 	public:
+
+		validator();
+		~validator();
+		validator(const validator& other);
+		validator(validator&& other) noexcept;
+
 		bool load(const std::string &filename);
 		bool load(nlohmann::json schema);
 		bool validate(nlohmann::json data);
+		bool is_init();
+
+		static void format_check(const std::string &format, const std::string &value);
+		static void loader(const nlohmann::json_uri& uri, nlohmann::json& schema);
 
 	private:
+		std::string _filename;
 		nlohmann::json _schema;
 		nlohmann::json_schema::json_validator _validator;
 		custom_error_handler _err;

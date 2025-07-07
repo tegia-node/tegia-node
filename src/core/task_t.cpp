@@ -73,6 +73,7 @@ nlohmann::json task_t::json()
 	tmp["data"] = this->data;
 	tmp["error"] = this->error;
 	tmp["result"] = this->result;
+	tmp["callback"] = this->callback;
 	tmp["wsid"] = this->wsid;
 	tmp["hash"] = this->hash;
 	return std::move(tmp);
@@ -98,6 +99,11 @@ int task_t::load(nlohmann::json &jtask)
 	this->data = jtask["data"];
 	this->error = jtask["error"];
 	this->result = jtask["result"];
+
+	if(jtask.contains("callback") == true)
+	{
+		this->callback = jtask["callback"];
+	}
 
 	return 0;
 };

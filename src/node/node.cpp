@@ -182,6 +182,7 @@ bool node::run()
 	this->_config    = new tegia::node::config();
 	this->_manager   = new tegia::threads::manager_t();
 	this->_actor_map = new tegia::actors::map_t();
+	this->_manager->init(this, this->_config, this->_logger, this->_actor_map);
 
 	//
 	// INIT CONFIGURATIONS
@@ -242,7 +243,7 @@ bool node::run()
 	std::cout << "INIT THREADS" << std::endl;
 	std::cout << _BASE_TEXT_ << std::endl;
 
-	this->_manager->init(this, this->_config, this->_logger, this->_actor_map);
+	// this->_manager->init(this, this->_config, this->_logger, this->_actor_map);
 	this->_actor_map->pool = new tegia::threads::pool_t();
 	this->_actor_map->pool->_callback = std::bind(&tegia::node::node::action,this);
 	this->_actor_map->pool->run(8);

@@ -28,6 +28,7 @@ class task_t
 		nlohmann::json data;
 		nlohmann::json result;
 		nlohmann::json error;
+		nlohmann::json callback;
 
 		int status(int status);
 		int status();

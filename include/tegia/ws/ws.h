@@ -8,6 +8,7 @@
 #include <tegia/actors/type.h>
 #include <tegia/db/mysql/mysql.h>
 #include <tegia/ws/router.h>
+#include <tegia/ws/system.h>
 
 //
 //
@@ -18,11 +19,18 @@ using namespace std::chrono_literals;
 namespace tegia {
 namespace actors {
 
+//
+//
+//
 
 class ws_t: public actor_t
 {
 	template <typename actor_type, typename Enable> friend class type_t;
+
+	public: 
+		virtual unsigned long long int roles(const std::string &uuid);
 	
+
 	protected:
 		nlohmann::json data;
 		tegia::app::router_t * _router;
@@ -43,15 +51,17 @@ class ws_t: public actor_t
 		int init(const std::shared_ptr<message_t> &message);
 		int router(const std::shared_ptr<message_t> &message);
 		int member_add(const std::shared_ptr<message_t> &message);
+		int member_accept(const std::shared_ptr<message_t> &message);
 		int member_remove(const std::shared_ptr<message_t> &message);
 
-	protected:
 		int commit();
 
 	private:
 		std::string table;
 		std::string connection;
-		std::unordered_map<std::string, unsigned long long int> members;
+		std::string ws_title;
+		
+		tegia::ws::system_t * _system = nullptr;
 		unsigned long long int creators;
 
 		int _create();
@@ -71,27 +81,39 @@ class type_t<actor_type, std::enable_if_t<std::is_base_of_v<tegia::actors::ws_t,
 		{
 			this->add_action(
 				"/init",
+				"",
 				static_cast<tegia::actors::action_fn_ptr>(&tegia::actors::ws_t::init),
 				tegia::user::roles(ROLES::WS::OWNER)
 			);
 
 			this->add_action(
 				"/router",
+				"",
 				static_cast<tegia::actors::action_fn_ptr>(&tegia::actors::ws_t::router),
 				tegia::user::roles(ROLES::SESSION::PUBLIC, ROLES::SESSION::USER)
 			);
 
 			this->add_action(
 				"/member/add",
+				"",
 				static_cast<tegia::actors::action_fn_ptr>(&tegia::actors::ws_t::member_add),
 				tegia::user::roles(ROLES::WS::OWNER, ROLES::WS::ADMIN)
 			);
 
 			this->add_action(
+				"/member/accept",
+				"",
+				static_cast<tegia::actors::action_fn_ptr>(&tegia::actors::ws_t::member_accept),
+				tegia::user::roles(ROLES::WS::OWNER, ROLES::WS::ADMIN)
+			);
+
+			this->add_action(
 				"/member/remove",
+				"",
 				static_cast<tegia::actors::action_fn_ptr>(&tegia::actors::ws_t::member_remove),
 				tegia::user::roles(ROLES::WS::OWNER, ROLES::WS::ADMIN)
 			);
+
 		};
 
 		actor_t * create_actor(const std::string &name) override

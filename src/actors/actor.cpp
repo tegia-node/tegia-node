@@ -12,6 +12,12 @@ actor_t::actor_t(
 {
 	this->ws = tegia::threads::user()->ws();
 };
+	
+
+unsigned long long int actor_t::roles(const std::string &uuid)
+{
+	return 0;
+};
 
 
 } // namespace actors

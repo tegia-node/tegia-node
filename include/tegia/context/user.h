@@ -34,9 +34,10 @@ namespace ROLES {
 
 namespace WS // [20 - 63]
 {
-	const int OWNER  = 63;
-	const int ADMIN  = 62;
-	const int MEMBER = 20;
+	const int OWNER    = 63;
+	const int ADMIN    = 62;
+	const int CANDIDAT = 21;
+	const int MEMBER   = 20;
 }
 
 namespace GLOBAL // [10 - 19]

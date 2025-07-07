@@ -39,12 +39,14 @@ class actor_t
 
 		actor_t(const std::string &type,const std::string &name);
 		virtual ~actor_t() = default;
-
+	
 	public:
 		actor_t(actor_t const&) = delete;
 		actor_t(actor_t &&) noexcept = delete;
 		actor_t& operator = (actor_t const&) = delete;
 		actor_t& operator = (actor_t &&) noexcept = delete;
+
+		virtual unsigned long long int roles(const std::string &uuid);
 };
 
 //

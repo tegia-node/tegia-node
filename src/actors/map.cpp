@@ -6,6 +6,15 @@
 #include "../threads/thread_t.h"
 #include "map.h"
 
+
+////
+#undef _LOG_LEVEL_
+#define _LOG_LEVEL_ _LOG_WARNING_
+#define _LOG_PRINT_ true
+#include <tegia/context/log.h>
+////
+
+
 namespace tegia {
 namespace actors {
 
@@ -145,25 +154,39 @@ void map_t::action_func(
 	const std::shared_ptr<message_t> &message,
 	std::shared_ptr<tegia::user> user)
 {
+	//
+	// CHECK WS ROLES
+	//
+
+	bool is_ws_member = false;
+	unsigned long long int _roles = _actor->roles(user->_uuid);
+	if(_roles > 0)
+	{
+		is_ws_member = true;
+	}
 
 	std::cout << _YELLOW_ << "run action " << _actor->name << " " << _action->action << _BASE_TEXT_<< std::endl;
 	std::cout << "   tid           = " << tegia::threads::tid() << std::endl;
 	std::cout << "   context  user = " << tegia::threads::user()->uuid() << std::endl;
 	std::cout << "   function user = " << user->uuid() << std::endl;
-	std::cout << "   actor ws ws   = " << _actor->ws << std::endl;
+	std::cout << "   actor ws name = " << _actor->ws << std::endl;
 	std::cout << "   actor name    = " << _actor->name << std::endl;
 	std::cout << "   user ws       = " << user->_ws << std::endl;
+	std::cout << "   ws roles      = " << _roles << std::endl;
 	std::cout << "   user roles    = " << user->_roles.to_ullong() << std::endl;
 	std::cout << "   action roles  = " << _action->roles << std::endl;
 	std::cout << "   &             = " << (user->_roles.to_ullong() & _action->roles) << std::endl;
 
-	
-	auto _match = user->_roles.to_ullong() & _action->roles;
+	//
+	// MATCH 
+	//
+
+	auto _match = ( user->_roles.to_ullong() | _roles ) & _action->roles;
 
 	if(_match == 0)
 	{
 		std::cout << _ERR_TEXT_ << _RED_TEXT_ << "send message \n" 
-					<< "      [403] YOU DO NOT HAVE ACCCESS RIGHTS\n" 
+					<< "      [403] [1] YOU DO NOT HAVE ACCCESS RIGHTS\n" 
 					<< "      status = '" << _actor->status << "'\n" 
 					<< "      actor  = '" << _actor->name << "'\n"
 					<< "      action = '" << _action->action << "'\n"
@@ -177,7 +200,7 @@ void map_t::action_func(
 		tegia::threads::thread->_user = user;
 		(_actor->*_action->fn)(message);
 	}
-	else if(_match > 6 && _actor->ws == user->_ws)
+	else if(_match > 6 && is_ws_member == true)
 	{
 		tegia::threads::thread->_user = user;
 		(_actor->*_action->fn)(message);
@@ -185,7 +208,7 @@ void map_t::action_func(
 	else
 	{
 		std::cout << _ERR_TEXT_ << _RED_TEXT_ << "send message \n" 
-					<< "      [403] YOU DO NOT HAVE ACCCESS RIGHTS\n" 
+					<< "      [403] [2] YOU DO NOT HAVE ACCCESS RIGHTS\n" 
 					<< "      status = '" << _actor->status << "'\n" 
 					<< "      actor  = '" << _actor->name << "'\n"
 					<< "      action = '" << _action->action << "'\n"
@@ -263,6 +286,26 @@ int map_t::send_message(
 		if(pos != this->_actors.end())
 		{
 			auto _action = this->_actions[pos->second->type + action];
+
+			if(_action->validator.is_init() == true)
+			{
+				if(_action->validator.validate(message->data) == false)
+				{
+					// ERROR
+
+					tegia::log::event_t event;
+					event.code = "rBKqKResEvsS";
+					event._data = {
+						{ "info", "message not valid"},
+						{ "actor", name },
+						{ "action", action },
+						{ "message", message->data }
+					};
+
+					L3ERROR(event);
+					exit(0);					
+				}
+			}
 
 			/*
 				TODO: Проверку прав делать до добавления задачи в пул
@@ -431,7 +474,7 @@ int map_t::send_message(
 						case 403:
 						{
 							std::cout << _ERR_TEXT_ << _RED_TEXT_ << "send message \n" 
-										<< "      [403] YOU DO NOT HAVE ACCCESS RIGHTS\n" 
+										<< "      [403] [3] YOU DO NOT HAVE ACCCESS RIGHTS\n" 
 										<< "      status = '" << _actor->status << "'\n" 
 										<< "      actor  = '" << name << "'\n"
 										<< "      action = '" << action << "'\n"
@@ -493,6 +536,26 @@ int map_t::send_message(
 					//
 					// GENERATE TASK FUNCTION
 					//
+
+					if(_action->validator.is_init() == true)
+					{
+						if(_action->validator.validate(message->data) == false)
+						{
+							// ERROR
+
+							tegia::log::event_t event;
+							event.code = "HOdFuCNudyYQ";
+							event._data = {
+								{ "info", "message not valid"},
+								{ "actor", _actor->name },
+								{ "action", _action->type },
+								{ "message", message->data }
+							};
+
+							L3ERROR(event);
+							exit(0);					
+						}
+					}
 
 					_actor->messages.fetch_add(1);
 					return this->pool->add_task(std::bind(&map_t::action_func,this,_actor,_action,message,tegia::threads::thread->_user), priority);
