@@ -183,6 +183,7 @@ bool node::run()
 	this->_manager   = new tegia::threads::manager_t();
 	this->_actor_map = new tegia::actors::map_t();
 	this->_manager->init(this, this->_config, this->_logger, this->_actor_map);
+	this->_bucket    = new tegia::tasks::bucket_t();
 
 	//
 	// INIT CONFIGURATIONS
