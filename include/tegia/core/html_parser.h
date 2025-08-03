@@ -1,3 +1,6 @@
+#ifndef H_TEGIA_CORE_HTML_PARSER
+#define H_TEGIA_CORE_HTML_PARSER
+
 #include <string>
 #include <vector>
 #include <iostream>
@@ -76,4 +79,4 @@ class parser
 } // END namespace core
 
 
-
+#endif
