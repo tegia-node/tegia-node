@@ -194,6 +194,18 @@ then
 	git clone https://github.com/Neargye/magic_enum.git --depth=1 --branch=v0.9.7
 fi
 
+#
+# quickjs
+#
+
+if ! [ -d  ${ROOT}/vendors/quickjs/ ]
+then
+	cd ${ROOT}/vendors
+	git clone https://github.com/bellard/quickjs.git
+	cd quickjs
+	make	
+fi
+
 
 #
 # CONFIGURE
