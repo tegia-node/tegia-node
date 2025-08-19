@@ -131,7 +131,8 @@ const int PADDING = RSA_PKCS1_PADDING;
 class rsa
 {
 	private:
-		RSA *pRSA = nullptr;
+		// RSA *pRSA = nullptr;
+		EVP_PKEY *pkey = nullptr;
 
 		unsigned char * decrypted = nullptr;
 		int decrypted_len = 0;
@@ -142,17 +143,19 @@ class rsa
 
 		int pubkey_len;
 
+		/*
 		long long int GetCipherTextSize()
 		{
 			return RSA_size(this->pRSA);
 		};
+		*/
 
 	public:
 
 		rsa();
 		~rsa();
-		RSA * createRSA(unsigned char * key,int _public);
-		std::string unpack_key(const std::string& base64Key, int keyType);
+		// RSA * createRSA(unsigned char * key,int _public);
+		// std::string unpack_key(const std::string& base64Key, int keyType);
 
 		//
 		//
@@ -178,6 +181,7 @@ class rsa
 		//
 
 
+		/*
 		int public_encrypt2(const std::string &data, const std::string &key)
 		{
 			RSA * rsa = createRSA( (unsigned char *)key.c_str(), PUBLICKEY);
@@ -212,6 +216,7 @@ class rsa
 			RSA_free(rsa);
 			return this->decrypted_len;
 		}
+		*/
 
 		std::string get_encrypt()
 		{

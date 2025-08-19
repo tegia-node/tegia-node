@@ -212,19 +212,19 @@ bool node::run()
 	// RUN MANTICORE
 	//
 
-	std::system("searchd -c ./configs/manticore.conf > /dev/null");
+	int ret = std::system("searchd -c ./configs/manticore.conf > /dev/null");
 
 	auto signal_handler = 
 		[](int signal)
 		{
-			std::system("searchd -c ./configs/manticore.conf --stop > /dev/null");
+			int ret2 = std::system("searchd -c ./configs/manticore.conf --stop > /dev/null");
 			std::signal(signal, SIG_DFL);
 			std::raise(signal);
 		};
 	auto atexit_handler =
 		[]()
 		{
-			std::system("searchd -c ./configs/manticore.conf --stop > /dev/null");
+			int ret2 = std::system("searchd -c ./configs/manticore.conf --stop > /dev/null");
 		};
 
 	std::signal(SIGINT, signal_handler);
