@@ -8,6 +8,8 @@
 #include <string>
 #include <chrono>
 #include <iostream>
+#include <sstream>
+#include <ctime>
 
 // strptime    http://www.opennet.ru/man.shtml?topic=strptime&category=3&russian=0
 
@@ -33,13 +35,32 @@ class time
 
 		bool parse_from_string(const std::string& str, const std::string& format) 
 		{
-			std::tm tmp = {};
+         /*
+         std::tm tmp = {};
 			if (strptime(str.c_str(), format.c_str(), &tmp) != nullptr) 
 			{
 				this->tm = tmp;
 				return true;
 			}
 			return false;
+         */
+
+         std::string fixed = str;
+
+         // Если строка оканчивается на таймзону вида +HH:MM или -HH:MM
+         if (fixed.size() > 6 && (fixed[fixed.size() - 6] == '+' || fixed[fixed.size() - 6] == '-')) 
+         {
+               // удаляем двоеточие перед минутами
+               fixed.erase(fixed.end() - 3);
+         }
+
+         std::tm tmp{};
+         if (strptime(fixed.c_str(), format.c_str(), &tmp) != nullptr) 
+         {
+               this->tm = tmp;
+               return true;
+         }
+         return false;
 		};
 
 	public:
