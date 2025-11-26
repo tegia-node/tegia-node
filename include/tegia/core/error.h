@@ -66,6 +66,7 @@ class event_t
 
 		nlohmann::json _data;
 		std::string log();
+		nlohmann::json json();
 
 	private:
 

@@ -6,20 +6,8 @@
 #include <tegia/core/json.h>
 #include <tegia/core/crypt.h>
 #include <tegia/context/user.h>
+#include <tegia/actors/addr.h>
 
-
-namespace tegia {
-namespace actors {
-
-struct addr_t
-{
-	bool is_addr = true;
-	std::string actor;
-	std::string action;
-};
-
-} // END namespace actors
-} // END namespace tegia
 
 
 struct addr_t
