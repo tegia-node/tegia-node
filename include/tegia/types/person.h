@@ -34,6 +34,7 @@ class person_t: public tegia::types::base_t
 
 		static std::string _normal(const std::string &name);
 		static std::string normal(const std::string &name, int part = 0);
+		static int gender(const std::string &name, const std::string &patronymic);
 		
 		//
 		// Specific
