@@ -129,6 +129,8 @@ bool node::action()
 	this->_actor_map->add_domain("data",tegia::domain::LOCAL);
 	this->_actor_map->add_domain("enrich",tegia::domain::LOCAL);
 
+	this->_actor_map->add_domain("tasks",tegia::domain::LOCAL);
+
 	//
 	// ADD PATTERNS
 	//

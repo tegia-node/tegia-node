@@ -82,6 +82,17 @@ std::string event_t::log()
 		this->user) + this->_data.dump(); 
 };
 
+
+nlohmann::json event_t::json()
+{
+	nlohmann::json data;
+	data["uuid"] = this->uuid;
+	data["user"] = this->user;
+	data["info"] = this->_data;
+	return std::move(data);
+};
+
+
 }
 }
 
