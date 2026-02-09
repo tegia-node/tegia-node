@@ -31,6 +31,7 @@ class router_t
 		std::unordered_map<std::string, nlohmann::json> _route_map;
 
 		void actor_name(nlohmann::json * _params);
+		void action_name(nlohmann::json * _params);
 };
 
 

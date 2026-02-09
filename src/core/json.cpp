@@ -127,6 +127,11 @@ std::tuple<int, std::string, nlohmann::json> _file(const std::string &filename)
 	{
 		return std::make_tuple(JSON_FILE_OUT_OF_RANGE, e.what(), nlohmann::json::object());
 	}
+
+	catch (std::exception& e)
+	{
+		return std::make_tuple(999, e.what(), nlohmann::json::object());
+	}	
 };
 
 
