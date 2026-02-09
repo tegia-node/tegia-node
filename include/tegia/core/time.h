@@ -59,11 +59,18 @@ class time
 		// Конструктор по строке
 		time(const std::string& _time, const std::string& format = "%Y-%m-%d %H:%M:%S") 
 		{
-			if (!parse_from_string(_time, format)) 
+         std::string _format = format;
+         if(format == "rfc2822")
+         {
+            _format = "%a, %d %b %Y %H:%M:%S %z";
+         }
+
+         auto flag = parse_from_string(_time, _format);
+			if (flag == false) 
 			{
 				init_now(); // если строка некорректна — устанавливаем текущее время
 			}
-		}
+		};
 
 		~time() = default;
 
@@ -90,7 +97,7 @@ class time
 
 		std::time_t timestamp() const
 		{
-			std::tm tmp = tm; // mktime может изменять поля
+			std::tm tmp = tm;
 			return std::mktime(&tmp);
 		};
 
@@ -150,6 +157,14 @@ inline bool operator<(const time& lh, const time& rh)
 
 
 } // END namespace tegia
+
+
+
+
+
+
+
+
 
 
 
