@@ -63,52 +63,83 @@ std::string encode(const std::string data)
 
 
 
-std::string decode(const std::string& input, std::string& out) 
+std::string decode(const std::string& input, std::string& out)
 {
-	static constexpr unsigned char kDecodingTable[] = {
-	64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
-	64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
-	64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 62, 64, 64, 64, 63,
-	52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 64, 64, 64, 64, 64, 64,
-	64,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14,
-	15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 64, 64, 64, 64, 64,
-	64, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
-	41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 64, 64, 64, 64, 64,
-	64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
-	64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
-	64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
-	64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
-	64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
-	64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
-	64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
-	64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64
-	};
+    static constexpr unsigned char kDecodingTable[256] = {
+        /* заполнено 64 по умолчанию */
+    };
 
-	size_t in_len = input.size();
-	if (in_len % 4 != 0) return "Input data size is not a multiple of 4";
+    // --- Инициализация таблицы один раз ---
+    static bool initialized = false;
+    if (!initialized)
+    {
+        auto& table = const_cast<unsigned char(&)[256]>(kDecodingTable);
 
-	size_t out_len = in_len / 4 * 3;
-	if (input[in_len - 1] == '=') out_len--;
-	if (input[in_len - 2] == '=') out_len--;
+        for (int i = 0; i < 256; ++i)
+            table[i] = 64;
 
-	out.resize(out_len);
+        for (int i = 0; i < 26; ++i) {
+            table['A' + i] = i;
+            table['a' + i] = 26 + i;
+        }
 
-	for (size_t i = 0, j = 0; i < in_len;) 
-	{
-		uint32_t a = input[i] == '=' ? 0 & i++ : kDecodingTable[static_cast<int>(input[i++])];
-		uint32_t b = input[i] == '=' ? 0 & i++ : kDecodingTable[static_cast<int>(input[i++])];
-		uint32_t c = input[i] == '=' ? 0 & i++ : kDecodingTable[static_cast<int>(input[i++])];
-		uint32_t d = input[i] == '=' ? 0 & i++ : kDecodingTable[static_cast<int>(input[i++])];
+        for (int i = 0; i < 10; ++i)
+            table['0' + i] = 52 + i;
 
-		uint32_t triple = (a << 3 * 6) + (b << 2 * 6) + (c << 1 * 6) + (d << 0 * 6);
+        table['+'] = 62;
+        table['/'] = 63;
 
-		if (j < out_len) out[j++] = (triple >> 2 * 8) & 0xFF;
-		if (j < out_len) out[j++] = (triple >> 1 * 8) & 0xFF;
-		if (j < out_len) out[j++] = (triple >> 0 * 8) & 0xFF;
-	}
+        initialized = true;
+    }
 
-	return "";
+    const size_t len = input.size();
+    if (len == 0) {
+        out.clear();
+        return "";
+    }
+
+    if (len % 4 != 0)
+        return "Base64 input size is not multiple of 4";
+
+    size_t padding = 0;
+    if (input[len - 1] == '=') padding++;
+    if (input[len - 2] == '=') padding++;
+
+    const size_t out_len = (len / 4) * 3 - padding;
+    out.resize(out_len);
+
+    size_t j = 0;
+
+    for (size_t i = 0; i < len; i += 4)
+    {
+        unsigned char c0 = input[i];
+        unsigned char c1 = input[i + 1];
+        unsigned char c2 = input[i + 2];
+        unsigned char c3 = input[i + 3];
+
+        if ((c0 != '=' && kDecodingTable[c0] == 64) ||
+            (c1 != '=' && kDecodingTable[c1] == 64) ||
+            (c2 != '=' && kDecodingTable[c2] == 64) ||
+            (c3 != '=' && kDecodingTable[c3] == 64))
+        {
+            return "Invalid base64 character";
+        }
+
+        uint32_t a = (c0 == '=') ? 0 : kDecodingTable[c0];
+        uint32_t b = (c1 == '=') ? 0 : kDecodingTable[c1];
+        uint32_t c = (c2 == '=') ? 0 : kDecodingTable[c2];
+        uint32_t d = (c3 == '=') ? 0 : kDecodingTable[c3];
+
+        uint32_t triple = (a << 18) | (b << 12) | (c << 6) | d;
+
+        if (j < out_len) out[j++] = static_cast<char>((triple >> 16) & 0xFF);
+        if (j < out_len) out[j++] = static_cast<char>((triple >> 8) & 0xFF);
+        if (j < out_len) out[j++] = static_cast<char>(triple & 0xFF);
+    }
+
+    return "";
 }
+
 
 }	// END base64 NAMESPACE
 }	// END tegia  NAMESPACE
