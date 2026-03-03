@@ -85,6 +85,8 @@ class map_t
 			const std::string &type
 		);
 
+		const tegia::actors::type_base_t * get_type(const std::string &name) const;
+
 		//
 		//
 		//

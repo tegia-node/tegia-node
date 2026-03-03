@@ -2,6 +2,8 @@
 #include <tegia/core/const.h>
 #include <tegia/ws/ws.h>
 #include <tegia/core/time.h>
+#include "../threads/thread_t.h"
+#include "../actors/map.h"
 
 namespace tegia {
 namespace actors {
@@ -27,8 +29,9 @@ creators(creators)
 {
 	std::cout << "[RUN] create tegia::actors::ws_t " << name << std::endl;
 
-	this->_router = new tegia::app::router_t(this->name);
+	this->_router = new tegia::app::router_t(this->name, this->type);
 	this->_system = new tegia::ws::system_t(connection,table,name);
+	this->load_type_routes();
 
 
 	auto query = "SELECT * FROM `" + table + "` WHERE `name` = '" + name + "'";
@@ -186,6 +189,41 @@ unsigned long long int ws_t::roles(const std::string &uuid)
 
 	return 0;
 };
+
+
+int ws_t::load_type_routes()
+{
+	auto actor_map = tegia::threads::thread->actor_map();
+	if(actor_map == nullptr)
+	{
+		std::cout << _YELLOW_ << "[WS_TYPE_METADATA_NOT_FOUND] "
+				  << "type='" << this->type << "' reason='actor_map_is_null'"
+				  << _BASE_TEXT_ << std::endl;
+		return 0;
+	}
+
+	auto type_meta = actor_map->get_type(this->type);
+	if(type_meta == nullptr)
+	{
+		std::cout << _YELLOW_ << "[WS_TYPE_METADATA_NOT_FOUND] "
+				  << "type='" << this->type << "'"
+				  << _BASE_TEXT_ << std::endl;
+		return 0;
+	}
+
+	for(const auto &it : type_meta->routes())
+	{
+		const auto &route = it.second;
+		this->_router->add(
+			route.method,
+			route.pattern,
+			route.data,
+			tegia::app::route_source_t::type_level
+		);
+	}
+
+	return 0;
+}
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

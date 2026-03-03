@@ -35,6 +35,13 @@ struct action_t
 	unsigned long long int roles = 0;
 };
 
+struct route_t
+{
+	std::string method;
+	std::string pattern;
+	nlohmann::json data;
+};
+
 
 //
 //
@@ -50,6 +57,8 @@ class type_base_t
 
 		std::string type;
 		std::unordered_map<std::string,action_t *> fmap;
+		std::unordered_map<std::string,route_t> route_by_key;
+		std::unordered_map<std::string,std::string> route_action_index;
 
 		type_base_t(const std::string &type): type(type){};
 
@@ -77,6 +86,162 @@ class type_base_t
 			this->fmap.insert({this->type + action,_action});
 			return 0;			
 		};
+
+		bool validate_route_mapping(const nlohmann::json &mapping, std::string &error) const
+		{
+			if(mapping.is_object() == false)
+			{
+				error = "route.mapping must be object";
+				return false;
+			}
+
+			for(auto it = mapping.begin(); it != mapping.end(); ++it)
+			{
+				if(it.key() != "")
+				{
+					try
+					{
+						nlohmann::json::json_pointer ptr(it.key());
+					}
+					catch(const std::exception &e)
+					{
+						error = "invalid mapping key json pointer: " + it.key();
+						return false;
+					}
+				}
+
+				if(it.value().is_string() == true)
+				{
+					std::string value = it.value().get<std::string>();
+					if(value.empty() == false && value[0] == '/')
+					{
+						try
+						{
+							nlohmann::json::json_pointer ptr(value);
+						}
+						catch(const std::exception &e)
+						{
+							error = "invalid mapping value json pointer: " + value;
+							return false;
+						}
+					}
+				}
+			}
+
+			return true;
+		}
+
+		bool validate_route_data(const nlohmann::json &data, std::string &error) const
+		{
+			if(data.is_object() == false)
+			{
+				error = "route data must be object";
+				return false;
+			}
+
+			if(data.contains("actor") == false || data["actor"].is_string() == false)
+			{
+				error = "route.actor must be string";
+				return false;
+			}
+
+			if(data.contains("action") == false || data["action"].is_string() == false)
+			{
+				error = "route.action must be string";
+				return false;
+			}
+
+			std::string action = data["action"].get<std::string>();
+			if(action.empty() == true || action[0] != '/')
+			{
+				error = "route.action must start with '/'";
+				return false;
+			}
+
+			if(data.contains("mapping") == false)
+			{
+				error = "route.mapping is required";
+				return false;
+			}
+
+			return validate_route_mapping(data["mapping"], error);
+		}
+
+		int add_route(const std::string &method, const std::string &pattern, const nlohmann::json &data)
+		{
+			if(method != "POST")
+			{
+				tegia::log::event_t event;
+				event.code = "WS_ROUTE_METHOD_INVALID";
+				event._data = {
+					{ "type", this->type },
+					{ "method", method },
+					{ "pattern", pattern }
+				};
+
+				L3ERROR(event);
+				exit(0);
+			}
+
+			std::string error;
+			if(validate_route_data(data, error) == false)
+			{
+				tegia::log::event_t event;
+				event.code = "WS_ROUTE_DATA_INVALID";
+				event._data = {
+					{ "type", this->type },
+					{ "method", method },
+					{ "pattern", pattern },
+					{ "error", error },
+					{ "data", data.dump() }
+				};
+
+				L3ERROR(event);
+				exit(0);
+			}
+
+			std::string key = method + " " + pattern;
+			auto pos = this->route_by_key.find(key);
+			if(pos != this->route_by_key.end())
+			{
+				tegia::log::event_t event;
+				event.code = "WS_ROUTE_DUPLICATE";
+				event._data = {
+					{ "type", this->type },
+					{ "method", method },
+					{ "pattern", pattern }
+				};
+
+				L3ERROR(event);
+				exit(0);
+			}
+
+			std::string action = data["action"].get<std::string>();
+			auto action_pos = this->route_action_index.find(action);
+			if(action_pos != this->route_action_index.end())
+			{
+				tegia::log::event_t event;
+				event.code = "WS_ROUTE_ACTION_DUPLICATE";
+				event._data = {
+					{ "type", this->type },
+					{ "action", action },
+					{ "old_route", action_pos->second },
+					{ "new_route", key }
+				};
+
+				L3ERROR(event);
+				exit(0);
+			}
+
+			this->route_by_key.insert({key, route_t{method, pattern, data}});
+			this->route_action_index.insert({action, key});
+			return 0;
+		}
+
+		const std::unordered_map<std::string,route_t> & routes() const
+		{
+			return this->route_by_key;
+		}
 };
 
 
@@ -91,6 +256,20 @@ class type_base_t
 
 #define ADD_ACTION2(action, filename, func, ...) \
     type->add_action(action, filename, static_cast<tegia::actors::action_fn_ptr>(func), tegia::user::roles(__VA_ARGS__))
+
+#define ADD_WS_ROUTE(method, pattern, data_json) \
+    type->add_route(method, pattern, data_json)
+
+#define ADD_WS_ACTION_ROUTE(method, pattern, actor_name, action, func, mapping_json, ...) \
+    do { \
+        type->add_action(action, "", static_cast<tegia::actors::action_fn_ptr>(func), tegia::user::roles(__VA_ARGS__)); \
+        nlohmann::json __route = { \
+            {"actor", actor_name}, \
+            {"action", action}, \
+            {"mapping", mapping_json} \
+        }; \
+        type->add_route(method, pattern, __route); \
+    } while(0)
 
 
 //
@@ -118,5 +297,3 @@ class type_t: public type_base_t
 
 
 #endif
-
-

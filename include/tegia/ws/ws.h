@@ -64,6 +64,7 @@ class ws_t: public actor_t
 		tegia::ws::system_t * _system = nullptr;
 		unsigned long long int creators;
 
+		int load_type_routes();
 		int _create();
 };
 

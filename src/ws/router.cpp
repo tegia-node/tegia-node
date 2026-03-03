@@ -1,9 +1,50 @@
 #include <string>
+#include <mutex>
+#include <unordered_set>
 
 #include <tegia/ws/router.h>
+#include <tegia/core.h>
+#include <tegia/core/const.h>
 
 namespace tegia {
 namespace app {
+
+namespace {
+
+bool legacy_override_enabled()
+{
+	auto cluster = tegia::conf::get("cluster");
+	if(cluster == nullptr)
+	{
+		return true;
+	}
+
+	try
+	{
+		nlohmann::json::json_pointer ptr("/nodes/data/ws/route/conflict_policy");
+		if(cluster->contains(ptr) == false)
+		{
+			return true;
+		}
+
+		std::string policy = (*cluster)[ptr].get<std::string>();
+		if(policy == "error")
+		{
+			return false;
+		}
+	}
+	catch(const std::exception &e)
+	{
+		return true;
+	}
+
+	return true;
+}
+
+std::unordered_set<std::string> deprecated_types_warned;
+std::mutex deprecated_types_warned_mutex;
+
+} // namespace
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
@@ -12,7 +53,9 @@ namespace app {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-router_t::router_t(const std::string &ws_name):ws_name(ws_name){};
+router_t::router_t(const std::string &ws_name, const std::string &ws_type)
+	: ws_name(ws_name), ws_type(ws_type)
+{};
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -146,22 +189,50 @@ void router_t::actor_name(nlohmann::json * _params)
 
 bool router_t::add(const std::string &method, const std::string &pattern, nlohmann::json data)
 {
+	return this->add(method, pattern, data, route_source_t::legacy_instance);
+}
+
+
+bool router_t::add(const std::string &method, const std::string &pattern, nlohmann::json data, route_source_t source)
+{
 	std::string _pattern = pattern + "/" + method;
 	std::string _path = "";
 	std::string _elm = "";
 
-	auto fn = [&_elm,&_path,this,&data](bool final)
+	if(source == route_source_t::legacy_instance)
 	{
-		//
-		// TODO: проверять дубликаты
-		//
+		bool must_warn = false;
+		std::string type_key = this->ws_type.empty() ? "<unknown_type>" : this->ws_type;
 
-		// std::cout << "_elm  = " << _elm << std::endl;
+		{
+			std::lock_guard<std::mutex> lock(deprecated_types_warned_mutex);
+			auto [_, inserted] = deprecated_types_warned.insert(type_key);
+			must_warn = inserted;
+		}
+
+		if(must_warn == true)
+		{
+			std::cout << _YELLOW_ << "[WS_LEGACY_ROUTE_DEPRECATED] "
+					  << "type='" << type_key
+					  << "' method='" << method
+					  << "' pattern='" << pattern
+					  << "'" << _BASE_TEXT_ << std::endl;
+		}
+	}
+
+	auto fn = [&_elm,&_path,this,&data,source](bool final)
+	{
+		if(_elm.empty() == true)
+		{
+			if(final == false && this->_route_map.find(_path) == this->_route_map.end())
+			{
+				this->_route_map.insert({_path,nullptr});
+			}
+			return;
+		}
 
 		if(_elm[0] == '{')
 		{
-			// std::cout << "param = " << _elm.substr(1,_elm.length() - 2) << std::endl;
-
 			data["params"].push_back( _elm.substr(1,_elm.length() - 2) );
 			_path = _path + "*";
 		}
@@ -172,11 +243,54 @@ bool router_t::add(const std::string &method, const std::string &pattern, nlohma
 
 		if(final == false)
 		{
-			this->_route_map.insert({_path,nullptr});
+			if(this->_route_map.find(_path) == this->_route_map.end())
+			{
+				this->_route_map.insert({_path,nullptr});
+			}
 		}
 		else
 		{
-			this->_route_map.insert({_path,data});
+			auto route_it = this->_route_map.find(_path);
+			if(route_it == this->_route_map.end())
+			{
+				this->_route_map.insert({_path,data});
+				this->_route_source[_path] = source;
+				return;
+			}
+
+			auto source_it = this->_route_source.find(_path);
+			auto old_source = source_it == this->_route_source.end() ? route_source_t::type_level : source_it->second;
+
+			if(legacy_override_enabled() == false)
+			{
+				std::cout << _ERR_TEXT_ << "[WS_ROUTE_CONFLICT_ERROR] "
+						  << "ws='" << this->ws_name
+						  << "' type='" << this->ws_type
+						  << "' path='" << _path
+						  << "'" << _BASE_TEXT_ << std::endl;
+				exit(0);
+			}
+
+			if(source == route_source_t::legacy_instance)
+			{
+				route_it->second = data;
+				this->_route_source[_path] = source;
+				std::cout << _YELLOW_ << "[WS_ROUTE_CONFLICT_OVERRIDE] "
+						  << "ws='" << this->ws_name
+						  << "' type='" << this->ws_type
+						  << "' path='" << _path
+						  << "' old_source='" << (old_source == route_source_t::legacy_instance ? "legacy" : "type")
+						  << "' new_source='legacy'"
+						  << _BASE_TEXT_ << std::endl;
+				return;
+			}
+
+			std::cout << _ERR_TEXT_ << "[WS_ROUTE_CONFLICT_ERROR] "
+					  << "ws='" << this->ws_name
+					  << "' type='" << this->ws_type
+					  << "' path='" << _path
+					  << "'" << _BASE_TEXT_ << std::endl;
+			exit(0);
 		}
 		
 	};
@@ -418,4 +532,3 @@ std::tuple<int, nlohmann::json> router_t::match(
 
 }	// END namespace app
 }	// END namespace tegia
-

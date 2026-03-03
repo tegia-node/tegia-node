@@ -147,6 +147,18 @@ int map_t::add_pattern(
 };
 
 
+const tegia::actors::type_base_t * map_t::get_type(const std::string &name) const
+{
+	auto pos = this->_types.find(name);
+	if(pos == this->_types.end())
+	{
+		return nullptr;
+	}
+
+	return pos->second;
+}
+
+
 
 void map_t::action_func(
 	tegia::actors::actor_t * _actor,
