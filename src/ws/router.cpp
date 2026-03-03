@@ -358,11 +358,26 @@ std::tuple<int, nlohmann::json> router_t::match(
 				for(auto it = _params["mapping"].begin(); it != _params["mapping"].end(); ++it)
 				{
 					nlohmann::json::json_pointer key(it.key());
-					nlohmann::json::json_pointer value(it.value().get<std::string>());
 
-					if(_params.contains(value) == true)
+					if(it.value().is_string() == false)
 					{
-						_params["data"][key] = _params[value];
+						_params["data"][key] = it.value();
+					}
+					else
+					{
+						std::string _val = it.value().get<std::string>();
+						if(_val[0] == '/')
+						{
+							nlohmann::json::json_pointer value(_val);
+							if(_params.contains(value) == true)
+							{
+								_params["data"][key] = _params[value];
+							}
+						}
+						else
+						{
+							_params["data"][key] = _val;
+						}
 					}
 				}
 
