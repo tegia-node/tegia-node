@@ -10,7 +10,9 @@
 - создай `type_t<Actor>("NAMESPACE::TYPE")`;
 - зарегистрируй actions:
   - `ADD_ACTION` / `ADD_ACTION2`;
-  - для `ws_t` используй `ADD_WS_ACTION_ROUTE`.
+  - для `ws_t` используй `ADD_WS_ACTION_ROUTE`;
+  - для внешнего `actor` используй `ADD_WS_ROUTE` (без локальной регистрации action).
+  - для `ADD_WS_ACTION_ROUTE` обязательны ключи `actor`, `action`, `mapping` в `route_json`.
 
 ## 3. Собери shared library
 

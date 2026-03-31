@@ -10,12 +10,14 @@
 ADD_WS_ACTION_ROUTE(
     "POST",
     "/clients/count",
-    "{/this}",
-    "/clients/count",
-    &MyWsActor::clients_count,
     nlohmann::json::parse(R"({
-        "": "/post/data"
+        "actor": "{/this}",
+        "action": "/clients/count",
+        "mapping": {
+            "": "/post/data"
+        }
     })"),
+    &MyWsActor::clients_count,
     ROLES::WS::MEMBER
 );
 ```
@@ -24,6 +26,43 @@ ADD_WS_ACTION_ROUTE(
 - регистрирует action;
 - регистрирует HTTP route;
 - связывает route -> actor/action.
+
+Обязательные поля `route_json` для `ADD_WS_ACTION_ROUTE`:
+- `actor` (string);
+- `action` (string, начинается с `/`);
+- `mapping` (object).
+
+Внешний actor (без локального action) объявляется через `ADD_WS_ROUTE`. Для внешнего actor **нельзя** использовать `ADD_WS_ACTION_ROUTE`, так как он регистрирует локальный action.
+
+Пример внешнего маршрута:
+
+```cpp
+ADD_WS_ROUTE(
+    "POST",
+    "/sync/client",
+    nlohmann::json::parse(R"({
+        "actor": "crm/client",
+        "action": "/sync",
+        "mapping": {
+            "": "/post/data"
+        }
+    })")
+);
+```
+
+Пример с использованием параметров из `pattern` в имени actor:
+
+```cpp
+ADD_WS_ROUTE(
+    "POST",
+    "/events/001/{uuid}/status",
+    nlohmann::json::parse(R"({
+        "actor": "data/pdp/events/0001/{/uuid}",
+        "action": "/status",
+        "mapping": {}
+    })")
+);
+```
 
 ## 2. Ограничения текущего runtime
 

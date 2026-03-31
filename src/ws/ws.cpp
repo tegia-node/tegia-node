@@ -103,15 +103,18 @@ creators(creators)
 
 	this->data = nlohmann::json::parse(res->get(table + "::data",0));
 
+	// std::cout << _YELLOW_ << "DATA" << _BASE_TEXT_ << std::endl;
+	// std::cout << this->data << std::endl;
+
 	//
 	// SYSTEM
 	//
 
 	auto __system = nlohmann::json::parse(res->get(table + "::members",0));
 	this->_system->init(__system);
-	this->_system->commit();
+	// this->_system->commit();
 	this->ws = this->name;
-	this->status = 200;
+	this->status = 100;
 
 	delete res;
 
@@ -119,6 +122,7 @@ creators(creators)
 	// ADD ROUTERS
 	//
 
+	/*
 	this->_router->add("POST", "/member/add",
 	nlohmann::json::parse(R"({
 		"actor": "{/this}",
@@ -128,6 +132,7 @@ creators(creators)
 			"": "/post/data"
 		}
 	})"));
+	*/
 	
 
 	std::cout << "[END] create tegia::actors::ws_t " << name << std::endl;
@@ -415,7 +420,24 @@ int ws_t::init(const std::shared_ptr<message_t> &message)
 	this->_system->prefix = message->data["prefix"].get<std::string>();
 	this->_system->wsid = message->data["wsid"].get<std::string>();
 
-	this->_system->commit();
+	// this->_system->commit();
+
+	std::string query = std::format(
+		"UPDATE `{}` SET `data` = '{}', `members` = '{}' WHERE `name` = '{}';",
+		this->table,
+		tegia::mysql::strip(message->data["data"].dump()),
+		tegia::mysql::strip(this->_system->dump()),
+		this->name
+	);
+
+	auto res = tegia::mysql::query(this->connection,query);
+
+	// TODO: ERROR
+	
+	delete res;
+
+	this->data = message->data["data"];     // OLD
+	this->set_data(message->data["data"]);  // NEW
 
 	return 200;
 };

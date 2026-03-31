@@ -56,7 +56,7 @@ int system_t::init(nlohmann::json &data)
 		data = __data;
 	}
 
-	std::cout << data << std::endl;
+	// std::cout << data << std::endl;
 
 	//
 	// PARSE DATA

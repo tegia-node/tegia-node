@@ -1,11 +1,11 @@
-# ADR-0002 Implementation Draft (Phase 1, no breaking changes)
+# Task-001: Реализация ADR-0002 (Phase 1, без breaking changes)
 
-- Статус: Implemented (Phase 1 core)
+- Статус: Выполнено
 - Дата: 2026-03-04
-- Основание: `ADR-0002-ws-route-registration-model.md`
-- Цель этапа: внедрить dual mode (`type-level` + `legacy instance-level`) без изменения поведения существующих конфигураций.
+- Основание: `docs/adr/ADR-0002-ws-route-registration-model.md`
+- Цель этапа: внедрить dual mode (`type-level` + `legacy instance-level`) без изменения поведения существующих конфигураций (Phase 1 core).
 
-## 1. Границы этапа
+## 1. Объем работ
 
 Входит в Phase 1:
 1. Добавление type-level route metadata.
@@ -42,6 +42,11 @@
 4. Проверять отсутствие дубля `method+pattern`.
 5. Проверять отсутствие второго route для того же `action`.
 6. При ошибке: лог + `exit(0)` (fail-fast).
+7. Коды событий в логах:
+   - `WS_ROUTE_METHOD_INVALID`
+   - `WS_ROUTE_DATA_INVALID`
+   - `WS_ROUTE_DUPLICATE`
+   - `WS_ROUTE_ACTION_DUPLICATE`
 
 ### 2.2 `src/actors/map.h` и `src/actors/map.cpp`
 
@@ -71,11 +76,14 @@ bool add(const std::string &method, const std::string &pattern, nlohmann::json d
 - вызывает `add(..., route_source_t::legacy_instance)`.
 
 Новая логика `add`:
-1. Проверка дубля route key.
+1. Проверка конфликта по нормализованному пути:
+   - ключ формируется как `pattern + "/" + method`;
+   - параметры в `{...}` превращаются в `*`.
 2. При конфликте действовать по `ws.route.conflict_policy`:
    - `error`: fail-fast;
    - `legacy_override`: legacy route заменяет ранее добавленный type-level route.
 3. Для legacy path писать deprecation warning.
+4. Если `legacy_override` включен и конфликт пришел от type-level, происходит fail-fast (type-level не переопределяет legacy).
 
 ### 2.4 `include/tegia/ws/ws.h` и `src/ws/ws.cpp`
 
@@ -89,12 +97,14 @@ int load_type_routes();
 1. Создать `_router` как сейчас.
 2. Вызвать `load_type_routes()`.
 3. Сохранить текущий legacy-код `this->_router->add(...)`.
+4. Фактически legacy-роут `/member/add` добавляется в конструкторе и повторно в `_create()`.
 
 `load_type_routes()`:
 1. Получить `actor_map` из thread context.
 2. Получить `type_meta = actor_map->get_type(this->type)`.
-3. Если `type_meta == nullptr`, писать warning `WS_TYPE_METADATA_NOT_FOUND` и возвращать 0 (legacy остается рабочим).
-4. Для каждого route из `type_meta->routes()` вызвать `_router->add(..., route_source_t::type_level)`.
+3. Если `actor_map == nullptr`, писать warning `WS_TYPE_METADATA_NOT_FOUND` с `reason='actor_map_is_null'` и возвращать 0 (legacy остается рабочим).
+4. Если `type_meta == nullptr`, писать warning `WS_TYPE_METADATA_NOT_FOUND` и возвращать 0 (legacy остается рабочим).
+5. Для каждого route из `type_meta->routes()` вызвать `_router->add(..., route_source_t::type_level)`.
 
 Важно:
 - Не менять `ws_t::router(...)` и callback pipeline.
@@ -108,6 +118,7 @@ int load_type_routes();
 Источник и порядок чтения (реализовано):
 1. `cluster.json` path: `/nodes/data/ws/route/conflict_policy`.
 2. Если path отсутствует или значение невалидно, использовать default.
+3. По факту в реализации обрабатывается только значение `error`; любые прочие значения трактуются как `legacy_override`.
 
 Значение по умолчанию для Phase 1:
 - `legacy_override` (чтобы не ломать существующие конфигурации при смешанном режиме).
@@ -124,8 +135,7 @@ int load_type_routes();
    - либо пустая строка `""` (копирование в корень `data`).
 3. Каждое значение:
    - любой non-string JSON literal (число, bool, object, array, null), или
-   - string-literal, или
-   - string JSON Pointer (строка, начинающаяся с `/`).
+   - любая строка. Если строка начинается с `/`, валидируется синтаксис JSON Pointer.
 4. Для string JSON Pointer проверяется синтаксис pointer, но не обязательная существуемость пути на старте (она зависит от runtime payload).
 
 Это обеспечивает fail-fast на структурных ошибках и не ломает текущие рабочие payload-dependent mapping.
@@ -138,14 +148,11 @@ int load_type_routes();
 #define ADD_WS_ROUTE(method, pattern, data_json) \
     type->add_route(method, pattern, data_json)
 
-#define ADD_WS_ACTION_ROUTE(method, pattern, actor_name, action, func, mapping_json, ...) \
+#define ADD_WS_ACTION_ROUTE(method, pattern, route_json, func, ...) \
     do { \
-        type->add_action(action, "", static_cast<tegia::actors::action_fn_ptr>(func), tegia::user::roles(__VA_ARGS__)); \
-        nlohmann::json __r = { \
-            {"actor", actor_name}, \
-            {"action", action}, \
-            {"mapping", mapping_json} \
-        }; \
+        nlohmann::json __r = route_json; \
+        std::string __action = __r["action"].get<std::string>(); \
+        type->add_action(__action, "", static_cast<tegia::actors::action_fn_ptr>(func), tegia::user::roles(__VA_ARGS__)); \
         type->add_route(method, pattern, __r); \
     } while(0)
 ```
@@ -167,7 +174,8 @@ int load_type_routes();
 При вызове legacy `router->add(...)`:
 - warning код: `WS_LEGACY_ROUTE_DEPRECATED`;
 - в сообщении: actor type, pattern, method;
-- warning выводится один раз на actor type за процесс (не на каждый instance).
+- warning выводится один раз на actor type за процесс (не на каждый instance);
+- если `ws_type` неизвестен, в сообщении используется `type='<unknown_type>'`.
 
 ## 6. Стратегия миграции конфликтов (без аварий)
 
@@ -198,38 +206,3 @@ Phase 1 rollout:
 
 6. `invalid_mapping_syntax`.
 - Ожидание: fail-fast на старте типа.
-
-7. `second_route_same_action`.
-- Ожидание: fail-fast на старте типа.
-
-8. `type_metadata_not_found`.
-- Ожидание: warning + корректная работа через legacy.
-
-## 8. Порядок выката
-
-1. Влить runtime изменения dual mode + conflict policy + warnings.
-2. Перевести базовые WS маршруты фреймворка на type-level.
-3. Выпустить версию и release notes: legacy API deprecated.
-4. Мигрировать прикладные конфигурации по одной.
-5. После окна миграции перевести default policy в `error`.
-6. Отдельным решением отключить legacy путь.
-
-## 9. Риски и контрмеры
-
-1. Риск: скрытые конфликты route.
-- Контрмера: явная policy + warning code `WS_ROUTE_CONFLICT_OVERRIDE` + staged switch к `error`.
-
-2. Риск: отсутствие metadata для некоторых типов.
-- Контрмера: `WS_TYPE_METADATA_NOT_FOUND` warning + legacy fallback.
-
-3. Риск: шум логов от deprecation.
-- Контрмера: warning один раз на actor type за процесс.
-
-## 10. Критерий завершения Phase 1
-
-Phase 1 завершен, когда:
-1. runtime поддерживает dual mode;
-2. старые конфигурации запускаются без правок;
-3. новые конфигурации используют `ADD_WS_ACTION_ROUTE`;
-4. есть warnings и документация deprecation;
-5. тесты из раздела 7 проходят в обеих policy (`legacy_override`, `error`).

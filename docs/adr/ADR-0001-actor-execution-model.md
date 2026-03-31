@@ -1,6 +1,6 @@
 # ADR-0001: Actor Execution Model
 
-- Статус: Proposed
+- Статус: Черновик
 - Дата: 2026-03-03
 - Автор: architecture review
 - Область: `tegia-node` runtime

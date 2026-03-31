@@ -260,14 +260,33 @@ class type_base_t
 #define ADD_WS_ROUTE(method, pattern, data_json) \
     type->add_route(method, pattern, data_json)
 
-#define ADD_WS_ACTION_ROUTE(method, pattern, actor_name, action, func, mapping_json, ...) \
+#define ADD_WS_ACTION_ROUTE(method, pattern, route_json, func, ...) \
     do { \
-        type->add_action(action, "", static_cast<tegia::actors::action_fn_ptr>(func), tegia::user::roles(__VA_ARGS__)); \
-        nlohmann::json __route = { \
-            {"actor", actor_name}, \
-            {"action", action}, \
-            {"mapping", mapping_json} \
-        }; \
+        nlohmann::json __route = route_json; \
+        std::string __route_error = ""; \
+        if(__route.is_object() == false) { \
+            __route_error = "route_json must be object"; \
+        } else if(__route.contains("actor") == false || __route["actor"].is_string() == false) { \
+            __route_error = "route_json.actor must be string"; \
+        } else if(__route.contains("action") == false || __route["action"].is_string() == false) { \
+            __route_error = "route_json.action must be string"; \
+        } else if(__route["action"].get<std::string>().empty() || __route["action"].get<std::string>()[0] != '/') { \
+            __route_error = "route_json.action must start with '/'"; \
+        } else if(__route.contains("mapping") == false) { \
+            __route_error = "route_json.mapping is required"; \
+        } \
+        if(__route_error.empty() == false) { \
+            std::cout << _ERR_TEXT_ << "[WS_ROUTE_JSON_INVALID] " \
+                      << "type='" << type->type \
+                      << "' method='" << method \
+                      << "' pattern='" << pattern \
+                      << "' error='" << __route_error \
+                      << "' route_json='" << __route.dump() \
+                      << "'" << _BASE_TEXT_ << std::endl; \
+            exit(0); \
+        } \
+        std::string __action = __route["action"].get<std::string>(); \
+        type->add_action(__action, "", static_cast<tegia::actors::action_fn_ptr>(func), tegia::user::roles(__VA_ARGS__)); \
         type->add_route(method, pattern, __route); \
     } while(0)
 

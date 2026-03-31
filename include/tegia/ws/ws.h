@@ -44,6 +44,10 @@ class ws_t: public actor_t
 
 		~ws_t();	
 
+		// Обязательный контракт наследников для data.
+		virtual int set_data(const nlohmann::json& data) = 0;
+		virtual nlohmann::json get_data() const = 0;
+
 		// ----------------------------------------------------------------------------------   
 		// ACTION FUNCTIONS
 		// ----------------------------------------------------------------------------------   
