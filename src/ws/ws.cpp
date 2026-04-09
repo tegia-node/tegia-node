@@ -122,7 +122,6 @@ creators(creators)
 	// ADD ROUTERS
 	//
 
-	/*
 	this->_router->add("POST", "/member/add",
 	nlohmann::json::parse(R"({
 		"actor": "{/this}",
@@ -131,9 +130,7 @@ creators(creators)
 		{
 			"": "/post/data"
 		}
-	})"));
-	*/
-	
+	})"));	
 
 	std::cout << "[END] create tegia::actors::ws_t " << name << std::endl;
 };

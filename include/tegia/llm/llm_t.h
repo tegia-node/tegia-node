@@ -49,6 +49,23 @@ class llm_t : public actor_t
 				message->data.erase("key");
 			}
 
+			if(message->data.contains("system") == true)
+			{
+				std::string path = message->data["system"].get<std::string>();
+				auto file = std::ifstream(path);
+				if(!file.is_open())
+				{
+					std::cout << _ERR_TEXT_ << "system file is not found" << std::endl;
+					std::cout << "path = " << path << std::endl;
+					exit(0);
+				}
+
+				std::string data((std::istreambuf_iterator<char>(file)),
+								 std::istreambuf_iterator<char>());
+				this->set_system(data);
+				message->data.erase("system");
+			}
+
 			static_cast<TYPE *>(this)->init(message);
 			return 200;
 		}
