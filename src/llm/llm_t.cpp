@@ -40,6 +40,13 @@ void llm_t::set_system(const std::string &content)
 
 std::tuple<int,std::string> llm_t::request(const std::string &user, bool is_json)
 {
+	/*
+	std::cout << _YELLOW_ << "system" << _BASE_TEXT_ << std::endl;
+	std::cout << this->system << std::endl;
+	std::cout << _YELLOW_ << "user" << _BASE_TEXT_ << std::endl;
+	std::cout << user << std::endl;
+	*/
+
 	switch(this->provider_crc32)
 	{
 		// gemini

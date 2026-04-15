@@ -63,6 +63,9 @@ std::tuple<int, std::string> openrouter::request(
 		prompt["response_format"]["type"] = "json_object";
 	}
 
+	std::string request_uuid = tegia::random::uuid();
+	tegia::json::save("../data/ll/requests/" + request_uuid + "-request.json", prompt);
+
 	const auto status = http.post(
 		"https://openrouter.ai/api/v1/chat/completions",
 		prompt.dump()
@@ -71,6 +74,9 @@ std::tuple<int, std::string> openrouter::request(
 	if(status == 200)
 	{
 		nlohmann::json body_json = nlohmann::json::parse(http.response->data);
+
+		tegia::json::save("../data/ll/requests/" + request_uuid + "-response.json", body_json);
+
 		return { 
 			200, 
 			body_json["choices"][0]["message"]["content"].get<std::string>() 
@@ -80,6 +86,7 @@ std::tuple<int, std::string> openrouter::request(
 	{
 		std::cout << _ERR_TEXT_ << "OPENROUTER ERROR" << std::endl;
 		std::cout << "status = " << status << std::endl;
+		std::cout << http.response->data << std::endl;
 		exit(0);
 	}
 };
