@@ -38,7 +38,7 @@ void llm_t::set_system(const std::string &content)
 };
 
 
-std::tuple<int,std::string> llm_t::request(const std::string &user, bool is_json)
+std::tuple<int,std::string> llm_t::request(const std::string &task_uuid, const std::string &user, bool is_json)
 {
 	/*
 	std::cout << _YELLOW_ << "system" << _BASE_TEXT_ << std::endl;

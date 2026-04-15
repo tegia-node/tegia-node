@@ -64,7 +64,7 @@ std::tuple<int, std::string> openrouter::request(
 	}
 
 	std::string request_uuid = tegia::random::uuid();
-	tegia::json::save("../data/ll/requests/" + request_uuid + "-request.json", prompt);
+	tegia::json::save("../data/llm/requests/" + request_uuid + "-request.json", prompt);
 
 	const auto status = http.post(
 		"https://openrouter.ai/api/v1/chat/completions",
@@ -73,9 +73,45 @@ std::tuple<int, std::string> openrouter::request(
 
 	if(status == 200)
 	{
-		nlohmann::json body_json = nlohmann::json::parse(http.response->data);
+		//
+		// JSON ERROR
+		//
 
-		tegia::json::save("../data/ll/requests/" + request_uuid + "-response.json", body_json);
+		nlohmann::json body_json = nlohmann::json::parse(http.response->data, nullptr, false);
+		if(body_json.is_discarded())
+		{
+			std::cout << _ERR_TEXT_ << "Invalid JSON in OpenRouter response" << std::endl;
+			std::cout << "response = " << http.response->data << std::endl;
+
+			tegia::log::event_t event;
+			event.code = "crdQGvRtdaFZUDIDdNyv";
+			event._data = {
+				{ "llm", http.response->data }
+			};
+			L3ERROR(event);
+			return { 500, "" };
+		}
+
+		//
+		// RESULT ERROR
+		//
+
+		if(body_json["choices"][0]["finish_reason"].get<std::string>() != "stop")
+		{
+			std::cout << _ERR_TEXT_ << "OPENROUTER RESULT ERROR" << std::endl;
+			std::cout << "finish_reason = " << body_json["choices"][0]["finish_reason"].get<std::string>() << std::endl;
+			tegia::json::save("../data/llm/requests/" + request_uuid + "-response-[error].json", body_json);
+
+			tegia::log::event_t event;
+			event.code = "crdQGvRtdaFZUDIDdNyv";
+			event._data = {
+				{ "llm", http.response->data }
+			};
+			L3ERROR(event);
+			return { 500, "" };
+		}
+
+		tegia::json::save("../data/llm/requests/" + request_uuid + "-response.json", body_json);
 
 		return { 
 			200, 

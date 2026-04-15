@@ -71,7 +71,7 @@ class llm_t : public actor_t
 		}
 
 		void set_system(const std::string &content);
-		std::tuple<int,std::string> request(const std::string &user, bool is_json);
+		std::tuple<int,std::string> request(const std::string &task_uuid, const std::string &user, bool is_json);
 
 	private:	
 		std::string provider;
