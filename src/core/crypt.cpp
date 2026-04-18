@@ -144,23 +144,6 @@ unsigned long int crc32(const std::string &data)
 namespace tegia {
 namespace crypt {
 
-/*
-std::string MD5(const std::string &str)
-{
-	unsigned char digest[16];
-	const char* string = str.c_str();
-	MD5_CTX context;
-	MD5_Init(&context);
-	MD5_Update(&context, string, strlen(string));
-	MD5_Final(digest, &context);
-
-	char md5string[33];
-	for(int i = 0; i < 16; ++i)
-		sprintf(&md5string[i*2], "%02x", (unsigned int)digest[i]);
-
-	return (const char*) md5string;
-};
-*/
 
 std::string MD5(const std::string &str)
 {
@@ -199,6 +182,20 @@ std::string MD5u(const std::string &str)
 	std::string hash = MD5(str);
 	return hash.substr(0,8) + "-" + hash.substr(8,4) + "-" + hash.substr(12,4) + "-" + hash.substr(16,4) + "-" + hash.substr(20);
 };
+
+
+std::string sha256_hex(const std::string &input)
+{
+	unsigned char hash[SHA256_DIGEST_LENGTH];
+	SHA256(reinterpret_cast<const unsigned char *>(input.data()), input.size(), hash);
+	std::ostringstream oss;
+	oss << std::hex << std::setfill('0');
+	for(unsigned char c : hash) {
+		oss << std::setw(2) << static_cast<int>(c);
+	}
+	return oss.str();
+};
+
 
 }	// END namespace crypt
 }	// END namespace tegia

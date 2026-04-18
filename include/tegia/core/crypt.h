@@ -21,12 +21,14 @@
 	#include <uuid/uuid.h>
 
 	#include <openssl/md5.h>
+	#include <openssl/sha.h>
 	#include <openssl/rsa.h>
 	#include <openssl/pem.h>
 	#include <openssl/rand.h>
 	#include <openssl/bio.h>
 	#include <openssl/buffer.h>
 	#include <openssl/err.h>
+
 
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -88,6 +90,7 @@ namespace crypt {
 
 std::string MD5(const std::string &str);
 std::string MD5u(const std::string &str);
+std::string sha256_hex(const std::string &input);
 
 }	// END namespace crypt
 }	// END namespace tegia
