@@ -37,6 +37,12 @@ class llm_t : public actor_t
 				message->data.erase("provider");
 			}
 
+			if(message->data.contains("url") == true)
+			{
+				this->url = message->data["url"].get<std::string>();
+				message->data.erase("url");
+			}
+
 			if(message->data.contains("model") == true)
 			{
 				this->model = message->data["model"].get<std::string>();
@@ -76,6 +82,7 @@ class llm_t : public actor_t
 	private:	
 		std::string provider;
 		long long int provider_crc32;
+		std::string url;
 		std::string model;
 		std::string key;
 		nlohmann::json system;

@@ -2,6 +2,7 @@
 
 #include <tegia/llm/openrouter.h>
 #include <tegia/llm/gemini.h>
+#include <tegia/llm/local.h>
 
 
 namespace tegia {
@@ -12,6 +13,13 @@ void llm_t::set_system(const std::string &content)
 {
 	switch(this->provider_crc32)
 	{
+		// local
+		case 2346092776:
+		{
+			this->system = tegia::llm::local::set_system(content);
+		}
+		break;
+
 		// gemini
 		case 3032164056:
 		{
@@ -49,6 +57,19 @@ std::tuple<int,std::string> llm_t::request(const std::string &task_uuid, const s
 
 	switch(this->provider_crc32)
 	{
+		// local
+		case 2346092776:
+		{
+			return tegia::llm::local::request(
+				this->system,
+				tegia::llm::local::set_user(user),
+				this->model,
+				this->key,
+				is_json
+			);
+		}
+		break;
+
 		// gemini
 		case 3032164056:
 		{
