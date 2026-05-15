@@ -51,10 +51,28 @@ std::string node::get_attr(const std::string &name)
 
 std::string node::get_text()
 {
-	xmlChar *text = xmlNodeGetContent(this->libxml_node);
-	return std::string( ( char*) text );
+    xmlChar* raw = xmlNodeGetContent(this->libxml_node);
+    if (!raw) return "";
+
+    std::string result((char*)raw);
+    xmlFree(raw);
+    return result;
 };
 
+
+std::string node::get_html()
+{
+	xmlBufferPtr buffer = xmlBufferCreate();
+    if (!buffer) return "";
+
+    // Сериализация узла (включая сам тег)
+    htmlNodeDump(buffer, this->libxml_node->doc, this->libxml_node);
+
+    std::string result((const char*)buffer->content);
+
+    xmlBufferFree(buffer);
+    return result;
+};
 
 
 std::string node::get_name()
@@ -111,6 +129,38 @@ std::string node::dump()
 //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
+nodes::nodes(nodes&& other) noexcept
+{
+    this->xpathCtx = other.xpathCtx;
+    this->xpathObj = other.xpathObj;
+
+    other.xpathCtx = nullptr;
+    other.xpathObj = nullptr;
+};
+
+
+nodes& nodes::operator=(nodes&& other) noexcept
+{
+    if (this != &other)
+    {
+        // сначала освобождаем свои ресурсы
+        if (this->xpathObj)
+            xmlXPathFreeObject(this->xpathObj);
+
+        if (this->xpathCtx)
+            xmlXPathFreeContext(this->xpathCtx);
+
+        // забираем ресурсы
+        this->xpathCtx = other.xpathCtx;
+        this->xpathObj = other.xpathObj;
+
+        // обнуляем источник
+        other.xpathCtx = nullptr;
+        other.xpathObj = nullptr;
+    }
+    return *this;
+};
+
 
 nodes::~nodes()
 {
@@ -122,8 +172,29 @@ nodes::~nodes()
 
 node nodes::operator[] (const int index)
 {
+	// std::cout << "index = " << index << std::endl;
+
+	if (this->xpathObj == nullptr)
+	{
+		std::cout << _ERR_TEXT_ << "this->xpathObj == nullptr" << std::endl;
+		exit(0);
+	}
+
+	if (this->xpathObj->nodesetval == nullptr)
+	{
+		std::cout << _ERR_TEXT_ << "this->xpathObj->nodesetval == nullptr" << std::endl;
+		exit(0);
+	}
+
+	auto* set = xpathObj->nodesetval;
+	if (index < 0 || index >= set->nodeNr)
+	{
+		std::cout << _ERR_TEXT_ << "index < 0 || index >= set->nodeNr" << std::endl;
+		exit(0);
+	}
+
 	node _ret_node;
-	_ret_node.libxml_node = this->xpathObj->nodesetval->nodeTab[index];
+	_ret_node.libxml_node = set->nodeTab[index];
 	return _ret_node;
 };
 
@@ -141,6 +212,14 @@ int nodes::count()
 //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
+
+void silentErrorHandler(void* ctx, const char* msg, ...)
+{
+    // ничего не делаем
+}
+
+
+
 parser::parser()
 {
 
@@ -149,6 +228,8 @@ parser::parser()
 
 parser::parser(const std::string &content)
 {
+	xmlSetGenericErrorFunc(nullptr, silentErrorHandler);
+	
 	this->html = htmlReadMemory(content.c_str(), content.length(), nullptr, nullptr, 1);
 
 	if(this->html == nullptr)
@@ -193,50 +274,33 @@ nodes parser::xpath(const std::string &xpath, nlohmann::json ns)
 {
 	nodes _ret;
 
-	const xmlChar* xpathExpr = (const xmlChar *) xpath.c_str();
-
 	/* Create xpath evaluation context */
 	_ret.xpathCtx = xmlXPathNewContext(this->html);
 	if(_ret.xpathCtx == NULL)
 	{
 		std::cout << _ERR_TEXT_ << "Error: unable to create new XPath context\n";
-		//fprintf(stderr,"Error: unable to create new XPath context\n");
-		//xmlFreeDoc(doc); 
-		//return(-1);
 		exit(0);
 	}
 
 	//
 	if(ns.is_array())
 	{
-		for(auto it = ns.begin(); it != ns.end(); it++)
+		for (const auto& item : ns) 
 		{
-			std::string ns_name = (*it)["name"].get<std::string>();
-			std::string ns_path = (*it)["path"].get<std::string>();
+			std::string ns_name = item["name"].get<std::string>();
+			std::string ns_path = item["path"].get<std::string>();
 			xmlXPathRegisterNs(_ret.xpathCtx, BAD_CAST ns_name.c_str(), BAD_CAST ns_path.c_str());
 		}
 	}
 	
-	//xmlXPathRegisterNs(_ret.xpathCtx,  BAD_CAST "xdr", BAD_CAST "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing");
-	//xmlXPathRegisterNs(_ret.xpathCtx,  BAD_CAST "a", BAD_CAST "http://schemas.openxmlformats.org/drawingml/2006/main");
-
 	/* Evaluate xpath expression */
-	_ret.xpathObj = xmlXPathEvalExpression(xpathExpr, _ret.xpathCtx);
+	_ret.xpathObj = xmlXPathEvalExpression(BAD_CAST xpath.c_str(), _ret.xpathCtx);
 	if(_ret.xpathObj == NULL)
 	{
-		std::cout << _ERR_TEXT_ << "Error: unable to evaluate xpath expression " << xpathExpr << "\n";
-		// fprintf(stderr,"Error: unable to evaluate xpath expression \"%s\"\n", xpathExpr);
+		std::cout << _ERR_TEXT_ << "Error: unable to evaluate xpath expression " << (const xmlChar *) xpath.c_str() << "\n";
 		xmlXPathFreeContext(_ret.xpathCtx); 
-		//xmlFreeDoc(doc); 
-		//return(-1);
 		exit(0);
 	}
-
-	//_ret.libxml_nodes = xpathObj->nodesetval;
-
-	/* Cleanup */
-	//xmlXPathFreeObject(xpathObj);
-	//xmlXPathFreeContext(xpathCtx);
 
 	return _ret;
 };

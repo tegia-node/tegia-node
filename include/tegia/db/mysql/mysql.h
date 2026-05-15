@@ -34,6 +34,12 @@ struct table_t
 	nlohmann::json data = nlohmann::json::object();
 };
 
+struct addr_t
+{
+	std::string connection = "";
+	std::string table = "";
+};
+
 
 /*
 

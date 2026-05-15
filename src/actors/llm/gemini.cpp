@@ -1,4 +1,4 @@
-#include <tegia/llm/gemini.h>
+#include "gemini.h"
 
 #include <format>
 #include <tuple>

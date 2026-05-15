@@ -1,4 +1,4 @@
-#include <tegia/llm/local.h>
+#include "openrouter.h"
 
 #include <format>
 #include <tuple>
@@ -14,7 +14,7 @@ namespace llm {
 //
 
 
-nlohmann::json local::set_system(const std::string &content)
+nlohmann::json openrouter::set_system(const std::string &content)
 {
 	nlohmann::json _system;
 	_system["role"] = "system";
@@ -28,7 +28,7 @@ nlohmann::json local::set_system(const std::string &content)
 //
 
 
-nlohmann::json local::set_user(const std::string &content)
+nlohmann::json openrouter::set_user(const std::string &content)
 {
 	nlohmann::json _system;
 	_system["role"] = "user";
@@ -42,7 +42,7 @@ nlohmann::json local::set_user(const std::string &content)
 //
 
 
-std::tuple<int, std::string> local::request(
+std::tuple<int, std::string> openrouter::request(
 	const nlohmann::json &system,
 	const nlohmann::json &user,
 	const std::string &model_name,
@@ -67,7 +67,7 @@ std::tuple<int, std::string> local::request(
 	tegia::json::save("../data/llm/requests/" + request_uuid + "-request.json", prompt);
 
 	const auto status = http.post(
-		"https://llm.openyourself.ru/v1/chat/completions",
+		"https://openrouter.ai/api/v1/chat/completions",
 		prompt.dump()
 	);
 
@@ -80,11 +80,11 @@ std::tuple<int, std::string> local::request(
 		nlohmann::json body_json = nlohmann::json::parse(http.response->data, nullptr, false);
 		if(body_json.is_discarded())
 		{
-			std::cout << _ERR_TEXT_ << "Invalid JSON in Local response" << std::endl;
+			std::cout << _ERR_TEXT_ << "Invalid JSON in OpenRouter response" << std::endl;
 			std::cout << "response = " << http.response->data << std::endl;
 
 			tegia::log::event_t event;
-			event.code = "KgBsnWBlUazxhwgpWmnq";
+			event.code = "crdQGvRtdaFZUDIDdNyv";
 			event._data = {
 				{ "llm", http.response->data }
 			};
@@ -98,12 +98,12 @@ std::tuple<int, std::string> local::request(
 
 		if(body_json["choices"][0]["finish_reason"].get<std::string>() != "stop")
 		{
-			std::cout << _ERR_TEXT_ << "LOCAL RESULT ERROR" << std::endl;
+			std::cout << _ERR_TEXT_ << "OPENROUTER RESULT ERROR" << std::endl;
 			std::cout << "finish_reason = " << body_json["choices"][0]["finish_reason"].get<std::string>() << std::endl;
 			tegia::json::save("../data/llm/requests/" + request_uuid + "-response-[error].json", body_json);
 
 			tegia::log::event_t event;
-			event.code = "UGuBAYzxLeLnvVZjQHRz";
+			event.code = "crdQGvRtdaFZUDIDdNyv";
 			event._data = {
 				{ "llm", http.response->data }
 			};
@@ -120,7 +120,7 @@ std::tuple<int, std::string> local::request(
 	}
 	else
 	{
-		std::cout << _ERR_TEXT_ << "LOCAL ERROR" << std::endl;
+		std::cout << _ERR_TEXT_ << "OPENROUTER ERROR" << std::endl;
 		std::cout << "status = " << status << std::endl;
 		std::cout << http.response->data << std::endl;
 		exit(0);

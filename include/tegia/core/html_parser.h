@@ -33,6 +33,7 @@ struct node
    node(xmlNodePtr libxml_node);
    std::string get_attr(const std::string &name);
    std::string get_text();
+   std::string get_html();
    std::string get_name();
    int child_count();
 
@@ -47,11 +48,18 @@ struct nodes
    xmlXPathContextPtr xpathCtx;
    xmlXPathObjectPtr xpathObj;
 
-   //xmlNodeSetPtr libxml_nodes;
+   nodes() : xpathCtx(nullptr), xpathObj(nullptr) {};
+
+   // запрещаем копирование
+   nodes(const nodes&) = delete;
+   nodes& operator=(const nodes&) = delete;
+
+   // разрешаем перемещение
+   nodes(nodes&& other) noexcept;
+   nodes& operator=(nodes&& other) noexcept;
 
    ~nodes();
 
-   //xmlNodePtr & operator[] (const int index);
    node operator[] (const int index);
    int count();
 };
