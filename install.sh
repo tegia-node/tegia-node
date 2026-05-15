@@ -142,8 +142,14 @@ fi
 
 if ! [ -d  ${ROOT}/vendors/csv-parser/ ]
 then
-	cd ${ROOT}/vendors
-	git clone https://github.com/vincentlaucsb/csv-parser.git
+	# mkdir ${ROOT}/vendors
+	# git clone https://github.com/vincentlaucsb/csv-parser.git
+	# cd ${ROOT}/vendors/csv-parser/single_include
+
+	mkdir ${ROOT}/vendors/csv-parser
+	mkdir ${ROOT}/vendors/csv-parser/single_include
+	cd ${ROOT}/vendors/csv-parser/single_include
+	wget https://vincentlaucsb.github.io/csv-parser/csv.hpp
 fi
 
 #
