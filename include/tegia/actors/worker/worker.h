@@ -25,7 +25,7 @@ class worker_t : public actor_t
 
 	protected:
 		worker_t(
-			const std::string &type, 
+			const std::string &type,
 			const std::string &name,
 			tegia::mysql::addr_t db)
 			: db(db), actor_t(type, name)
@@ -44,18 +44,41 @@ class worker_t : public actor_t
 			this->task.init(message->data);
 			return static_cast<TYPE *>(this)->run(message);
 		}
-		
+
 		template<typename TYPE>
 		int init(const std::shared_ptr<message_t> &message)
 		{
-			this->manager.actor  = message->data["manager"]["actor"].get<std::string>();
-			this->manager.action = message->data["manager"]["action"].get<std::string>();
-			
+			if (message == nullptr || !message->data.is_object()) {
+				return 400;
+			}
+
+			if (message->data.contains("manager") && message->data["manager"].is_string()) {
+				this->manager.actor = message->data["manager"].get<std::string>();
+			} else if (message->data.contains("manager") && message->data["manager"].is_object() &&
+				message->data["manager"].contains("actor") && message->data["manager"]["actor"].is_string()) {
+				this->manager.actor = message->data["manager"]["actor"].get<std::string>();
+			} else {
+				return 400;
+			}
+
+			if (message->data.contains("init") && message->data["init"].is_string()) {
+				this->manager.action = message->data["init"].get<std::string>();
+			} else if (message->data.contains("manager") && message->data["manager"].is_object() &&
+				message->data["manager"].contains("init_action") && message->data["manager"]["init_action"].is_string()) {
+				this->manager.action = message->data["manager"]["init_action"].get<std::string>();
+			} else if (message->data.contains("manager") && message->data["manager"].is_object() &&
+				message->data["manager"].contains("action") && message->data["manager"]["action"].is_string()) {
+				this->manager.action = message->data["manager"]["action"].get<std::string>();
+			} else {
+				return 400;
+			}
+
 			int _status = static_cast<TYPE *>(this)->init(message);
+			(void)_status;
 
 			tegia::message::send(
-				this->manager.actor, 
-				this->manager.action, 
+				this->manager.actor,
+				this->manager.action,
 				{
 					{ "worker", this->name },
 					{ "task", "" },
@@ -66,22 +89,17 @@ class worker_t : public actor_t
 			return 200;
 		}
 
-		
-
 	private:
 
 };
 
 
-//
-//
-//
 
 
 template<typename actor_type>
-class type_t<actor_type, std::enable_if_t<std::is_base_of_v<tegia::actors::worker_t, actor_type>>> : public type_base_t 
+class type_t<actor_type, std::enable_if_t<std::is_base_of_v<tegia::actors::worker_t, actor_type>>> : public type_base_t
 {
-	protected: 
+	protected:
 
 	public:
 		type_t(const std::string &type): type_base_t(type)
