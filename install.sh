@@ -212,6 +212,18 @@ then
 	make	
 fi
 
+#
+# date
+#
+
+if ! [ -d  ${ROOT}/vendors/date/ ]
+then
+	cd ${ROOT}/vendors
+	git clone https://github.com/HowardHinnant/date.git
+fi
+
+
+
 
 #
 # CONFIGURE
