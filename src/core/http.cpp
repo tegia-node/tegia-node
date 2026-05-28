@@ -1,4 +1,7 @@
 #include <tegia/core/http.h>
+#include <idn2.h>
+
+
 namespace tegia {
 namespace http {
 
@@ -62,6 +65,54 @@ int url_t::parse(const std::string &url)
 	curl_free(_host);
 
 	//
+	// Кодирование host в ASCII/Punycode-форме
+	//
+
+	{
+		char* output = nullptr;
+
+		int rc = idn2_lookup_u8(
+			(const uint8_t*)this->host.c_str(),
+			(uint8_t**)&output,
+			0
+		);
+
+		if (rc != IDN2_OK)
+		{
+			// throw std::runtime_error(idn2_strerror(rc));
+			return 6;
+		}
+
+		std::string result(output);
+		idn2_free(output);
+
+		// std::cout << "idn2 result = " << result << std::endl;
+		this->host = result;
+	}
+
+	//
+	// PORT
+	//
+
+	char *_port;
+	rc = curl_url_get(curl, CURLUPART_PORT, &_port, 0);
+	if(rc == CURLUE_OK) 
+	{
+		this->port = ":" + std::string(_port);
+		curl_free(_port);
+	}
+	else if(rc == CURLUE_NO_PORT)
+	{
+		this->port = "";
+	}
+	else
+	{
+		// error
+		curl_url_cleanup(curl);
+		return 7;
+	}
+
+	//
 	// PATH
 	//
 
@@ -82,6 +133,14 @@ int url_t::parse(const std::string &url)
 };
 
 
+
+std::string url_t::get() const
+{
+	std::string url = this->scheme + "://" + this->host + this->port + this->path;
+	return url;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
 
@@ -89,6 +148,7 @@ int url_t::parse(const std::string &url)
 */
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/*
 int request::parseurl(const std::string &_url)
 {
 	this->url = _url;
@@ -140,6 +200,32 @@ int request::parseurl(const std::string &_url)
 	curl_free(_host);
 
 	//
+	// Кодирование host в ASCII/Punycode-форме
+	//
+
+	{
+		char* output = nullptr;
+
+		int rc = idn2_lookup_u8(
+			(const uint8_t*)this->host.c_str(),
+			(uint8_t**)&output,
+			0
+		);
+
+		if (rc != IDN2_OK)
+		{
+			// throw std::runtime_error(idn2_strerror(rc));
+			return 6;
+		}
+
+		std::string result(output);
+		idn2_free(output);
+
+		// std::cout << "idn2 result = " << result << std::endl;
+		this->host = result;
+	}
+
+	//
 	// PATH
 	//
 
@@ -161,6 +247,12 @@ int request::parseurl(const std::string &_url)
 
 
 
+std::string request::geturl() const
+{
+	std::string url = this->scheme + "://" + this->host + this->path;
+	return url;
+}
+*/
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
@@ -536,7 +628,7 @@ int client::run()
 		for(auto it = this->cookielist.begin(); it != this->cookielist.end(); it++)
 		{
 			size_t len = it->second.path.length();
-			if(this->request->path.substr(0,len) == it->second.path)
+			if(this->request->url.path.substr(0,len) == it->second.path)
 			{
 				str_cookie = str_cookie + it->second.name + "=" + it->second.value + ";";
 
@@ -653,8 +745,16 @@ int client::get(const std::string &_url,const std::string &_filename)
 {
 	if(this->curl) 
 	{
-		this->request->parseurl(_url);
-		curl_easy_setopt(this->curl, CURLOPT_URL, _url.c_str() );
+		this->request->url.parse(_url);
+		std::string url = this->request->url.get();
+
+		std::cout << "scheme = " << this->request->url.scheme << std::endl;
+		std::cout << "host   = " << this->request->url.host << std::endl;
+		std::cout << "port   = " << this->request->url.port << std::endl;
+		std::cout << "path   = " << this->request->url.path << std::endl;
+		std::cout << "url    = " << url << std::endl;
+
+		curl_easy_setopt(this->curl, CURLOPT_URL, url.c_str() );
 		curl_easy_setopt(this->curl, CURLOPT_CUSTOMREQUEST, "GET");
 		curl_easy_setopt(this->curl, CURLOPT_POSTFIELDS, "");
 
@@ -690,8 +790,16 @@ int client::post(const std::string &_url, const std::string &_data)
 {
 	if(this->curl) 
 	{
-		this->request->parseurl(_url);
-		curl_easy_setopt(this->curl, CURLOPT_URL, _url.c_str() );
+		this->request->url.parse(_url);
+		std::string url = this->request->url.get();
+
+		std::cout << "scheme = " << this->request->url.scheme << std::endl;
+		std::cout << "host   = " << this->request->url.host << std::endl;
+		std::cout << "port   = " << this->request->url.port << std::endl;
+		std::cout << "path   = " << this->request->url.path << std::endl;
+		std::cout << "url    = " << url << std::endl;
+
+		curl_easy_setopt(this->curl, CURLOPT_URL, url.c_str() );
 		curl_easy_setopt(this->curl, CURLOPT_CUSTOMREQUEST, "POST");
 		curl_easy_setopt(this->curl, CURLOPT_POSTFIELDS, _data.c_str());
 
@@ -1051,7 +1159,7 @@ int stream_client::run()
 		for(auto it = this->cookielist.begin(); it != this->cookielist.end(); it++)
 		{
 			size_t len = it->second.path.length();
-			if(this->request->path.substr(0,len) == it->second.path)
+			if(this->request->url.path.substr(0,len) == it->second.path)
 			{
 				str_cookie = str_cookie + it->second.name + "=" + it->second.value + ";";
 
@@ -1157,7 +1265,7 @@ int stream_client::get(const std::string &_url,const std::string &_filename)
 {
 	if(this->curl) 
 	{
-		this->request->parseurl(_url);
+		this->request->url.parse(_url);
 		curl_easy_setopt(this->curl, CURLOPT_URL, _url.c_str() );
 		curl_easy_setopt(this->curl, CURLOPT_CUSTOMREQUEST, "GET");
 		curl_easy_setopt(this->curl, CURLOPT_POSTFIELDS, "");

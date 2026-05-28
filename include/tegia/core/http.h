@@ -58,10 +58,12 @@ class url_t
 		~url_t() = default;
 
 		int parse(const std::string &url);
+		std::string get() const;
 
 		std::string raw;
 		std::string scheme;
 		std::string host;
+		std::string port;
 		std::string path;
 };
 
@@ -172,13 +174,15 @@ class request
 
 		std::string useragent;
 
-		std::string url; 
-		std::string scheme;
-		std::string host;
-		std::string path;
+		// std::string raw_url;
+		// std::string scheme;
+		// std::string host;
+		// std::string port;
+		// std::string path;
 
 
-		int parseurl(const std::string &_url);
+		// int seturl(const std::string &_url);
+		// std::string geturl() const;
 
 	public:
 		request()
@@ -187,6 +191,7 @@ class request
 		};
 		~request(){};
 
+		tegia::http::url_t url;
 };
 
 
