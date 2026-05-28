@@ -1,4 +1,6 @@
 #include <tegia/db/mysql/mysql.h>
+#include <tegia/core/crypt.h>
+
 // #include "../../threads/data.h"
 #include "../../threads/thread_t.h"
 
@@ -68,6 +70,27 @@ std::tuple<int,table_t*> table(const std::string &context, const std::string &na
 	delete res;
 
 	return std::make_tuple(200,table);
+};
+
+
+
+
+std::string sha256bin(const std::string &string)
+{
+	static const char* hex = "0123456789abcdef";
+
+	std::string out;
+	out.reserve(66);
+	out += "0x";
+
+	auto hash = tegia::crypt::sha256_bin(string);
+	for (unsigned char c : hash)
+	{
+		out.push_back(hex[c >> 4]);
+		out.push_back(hex[c & 0x0F]);
+	}
+
+	return out;
 };
 
 

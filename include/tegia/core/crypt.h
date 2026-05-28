@@ -90,7 +90,9 @@ namespace crypt {
 
 std::string MD5(const std::string &str);
 std::string MD5u(const std::string &str);
+
 std::string sha256_hex(const std::string &input);
+std::array<unsigned char, 32> sha256_bin(const std::string& input);
 
 }	// END namespace crypt
 }	// END namespace tegia

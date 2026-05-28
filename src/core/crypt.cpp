@@ -184,6 +184,22 @@ std::string MD5u(const std::string &str)
 };
 
 
+}	// END namespace crypt
+}	// END namespace tegia
+
+
+////////////////////////////////////////////////////////////////////////////////////
+//
+//
+// SHA256
+//
+//
+////////////////////////////////////////////////////////////////////////////////////
+
+
+namespace tegia {
+namespace crypt {
+
 std::string sha256_hex(const std::string &input)
 {
 	unsigned char hash[SHA256_DIGEST_LENGTH];
@@ -194,6 +210,19 @@ std::string sha256_hex(const std::string &input)
 		oss << std::setw(2) << static_cast<int>(c);
 	}
 	return oss.str();
+};
+
+
+std::array<unsigned char, 32> sha256_bin(const std::string& input)
+{
+    std::array<unsigned char, 32> hash;
+
+    SHA256_CTX ctx;
+    SHA256_Init(&ctx);
+    SHA256_Update(&ctx, input.data(), input.size());
+    SHA256_Final(hash.data(), &ctx);
+
+    return hash;
 };
 
 
