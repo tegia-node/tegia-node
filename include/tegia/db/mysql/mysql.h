@@ -75,6 +75,7 @@ namespace mysql{
 
 	std::tuple<int,table_t*> table(const std::string &context, const std::string &name);
 
+	std::string sha256bin(const std::string &string);
 
 } // END namespace mysql
 } // END namespace tegia
