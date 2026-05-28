@@ -1,5 +1,130 @@
 #include <tegia/core/time.h>
+#include <tegia/core/const.h>
 
+#include <date/date.h>
+
+//
+//
+//
+
+
+namespace tegia {
+
+struct time_t::time_impl
+{
+    date::sys_seconds value;
+};
+
+
+time_t::time_t()
+    : time(new time_impl())
+{}
+
+time_t::~time_t()
+{
+    delete time;
+}
+
+
+std::string time_t::format(const std::string &format)
+{
+	return date::format(format, this->time->value);
+};
+
+
+int time_t::parse(const std::string& str)
+{
+	///////////////////////////////////////////////////////////////////////
+	/*
+		ISO 8601
+		2026-05-27T06:00:38Z или с offset
+	*/
+	///////////////////////////////////////////////////////////////////////
+
+
+	if (str.find('T') != std::string::npos &&
+       (str.find('Z') != std::string::npos || 
+	    str.find('+') != std::string::npos))
+    {
+        std::istringstream in(str);
+        date::sys_seconds tp;
+
+        in >> date::parse("%FT%TZ", tp);
+
+        if (in.fail() == false)
+		{
+			this->time->value = tp;
+			return 0;
+		}
+
+        in.clear();
+        in.str(str);
+
+        in >> date::parse("%FT%T%z", tp);
+
+        if (in.fail() == false)
+		{
+			this->time->value = tp;
+			return 0;
+		}
+
+        in.clear();
+        in.str(str);
+
+        in >> date::parse("%FT%T%Ez", tp);
+
+        if (in.fail() == false)
+		{
+			this->time->value = tp;
+			return 0;
+		}
+    }
+
+
+	///////////////////////////////////////////////////////////////////////
+	/*
+		RFC 2822
+		Wed, 27 May 2026 06:00:38 +0000
+	*/
+	///////////////////////////////////////////////////////////////////////
+
+
+    if (str.find(',') != std::string::npos &&
+        str.find(':') != std::string::npos)
+    {
+        std::istringstream in(str);
+        date::sys_seconds tp;
+
+        in >> date::parse("%a, %d %b %Y %H:%M:%S %z", tp);
+
+        if (in.fail() == false)
+		{
+			this->time->value = tp;
+			return 0;
+		}
+    }
+
+
+	///////////////////////////////////////////////////////////////////////
+	/*
+		ERROR
+		not found pattern
+	*/
+	///////////////////////////////////////////////////////////////////////
+
+
+	std::cout << _ERR_TEXT_ << "Failed to parse time string: " << str << std::endl;
+	exit(0);
+};
+
+
+}
+
+
+
+//
+//
+//
 
 
 namespace core {

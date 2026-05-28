@@ -10,12 +10,46 @@
 #include <iostream>
 #include <sstream>
 #include <ctime>
+#include <ctime>
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+/*
+
+   NEW TIME CLASS
+
+*/
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+namespace tegia {
+
+class time_t
+{
+   public:
+      time_t();
+      ~time_t();
+
+      int parse(const std::string& str);
+      std::string format(const std::string &format = "%Y-%m-%d %H:%M:%S");
+
+   private:
+      struct time_impl;  
+      time_impl * time;   
+};
+
+} // END namespace tegia
+
+
+
+
+
 
 // strptime    http://www.opennet.ru/man.shtml?topic=strptime&category=3&russian=0
 
-// -------------------------------------------------------------------------------------- //
-//                                       DEFINES                                          //
-// -------------------------------------------------------------------------------------- //
+
+
 
 namespace tegia {
 class time
