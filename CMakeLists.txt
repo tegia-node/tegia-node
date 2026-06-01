@@ -40,8 +40,9 @@ add_executable(${PROJECT_NAME} ${TEGIA_SOURCES})
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ./include
-    ../vendors
-    ../vendors/date/include
+    /usr/local/src/tegia-vendors
+    /usr/local/src/tegia-vendors/date/include
+    /usr/local/include
     /usr/include/libxml2
 )
 

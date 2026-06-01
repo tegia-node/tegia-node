@@ -1,10 +1,11 @@
 #!/bin/bash
+set -euo pipefail
 
-RED=`tput setaf 1`
-GREEN=`tput setaf 2`
-YELLOW=`tput setaf 3`
-BLUE=`tput setaf 4`
-RESET=`tput sgr0`
+RED=`tput setaf 1 2>/dev/null || true`
+GREEN=`tput setaf 2 2>/dev/null || true`
+YELLOW=`tput setaf 3 2>/dev/null || true`
+BLUE=`tput setaf 4 2>/dev/null || true`
+RESET=`tput sgr0 2>/dev/null || true`
 
 
 _OK_="${GREEN}[OK]  ${RESET}"
@@ -12,218 +13,72 @@ _ERR_="${RED}[ERR] ${RESET}"
 
 ROOT=$(realpath ../)
 
+usage()
+{
+	cat <<USAGE
+Usage:
+  bash install.sh [--build-only|--skip-system-deps]
+
+Host-level dependencies are installed by .deploy/init-host.sh.
+This script builds tegia-node and regenerates Makefile.variable only.
+USAGE
+}
+
+for arg in "$@"; do
+	case "${arg}" in
+		--build-only|--skip-system-deps)
+			;;
+		-h|--help)
+			usage
+			exit 0
+			;;
+		*)
+			echo "${_ERR_}unknown argument: ${arg}" >&2
+			usage >&2
+			exit 2
+			;;
+	esac
+done
+
+check_cmd()
+{
+	local cmd=$1
+	command -v "${cmd}" >/dev/null 2>&1 || {
+		echo "${_ERR_}required command not found: ${cmd}. Run: bash .deploy/init-host.sh --install" >&2
+		exit 5
+	}
+}
+
+check_header()
+{
+	local path=$1
+	if ! [ -e "${path}" ]; then
+		echo "${_ERR_}required header/path not found: ${path}. Run: bash .deploy/init-host.sh --install" >&2
+		exit 5
+	fi
+}
+
 echo " "
 echo "------------------------------------------------------------"
-echo "TEGIA NODE: ${GREEN} DEPENDENCES ${RESET}"
+echo "TEGIA NODE: ${GREEN} PREFLIGHT ${RESET}"
 echo "------------------------------------------------------------"
 echo " "
 
 mkdir -p ${ROOT}/tegia-node/build
-mkdir -p ${ROOT}/vendors
 mkdir -p ${ROOT}/configurations
 mkdir -p ${ROOT}/ui
 
-#
-# ENV
-#
-
-sudo apt install -y mc
-sudo apt install -y screen
-sudo apt install -y zip
-sudo apt install -y python
-sudo apt install -y build-essential
-sudo apt install -y libtool
-sudo apt install -y m4
-sudo apt install -y automake
-sudo apt install -y pkg-config
-sudo apt install -y cmake
-sudo apt install -y libgtest-dev
-
-#
-# LIBS
-#
-sudo apt install -y default-libmysqlclient-dev
-sudo apt install -y uuid-dev
-sudo apt install -y libxml2-dev
-sudo apt install -y libcurl4-openssl-dev libssl-dev
-sudo apt install -y libbz2-dev libzip-dev unzip
-sudo apt install -y libfmt-dev
-
-#
-# GNU G++
-#
-
-# sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-# sudo apt install -y g++-11 gcc-11
-# sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 60 --slave /usr/bin/g++ g++ /usr/bin/g++-11
-
-#
-# MySQL
-#
-
-version=$(lsb_release -r | awk '{print $2}')
-
-# Проверяем версию ОС и выполняем соответствующие действия
-if [[ "$version" == "20.04" ]]
-then
-    echo "Версия ОС: Ubuntu 20.04"
-	ismysql80="$(dpkg --get-selections | grep mysql-server-8.0)"
-	if [[ "${#ismysql80}" == 0 ]]; then
-
-		mkdir -p $ROOT/vendors/mysql
-		cd $ROOT/vendors/mysql
-		wget -N https://dev.mysql.com/get/mysql-apt-config_0.8.15-1_all.deb
-		sudo DEBIAN_FRONTEND=noninteractive dpkg -i mysql-apt-config_0.8.15-1_all.deb    
-
-		sudo apt-get update -y
-		sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server
-		sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-client
-
-		echo -e "${_OK_}MySQL success installed"
-	else
-		echo -e "${_OK_}MySQL is already installed"
-	fi
-elif [[ "$version" == "24.04" ]]
-then
-    echo "Версия ОС: Ubuntu 24.04"
-    sudo apt install -y mysql-server
-else
-    echo "Версия ОС: другая версия (или неизвестная)"
-    # Ваши действия для других версий
-fi
-
-#
-# Manticore
-#
-
-wget https://repo.manticoresearch.com/manticore-repo.noarch.deb
-sudo dpkg -i manticore-repo.noarch.deb
-sudo apt update
-sudo apt install manticore manticore-extra -y
-rm manticore-repo.noarch.deb
-
-#
-# nlohmann json
-#
-
-if ! [ -d  ${ROOT}/vendors/json/ ]
-then
-	cd ${ROOT}/vendors
-	git clone https://github.com/nlohmann/json.git
-	cd json
-	mkdir -p build
-	cd build
-	cmake ..
-	make
-	sudo make install
-	sudo ldconfig
-fi
-
-#
-# json-schema-validator
-#
-
-if ! [ -d  ${ROOT}/vendors/json-schema-validator/ ]
-then
-	cd ${ROOT}/vendors
-	git clone https://github.com/pboettch/json-schema-validator.git
-	cd json-schema-validator
-	mkdir -p build
-	cd build
-	cmake .. -DBUILD_SHARED_LIBS=ON ..
-	make
-	sudo make install
-	sudo ldconfig
-fi
-
-#
-# vincentlaucsb / csv-parser
-#
-
-if ! [ -d  ${ROOT}/vendors/csv-parser/ ]
-then
-	# mkdir ${ROOT}/vendors
-	# git clone https://github.com/vincentlaucsb/csv-parser.git
-	# cd ${ROOT}/vendors/csv-parser/single_include
-
-	mkdir ${ROOT}/vendors/csv-parser
-	mkdir ${ROOT}/vendors/csv-parser/single_include
-	cd ${ROOT}/vendors/csv-parser/single_include
-	wget https://vincentlaucsb.github.io/csv-parser/csv.hpp
-fi
-
-#
-# xml2json
-#
-
-if ! [ -d  ${ROOT}/vendors/xml2json/ ]
-then
-	cd ${ROOT}/vendors
-	git clone https://github.com/Cheedoong/xml2json
-	# TODO: переделать на более правильный вариант
-	sudo ln -fs ${ROOT}/vendors/xml2json /usr/include/xml2json
-fi
-
-#
-# jwt
-#
-
-if ! [ -d  ${ROOT}/vendors/cpp-jwt/ ]
-then
-	cd ${ROOT}/vendors
-	git clone https://github.com/arun11299/cpp-jwt.git
-	cd cpp-jwt
-	mkdir -p build
-	cd build
-	cmake ..
-	cmake --build . -j
-	sudo make install
-fi
-
-#
-# inja
-#
-
-if ! [ -d  ${ROOT}/vendors/inja/ ]
-then
-	cd ${ROOT}/vendors
-	git clone https://github.com/pantor/inja.git --depth=1 --branch=v3.4.0
-fi
-
-#
-# magic_enum
-#
-
-if ! [ -d  ${ROOT}/vendors/magic_enum/ ]
-then
-	cd ${ROOT}/vendors
-	git clone https://github.com/Neargye/magic_enum.git --depth=1 --branch=v0.9.7
-fi
-
-#
-# quickjs
-#
-
-if ! [ -d  ${ROOT}/vendors/quickjs/ ]
-then
-	cd ${ROOT}/vendors
-	git clone https://github.com/bellard/quickjs.git
-	cd quickjs
-	make	
-fi
-
-#
-# date
-#
-
-if ! [ -d  ${ROOT}/vendors/date/ ]
-then
-	cd ${ROOT}/vendors
-	git clone https://github.com/HowardHinnant/date.git
-fi
-
-
-
+check_cmd cmake
+check_cmd make
+check_cmd mysql
+check_cmd searchd
+check_cmd flyway
+check_header /usr/include/mysql/mysql.h
+check_header /usr/include/libxml2
+check_header /usr/include/uuid/uuid.h
+check_header /usr/include/xml2json
+check_header /usr/local/include/csv.hpp
+check_header /usr/local/src/tegia-vendors/date/include/date/date.h
 
 #
 # CONFIGURE
@@ -245,9 +100,8 @@ echo " "
 
 tee ${ROOT}/Makefile.variable << EOF > /dev/null
 iNODE				= ${ROOT}/tegia-node/include
-iVENDORS			= ${ROOT}/vendors
-VENDOR_NAMES        = \$(notdir \$(wildcard ${ROOT}/vendors/*))
-iVENDORSINCLUDE     = \$(foreach name,\$(VENDOR_NAMES),\$(wildcard ${ROOT}/vendors/\$(name)/include/\$(name)/))
+iVENDORS			= /usr/local/src/tegia-vendors
+iVENDORSINCLUDE     = /usr/local/include /usr/include /usr/include/libxml2 /usr/local/src/tegia-vendors /usr/local/src/tegia-vendors/*/include /usr/local/src/tegia-vendors/*/single_include
 C++VER				= -std=c++2a
 
 ProdFlag			= -rdynamic -I\$(iNODE) -I\$(iVENDORS) \$(addprefix -I,\$(iVENDORSINCLUDE)) \$(C++VER) -march=native -m64 -O2
@@ -267,4 +121,3 @@ echo "------------------------------------------------------------"
 echo " "
 
 exit 0
-
