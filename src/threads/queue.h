@@ -30,18 +30,11 @@ class worker_t;
 
 struct task
 {
-	std::string uuid;
 	std::function<void()> fn;
 
-	task(const std::string &_uuid): uuid(_uuid)
-	{
-		//std::cout << "create task " << this->uuid << std::endl;
-	};
+	task() = default;
 
-	~task()
-	{
-		//std::cout << "delete task " << this->uuid << std::endl;
-	};
+	~task() = default;
 };
 
 
@@ -74,6 +67,12 @@ class queue
 		// мьютекс
 		std::mutex				mutex;
 
+		// Проверяет пустоту очереди при уже захваченном queue::mutex.
+		bool empty_locked() const
+		{
+			return this->tasks_bitset.none();
+		};
+
 	public:
 
 		queue()
@@ -89,7 +88,7 @@ class queue
 			if(priority > 63 || priority < 0)
 			{
 				// TODO: GENERATE ERROR
-				return 0;
+				return 400;
 			}
 
 			std::unique_lock<std::mutex> locker(this->mutex);

@@ -42,7 +42,10 @@ void worker_t::thread_fn()
 		// Ожидаем уведомления, и убедимся что это не ложное пробуждение
 		// Поток должен проснуться если очередь не пустая либо он выключен
 
-		this->_queue->cv.wait(locker);	
+		this->_queue->cv.wait(locker, [this]()
+		{
+			return this->_queue->empty_locked() == false || this->is_work == false;
+		});	
 
 
 		bool flag = true;
@@ -69,4 +72,3 @@ void worker_t::thread_fn()
 
 } // END namespace threads
 } // END namespace tegia
-

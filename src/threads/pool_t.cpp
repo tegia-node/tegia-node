@@ -1,6 +1,8 @@
 
 #include "pool_t.h" 
 
+#include <utility>
+
 namespace tegia {
 namespace threads {
 
@@ -72,10 +74,16 @@ void pool_t::signal(const std::string &tid)
 
 int pool_t::add_task(std::function<void(void)> _fn, int priority)
 {
-	auto _task = new tegia::threads::task(tegia::random::uuid());
-	_task->fn = _fn;
-	this->_queue->add(_task, priority);
-	return 0;
+	auto _task = new tegia::threads::task();
+	_task->fn = std::move(_fn);
+
+	int code = this->_queue->add(_task, priority);
+	if(code != 0)
+	{
+		delete _task;
+	}
+
+	return code;
 };
 
 
