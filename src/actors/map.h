@@ -9,6 +9,7 @@
 #include <tegia/actors/type.h>
 #include <tegia/actors/actor.h>
 
+#include "actor_entry.h"
 #include "../threads/pool_t.h"
 
 //
@@ -51,7 +52,7 @@ class map_t
 {
 	protected:
 		std::unordered_map<std::string, tegia::actors::action_t     * >  _actions;
-		std::unordered_map<std::string, tegia::actors::actor_t      * >  _actors;
+		std::unordered_map<std::string, tegia::actors::actor_entry_t> _actors;
 		std::unordered_map<std::string, tegia::actors::type_base_t  * >  _types;
 		std::unordered_map<std::string, tegia::actors::type_base_t  * >  _patterns;
 		std::unordered_map<std::string, tegia::actors::domain_t     * >  _domains;

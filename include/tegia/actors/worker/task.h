@@ -14,17 +14,17 @@ class task_t
         ~task_t() = default;
 
         std::string uuid;
-        std::string assignment_id;
-        tegia::actors::addr_t handler;
-        tegia::actors::addr_t manager;
-        tegia::actors::addr_t worker;
+        std::string type;
+        std::string hash;
 
         int stage = 0;
+        int status = 0;
+
         nlohmann::json params = nullptr;
+        nlohmann::json result = nullptr;
         nlohmann::json error = nullptr;
 
         void init(const nlohmann::json &jdata);
-        int commit(int status, nlohmann::json result, nlohmann::json error);
 };
 
 }  // END namespace worker

@@ -177,6 +177,7 @@ void map_t::action_func(
 		is_ws_member = true;
 	}
 
+	/*
 	std::cout << _YELLOW_ << "run action " << _actor->name << " " << _action->action << _BASE_TEXT_<< std::endl;
 	std::cout << "   tid           = " << tegia::threads::tid() << std::endl;
 	std::cout << "   context  user = " << tegia::threads::user()->uuid() << std::endl;
@@ -188,6 +189,7 @@ void map_t::action_func(
 	std::cout << "   user roles    = " << user->_roles.to_ullong() << std::endl;
 	std::cout << "   action roles  = " << _action->roles << std::endl;
 	std::cout << "   &             = " << (user->_roles.to_ullong() & _action->roles) << std::endl;
+	*/
 
 	//
 	// MATCH 
@@ -251,10 +253,10 @@ int map_t::unload(const std::string &actor)
 	auto pos = this->_actors.find(actor);
 	if(pos != this->_actors.end())
 	{
-		int curr_msg = pos->second->messages.load();
+		int curr_msg = pos->second._actor->messages.load();
 		if(curr_msg == 0)
 		{
-			delete pos->second;
+			delete pos->second._actor;
 			this->_actors.erase(actor);
 		
 			return 200;
@@ -283,7 +285,7 @@ int map_t::send_message(
 	const std::shared_ptr<message_t> &message,
 	int priority)
 {
-	std::cout << _YELLOW_ << "send message " << name << " " << action << _BASE_TEXT_<< std::endl;
+	// std::cout << _YELLOW_ << "send message " << name << " " << action << _BASE_TEXT_<< std::endl;
 
 	///////////////////////////////////////////////////////////////////////////////////////
 	//
@@ -297,7 +299,7 @@ int map_t::send_message(
 		auto pos = this->_actors.find(name);
 		if(pos != this->_actors.end())
 		{
-			auto _action = this->_actions[pos->second->type + action];
+			auto _action = this->_actions[pos->second._actor->type + action];
 
 			if(_action->validator.is_init() == true)
 			{
@@ -323,8 +325,8 @@ int map_t::send_message(
 				TODO: Проверку прав делать до добавления задачи в пул
 			*/
 
-			pos->second->messages.fetch_add(1);
-			return this->pool->add_task(std::bind(&map_t::action_func,this,pos->second,_action,message,tegia::threads::thread->_user),priority);
+			pos->second._actor->messages.fetch_add(1);
+			return this->pool->add_task(std::bind(&map_t::action_func,this,pos->second._actor,_action,message,tegia::threads::thread->_user),priority);
 		}
 	}
 
@@ -524,7 +526,7 @@ int map_t::send_message(
 					// std::cout << _YELLOW_ << _actor->type + action << _BASE_TEXT_ << std::endl;
 					// std::cout << _YELLOW_ << name << _BASE_TEXT_ << std::endl;
 
-					this->_actors.insert({name,_actor});
+					this->_actors.try_emplace(name,_actor);
 										
 					tegia::actors::action_t * _action = nullptr;
 

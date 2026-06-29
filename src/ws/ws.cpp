@@ -181,7 +181,7 @@ int ws_t::commit()
 
 unsigned long long int ws_t::roles(const std::string &uuid)
 {
-	std::cout << _YELLOW_ << "RUN ws_t::roles()" << _BASE_TEXT_ << std::endl;
+	// std::cout << _YELLOW_ << "RUN ws_t::roles()" << _BASE_TEXT_ << std::endl;
 	
 	auto pos = this->_system->_members.find(uuid);
 	if(pos != this->_system->_members.end())

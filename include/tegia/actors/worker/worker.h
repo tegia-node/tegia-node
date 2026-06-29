@@ -26,65 +26,92 @@ class worker_t : public actor_t
 	protected:
 		worker_t(
 			const std::string &type,
-			const std::string &name,
-			tegia::mysql::addr_t db)
-			: db(db), actor_t(type, name)
+			const std::string &name)
+			: actor_t(type, name)
 		{
 			this->status = 200;
 		}
 
-	protected:
-		tegia::worker::task_t task;
-		tegia::actors::addr_t manager;
-		tegia::mysql::addr_t db;
+		protected:
+			tegia::worker::task_t task;
+			tegia::actors::addr_t init_addr;
+			tegia::actors::addr_t commit_addr;
+			std::mutex run_mutex;
 
-		template<typename TYPE>
-		int run(const std::shared_ptr<message_t> &message)
+		static constexpr int INIT_READY_DEFERRED = 102;
+
+		int notify_ready(int status = 100)
 		{
-			this->task.init(message->data);
-			return static_cast<TYPE *>(this)->run(message);
-		}
-
-		template<typename TYPE>
-		int init(const std::shared_ptr<message_t> &message)
-		{
-			if (message == nullptr || !message->data.is_object()) {
-				return 400;
-			}
-
-			if (message->data.contains("manager") && message->data["manager"].is_string()) {
-				this->manager.actor = message->data["manager"].get<std::string>();
-			} else if (message->data.contains("manager") && message->data["manager"].is_object() &&
-				message->data["manager"].contains("actor") && message->data["manager"]["actor"].is_string()) {
-				this->manager.actor = message->data["manager"]["actor"].get<std::string>();
-			} else {
-				return 400;
-			}
-
-			if (message->data.contains("init") && message->data["init"].is_string()) {
-				this->manager.action = message->data["init"].get<std::string>();
-			} else if (message->data.contains("manager") && message->data["manager"].is_object() &&
-				message->data["manager"].contains("init_action") && message->data["manager"]["init_action"].is_string()) {
-				this->manager.action = message->data["manager"]["init_action"].get<std::string>();
-			} else if (message->data.contains("manager") && message->data["manager"].is_object() &&
-				message->data["manager"].contains("action") && message->data["manager"]["action"].is_string()) {
-				this->manager.action = message->data["manager"]["action"].get<std::string>();
-			} else {
-				return 400;
-			}
-
-			int _status = static_cast<TYPE *>(this)->init(message);
-			(void)_status;
-
-			tegia::message::send(
-				this->manager.actor,
-				this->manager.action,
+			return tegia::message::send(
+				this->init_addr.actor,
+				this->init_addr.action,
 				{
 					{ "worker", this->name },
 					{ "task", "" },
-					{ "status", 100 }
+					{ "status", status }
 				}
 			);
+		}
+
+			template<typename TYPE>
+			int run(const std::shared_ptr<message_t> &message)
+			{
+				std::lock_guard<std::mutex> guard(this->run_mutex);
+				this->task.init(message->data);
+				return static_cast<TYPE *>(this)->run(message);
+			}
+
+			template<typename TYPE>
+			int init(const std::shared_ptr<message_t> &message)
+			{
+				std::string manager = "";
+				if (message->data.contains("manager") && message->data["manager"].is_string())
+				{
+					manager = message->data["manager"].get<std::string>();
+				}
+				else if (
+					message->data.contains("manager") &&
+					message->data["manager"].is_object() &&
+					message->data["manager"].contains("actor") &&
+					message->data["manager"]["actor"].is_string()
+				)
+				{
+					manager = message->data["manager"]["actor"].get<std::string>();
+				}
+
+				if (message->data.contains("init") && message->data["init"].is_string())
+				{
+					this->init_addr.actor = manager;
+					this->init_addr.action = message->data["init"].get<std::string>();
+				}
+				else if (
+					message->data.contains("manager") &&
+					message->data["manager"].is_object() &&
+					message->data["manager"].contains("action") &&
+					message->data["manager"]["action"].is_string()
+				)
+				{
+					this->init_addr.actor = manager;
+					this->init_addr.action = message->data["manager"]["action"].get<std::string>();
+				}
+
+				if (message->data.contains("commit") && message->data["commit"].is_string())
+				{
+					this->commit_addr.actor = manager;
+					this->commit_addr.action = message->data["commit"].get<std::string>();
+				}
+				else if(this->init_addr.actor.empty() == false)
+				{
+					this->commit_addr.actor = this->init_addr.actor;
+					this->commit_addr.action = "/workers/commit";
+				}
+
+			int _status = static_cast<TYPE *>(this)->init(message);
+
+			if(_status != INIT_READY_DEFERRED)
+			{
+				this->notify_ready();
+			}
 
 			return 200;
 		}
