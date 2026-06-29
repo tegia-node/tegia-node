@@ -74,16 +74,10 @@ void pool_t::signal(const std::string &tid)
 
 int pool_t::add_task(std::function<void(void)> _fn, int priority)
 {
-	auto _task = new tegia::threads::task();
-	_task->fn = std::move(_fn);
+	tegia::threads::task _task;
+	_task.fn = std::move(_fn);
 
-	int code = this->_queue->add(_task, priority);
-	if(code != 0)
-	{
-		delete _task;
-	}
-
-	return code;
+	return this->_queue->add(std::move(_task), priority);
 };
 
 

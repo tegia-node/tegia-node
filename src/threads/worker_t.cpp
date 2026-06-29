@@ -52,9 +52,9 @@ void worker_t::thread_fn()
 
 		while(flag)
 		{
-			tegia::threads::task * _task = this->_queue->get();
+			auto _task = this->_queue->get();
 			
-			if(_task == nullptr)
+			if(_task.has_value() == false)
 			{
 				flag = false;
 				continue;
@@ -62,7 +62,6 @@ void worker_t::thread_fn()
 
 			locker.unlock();
 			_task->fn();
-			delete _task;
 
 			locker.lock();   
 		}

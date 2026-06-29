@@ -10,7 +10,10 @@
 #include <condition_variable>
 #include <chrono>
 #include <bitset>
+#include <optional>
 #include <strings.h>
+#include <utility>
+#include <vector>
 
 using namespace std::chrono_literals;
 
@@ -33,8 +36,12 @@ struct task
 	std::function<void()> fn;
 
 	task() = default;
-
 	~task() = default;
+
+	task(const task &) = delete;
+	task & operator=(const task &) = delete;
+	task(task &&) = default;
+	task & operator=(task &&) = default;
 };
 
 
@@ -45,21 +52,9 @@ class queue
 
 	protected:
 
-		std::vector<std::queue<task*>> tasks 
-		{
-			{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},
-			{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},
-			{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},
-			{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}
-		};
+		std::vector<std::queue<task>> tasks;
 
 		std::bitset<64> tasks_bitset {0};
-
-		
-		// Очереди задач на исполнение
-		std::queue<task*>		hight_fqueue;
-		std::queue<task*>		medium_fqueue;
-		std::queue<task*>		low_fqueue;
 
 		// Условная переменная, которая задает ожидание задачи на исполнение
 		std::condition_variable cv;
@@ -76,6 +71,7 @@ class queue
 	public:
 
 		queue()
+			: tasks(64)
 		{	};
 
 		~queue()
@@ -83,7 +79,7 @@ class queue
 
 
 
-		int add(tegia::threads::task * _task, int priority = 0)
+		int add(tegia::threads::task && _task, int priority = 0)
 		{  
 			if(priority > 63 || priority < 0)
 			{
@@ -93,7 +89,7 @@ class queue
 
 			std::unique_lock<std::mutex> locker(this->mutex);
 			
-			this->tasks[priority].push(_task);
+			this->tasks[priority].push(std::move(_task));
 			this->tasks_bitset.set(priority);
 
 			this->cv.notify_one();
@@ -101,10 +97,8 @@ class queue
 		};
 
 
-		tegia::threads::task * get()
+		std::optional<tegia::threads::task> get()
 		{
-			tegia::threads::task * _task = nullptr;
-
 			//
 			// TODO: Возможно, тут нужен мьютекс
 			// this->mutex.lock();
@@ -117,10 +111,10 @@ class queue
 			{
 				// std::cout << "not found tasks" << std::endl;
 				// exit(0);
-				return _task;
+				return std::nullopt;
 			}
 
-			_task = this->tasks[s-1].front();
+			tegia::threads::task _task = std::move(this->tasks[s-1].front());
 			this->tasks[s-1].pop();
 
 			if(this->tasks[s-1].size() == 0)
@@ -128,7 +122,7 @@ class queue
 				this->tasks_bitset.reset(s-1);
 			}
 
-			return _task;
+			return std::optional<tegia::threads::task>(std::move(_task));
 		};
 
 
