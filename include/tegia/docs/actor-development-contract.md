@@ -15,6 +15,10 @@ extern "C" tegia::actors::type_base_t * _init_type()
 {
     auto type = new tegia::actors::type_t<MyActor>("MY::TYPE");
 
+    // Опционально: включить последовательную обработку сообщений actor instance.
+    // Если не вызвать stateful(), тип остается stateless.
+    type->stateful();
+
     ADD_ACTION("/ping", &MyActor::ping, ROLES::SESSION::PUBLIC);
     // или ADD_ACTION2(action, json_schema_file, func, roles...)
 
@@ -27,7 +31,18 @@ extern "C" tegia::actors::type_base_t * _init_type()
 - возвращаемый тип строго `tegia::actors::type_base_t *`;
 - action-функции имеют сигнатуру `int(const std::shared_ptr<message_t> &)`.
 
-## 3. Action API
+## 3. Режим выполнения actor type
+
+`type_base_t` хранит признак выполнения actor instances этого типа:
+
+- `type->stateless()` - actor instance может обрабатывать несколько сообщений параллельно;
+- `type->stateful()` - actor instance обрабатывает сообщения строго последовательно.
+
+Дефолт: `stateless`. Это сохраняет старое поведение для существующих actor types.
+
+Для actor type с изменяемым состоянием экземпляра вызывай `type->stateful()` в `_init_type()` до возврата `type`.
+
+## 4. Action API
 
 Макросы:
 - `ADD_ACTION(action, func, roles...)` - регистрация action без schema-файла;
@@ -37,7 +52,7 @@ extern "C" tegia::actors::type_base_t * _init_type()
 - `action` начинается с `/` (например `/create`, `/stats/get`);
 - источником прав доступа является `roles` из `ADD_ACTION`/`ADD_ACTION2`.
 
-## 4. Модель прав
+## 5. Модель прав
 
 При выполнении action runtime проверяет:
 - роли пользователя из контекста (`user->_roles`);
@@ -48,7 +63,7 @@ extern "C" tegia::actors::type_base_t * _init_type()
 - доступ определяется только roles, заданными при регистрации action;
 - route-level поле `role` в роутере сейчас не используется.
 
-## 5. Рекомендованный минимальный шаблон актора
+## 6. Рекомендованный минимальный шаблон актора
 
 ```cpp
 class MyActor : public tegia::actors::actor_t
@@ -65,7 +80,7 @@ public:
 };
 ```
 
-## 6. Важные runtime-особенности
+## 7. Важные runtime-особенности
 
 - Многие ошибки в runtime fail-fast (`exit(0)`), поэтому ошибки контракта лучше ловить на этапе ревью и локального запуска.
 - Подпись action и структура регистрации должны быть строгими: runtime не выполняет "мягкую" адаптацию.

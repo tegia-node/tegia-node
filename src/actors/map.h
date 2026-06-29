@@ -114,6 +114,13 @@ class map_t
 			const std::shared_ptr<message_t> &message,
 			std::shared_ptr<tegia::user> user);
 
+		int enqueue_actor_message(
+			tegia::actors::actor_entry_t &entry,
+			tegia::actors::action_t * _action,
+			const std::shared_ptr<message_t> &message,
+			std::shared_ptr<tegia::user> user,
+			int priority);
+
 		std::shared_mutex shared_mtx;
 
 		// tegia::actors::actor_t * get_actor(const std::string &name);	

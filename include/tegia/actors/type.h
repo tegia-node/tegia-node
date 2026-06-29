@@ -26,6 +26,15 @@
 namespace tegia {
 namespace actors {
 
+enum class actor_execution_t
+{
+	// Actor instance может параллельно обрабатывать несколько сообщений.
+	stateless,
+
+	// Actor instance должен обрабатывать сообщения строго последовательно.
+	stateful
+};
+
 struct action_t
 {
 	std::string type;
@@ -60,7 +69,44 @@ class type_base_t
 		std::unordered_map<std::string,route_t> route_by_key;
 		std::unordered_map<std::string,std::string> route_action_index;
 
+		// Режим выполнения actor instances этого actor type.
+		// По умолчанию используется stateless, чтобы сохранить прежнее поведение существующих типов.
+		actor_execution_t execution = actor_execution_t::stateless;
+
 		type_base_t(const std::string &type): type(type){};
+
+		// Явно задает режим выполнения actor instances этого type.
+		// Используется при инициализации type в _init_type(), до создания actor instances.
+		void set_execution(actor_execution_t execution)
+		{
+			this->execution = execution;
+		}
+
+		// Помечает actor type как stateful.
+		// Runtime будет создавать для каждого actor instance serial mailbox с max_inflight = 1.
+		void stateful()
+		{
+			this->execution = actor_execution_t::stateful;
+		}
+
+		// Помечает actor type как stateless.
+		// Runtime будет создавать для каждого actor instance parallel mailbox с max_inflight = threads_count(pool_t).
+		void stateless()
+		{
+			this->execution = actor_execution_t::stateless;
+		}
+
+		// Проверяет, что actor type требует последовательной обработки сообщений.
+		bool is_stateful() const
+		{
+			return this->execution == actor_execution_t::stateful;
+		}
+
+		// Проверяет, что actor type допускает параллельную обработку сообщений.
+		bool is_stateless() const
+		{
+			return this->execution == actor_execution_t::stateless;
+		}
 
 		int add_action(const std::string &action, const std::string &filename, action_fn_ptr fn, unsigned long long int roles)
 		{

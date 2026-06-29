@@ -52,29 +52,31 @@ Stateless actor подходит для адаптеров, маршрутиза
 
 ## 4. Публичный API для actor types
 
-Рекомендуемая форма API — два базовых класса:
+На текущем этапе режим выполнения задается на уровне `type_base_t`.
 
 ```cpp
-class my_stateful_actor_t : public tegia::actors::stateful_actor_t
+extern "C" tegia::actors::type_base_t * _init_type()
 {
-public:
-    explicit my_stateful_actor_t(const std::string &name)
-        : stateful_actor_t("MY::STATEFUL", name) {}
-};
+    auto type = new tegia::actors::type_t<MyActor>("MY::TYPE");
+
+    // Если actor instance хранит изменяемое состояние.
+    type->stateful();
+
+    ADD_ACTION("/run", &MyActor::run, ROLES::SESSION::USER);
+    return type;
+}
 ```
 
-```cpp
-class my_stateless_actor_t : public tegia::actors::stateless_actor_t
-{
-public:
-    explicit my_stateless_actor_t(const std::string &name)
-        : stateless_actor_t("MY::STATELESS", name) {}
-};
-```
+Контракт:
 
-Оба класса наследуются от существующего `actor_t`, поэтому сигнатура `action` и регистрация через `type_t<Actor>` остаются прежними.
+- дефолтный режим `type_base_t` - `stateless`;
+- `type->stateful()` включает последовательную обработку сообщений для actor instances этого типа;
+- `type->stateless()` явно оставляет параллельную обработку сообщений;
+- режим задается до создания actor instances, обычно внутри `_init_type()`.
 
-Для совместимости на первом этапе `actor_t` должен сохранить старое поведение. Новые акторы должны явно выбирать `stateful_actor_t` или `stateless_actor_t`.
+Это сохраняет существующую модель наследования от `actor_t`: сигнатура `action`, регистрация через `type_t<Actor>` и конструкторы акторов не меняются.
+
+Отдельные базовые классы `stateful_actor_t` и `stateless_actor_t` можно добавить позднее как удобную обертку над тем же признаком `type_base_t`, но они не являются обязательными для интеграции mailbox.
 
 ## 5. Runtime-модель dispatch
 
@@ -93,7 +95,7 @@ public:
 Разница между stateful и stateless actor задается только значением `max_inflight`:
 
 1. **Stateful mailbox** — `max_inflight = 1`. Одновременно в `pool_t` может находиться только один item этого actor instance.
-2. **Stateless mailbox** — `max_inflight = thread_count(pool_t)`. Одновременно в `pool_t` может находиться не больше item этого actor instance, чем запущено worker threads в общем пуле.
+2. **Stateless mailbox** — `max_inflight = pool_t::threads_count()`. Одновременно в `pool_t` может находиться не больше item этого actor instance, чем запущено worker threads в общем пуле.
 
 Общие поля `mailbox`:
 
@@ -196,7 +198,7 @@ Stateful actor использует тот же mailbox, но с `max_inflight =
 
 Значение `0` для queue limit запрещено. Runtime-конфигурация с нулевым лимитом должна отклоняться на этапе wiring/config validation. Внутри mailbox нулевое значение должно защитно нормализоваться к минимальному рабочему значению `1`, чтобы actor instance не становился навсегда непринимающим сообщения.
 
-Для stateless actor лимит очереди все равно нужен: если actor instance уже передал в `pool_t` `thread_count(pool_t)` item, новые сообщения должны ожидать в mailbox, а не бесконечно раздувать общий pool.
+Для stateless actor лимит очереди все равно нужен: если actor instance уже передал в `pool_t` `pool_t::threads_count()` item, новые сообщения должны ожидать в mailbox, а не бесконечно раздувать общий pool.
 
 При переполнении:
 
@@ -255,7 +257,7 @@ Mailbox-задачи, переданные в `pool_t`, не должны пер
 4. Добавить mailbox как обязательный runtime-компонент actor instance.
 5. Добавить в mailbox лимит `max_inflight`.
 6. Для stateful actor задавать `max_inflight = 1`.
-7. Для stateless actor задавать `max_inflight = thread_count(pool_t)`.
+7. Для stateless actor задавать `max_inflight = pool_t::threads_count()`.
 
 ### Этап 2. Scheduler
 
@@ -297,7 +299,7 @@ Mailbox-задачи, переданные в `pool_t`, не должны пер
 
 1. Для одного stateful actor instance два долгих action не выполняются одновременно.
 2. Для двух разных stateful actor instances action выполняются параллельно.
-3. Stateless actor через mailbox выполняет параллельно не больше `thread_count(pool_t)` action одного actor instance.
+3. Stateless actor через mailbox выполняет параллельно не больше `pool_t::threads_count()` action одного actor instance.
 4. Callback на тот же stateful actor instance не стартует параллельно с текущим action.
 5. `unload(...)` не удаляет actor instance с непустым mailbox или ненулевым `running`.
 6. Переполнение mailbox возвращает контролируемую ошибку.
@@ -310,4 +312,4 @@ Mailbox-задачи, переданные в `pool_t`, не должны пер
 3. Нужно ли поддерживать priority внутри mailbox одного actor instance?
 4. Какой default queue limit mailbox принять для production?
 5. Должен ли `actor_t` остаться допустимым базовым классом после миграционного периода?
-6. Где хранить `thread_count(pool_t)`: как публичный метод pool, как параметр `node::run()` или как часть runtime config?
+6. Решено: число запущенных worker threads берется через публичный метод `pool_t::threads_count()`.

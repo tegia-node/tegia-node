@@ -241,6 +241,48 @@ void map_t::action_func(
 	}
 };
 
+
+int map_t::enqueue_actor_message(
+	tegia::actors::actor_entry_t &entry,
+	tegia::actors::action_t * _action,
+	const std::shared_ptr<message_t> &message,
+	std::shared_ptr<tegia::user> user,
+	int priority)
+{
+	auto actor = entry._actor;
+	actor->messages.fetch_add(1);
+
+	auto mailbox = entry.mailbox();
+	if(mailbox == nullptr)
+	{
+		int code = this->pool->add_task(
+			std::bind(&map_t::action_func,this,actor,_action,message,user),
+			priority);
+
+		if(code != 0)
+		{
+			actor->messages.fetch_sub(1);
+		}
+
+		return code;
+	}
+
+	tegia::actors::actor_mailbox_item_t item;
+	item.actor = actor;
+	item.action = _action;
+	item.message = message;
+	item.user = user;
+	item.priority = priority;
+
+	int code = mailbox->enqueue(std::move(item));
+	if(code != tegia::actors::actor_mailbox_t::OK)
+	{
+		actor->messages.fetch_sub(1);
+	}
+
+	return code;
+}
+
 //
 //
 //
@@ -253,8 +295,12 @@ int map_t::unload(const std::string &actor)
 	auto pos = this->_actors.find(actor);
 	if(pos != this->_actors.end())
 	{
-		int curr_msg = pos->second._actor->messages.load();
-		if(curr_msg == 0)
+		auto mailbox = pos->second.mailbox();
+		bool is_idle = mailbox != nullptr
+			? mailbox->idle()
+			: pos->second._actor->messages.load() == 0;
+
+		if(is_idle == true)
 		{
 			delete pos->second._actor;
 			this->_actors.erase(actor);
@@ -325,8 +371,12 @@ int map_t::send_message(
 				TODO: Проверку прав делать до добавления задачи в пул
 			*/
 
-			pos->second._actor->messages.fetch_add(1);
-			return this->pool->add_task(std::bind(&map_t::action_func,this,pos->second._actor,_action,message,tegia::threads::thread->_user),priority);
+			return this->enqueue_actor_message(
+				pos->second,
+				_action,
+				message,
+				tegia::threads::thread->_user,
+				priority);
 		}
 	}
 
@@ -469,7 +519,8 @@ int map_t::send_message(
 						break;
 					}
 					
-					auto _actor = pos->second->create_actor(name);
+					auto actor_type = pos->second;
+					auto _actor = actor_type->create_actor(name);
 
 					/* -DEL-
 					std::cout << typeid( _actor ).name() << std::endl;
@@ -526,7 +577,27 @@ int map_t::send_message(
 					// std::cout << _YELLOW_ << _actor->type + action << _BASE_TEXT_ << std::endl;
 					// std::cout << _YELLOW_ << name << _BASE_TEXT_ << std::endl;
 
-					this->_actors.try_emplace(name,_actor);
+					auto dispatch_fn = [this](const tegia::actors::actor_mailbox_item_t &item) -> int
+					{
+						this->action_func(item.actor,item.action,item.message,item.user);
+						return tegia::actors::actor_mailbox_t::OK;
+					};
+
+					auto mailbox_mode = actor_type->is_stateful()
+						? tegia::actors::actor_mailbox_t::mode_t::serial
+						: tegia::actors::actor_mailbox_t::mode_t::parallel;
+
+					std::size_t max_inflight = actor_type->is_stateful()
+						? 1
+						: static_cast<std::size_t>(this->pool->threads_count());
+
+					auto [actor_pos, inserted] = this->_actors.try_emplace(
+						name,
+						_actor,
+						mailbox_mode,
+						this->pool,
+						std::move(dispatch_fn),
+						max_inflight);
 										
 					tegia::actors::action_t * _action = nullptr;
 
@@ -571,8 +642,12 @@ int map_t::send_message(
 						}
 					}
 
-					_actor->messages.fetch_add(1);
-					return this->pool->add_task(std::bind(&map_t::action_func,this,_actor,_action,message,tegia::threads::thread->_user), priority);
+					return this->enqueue_actor_message(
+						actor_pos->second,
+						_action,
+						message,
+						tegia::threads::thread->_user,
+						priority);
 
 					// END return
 				}

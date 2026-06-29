@@ -8,6 +8,7 @@
 ## 2. Зарегистрируй type в `_init_type`
 
 - создай `type_t<Actor>("NAMESPACE::TYPE")`;
+- если actor instance хранит изменяемое состояние, вызови `type->stateful()`;
 - зарегистрируй actions:
   - `ADD_ACTION` / `ADD_ACTION2`;
   - для `ws_t` используй `ADD_WS_ACTION_ROUTE`;
