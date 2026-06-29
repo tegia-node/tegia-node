@@ -29,6 +29,7 @@ class pool_t
 		int add_task(std::function<void(void)> _fn, int priority);
 		void signal(const std::string &tid);
 		void run(int count);
+		int threads_count() const;
 
 		std::function<void()> _callback;
 
@@ -39,7 +40,7 @@ class pool_t
 
 		tegia::threads::queue * _queue;
 		std::mutex signal_mutex;
-		int threads_count = 0;
+		int _threads_count = 0;
 };
 
 

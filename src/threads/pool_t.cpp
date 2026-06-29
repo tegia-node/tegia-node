@@ -16,6 +16,7 @@ void pool_t::run(int count)
 {
 	this->init_workers = 0;
 	this->order_workers = count;
+	this->_threads_count = count;
 	this->_workers.reserve(count);
 	this->_queue = new tegia::threads::queue();
 	auto _fn = std::bind(&tegia::threads::pool_t::signal,this,"tid");
@@ -27,6 +28,19 @@ void pool_t::run(int count)
 		_workers.push_back(worker);
 		tegia::threads::run(std::bind(&tegia::threads::worker_t::thread_fn,worker));
 	}
+};
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+
+*/
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+int pool_t::threads_count() const
+{
+	return this->_threads_count;
 };
 
 
@@ -67,4 +81,3 @@ int pool_t::add_task(std::function<void(void)> _fn, int priority)
 
 } // END namespace threads
 } // END namespace tegia
-
