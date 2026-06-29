@@ -270,12 +270,13 @@ client::client()
 		this->request = new tegia::http::request();
 		this->response = new tegia::http::response();
 
+		curl_easy_setopt(this->curl, CURLOPT_NOSIGNAL, 1L);
 		curl_easy_setopt(this->curl, CURLOPT_USERAGENT,this->request->useragent.c_str());
 
 		curl_easy_setopt(this->curl, CURLOPT_HEADERFUNCTION, tegia::http::client::writeheader);
 		curl_easy_setopt(this->curl, CURLOPT_HEADERDATA, reinterpret_cast<void*>(this->response) );
 		curl_easy_setopt(this->curl, CURLOPT_WRITEFUNCTION, tegia::http::client::writedata);
-		curl_easy_setopt(this->curl, CURLOPT_WRITEDATA, reinterpret_cast<void*>(this->response) );	
+			curl_easy_setopt(this->curl, CURLOPT_WRITEDATA, reinterpret_cast<void*>(this->response) );
 
 		curl_easy_setopt(this->curl, CURLOPT_FOLLOWLOCATION, 0L);
 
@@ -315,6 +316,25 @@ client::~client()
 bool client::set_timeout(long seconds)
 {
 	CURLcode res = curl_easy_setopt(this->curl, CURLOPT_TIMEOUT, seconds);
+	if(res == CURLE_OK)
+	{
+		return true;
+	}
+	return false;
+};
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+
+
+*/
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+bool client::set_connect_timeout(long seconds)
+{
+	CURLcode res = curl_easy_setopt(this->curl, CURLOPT_CONNECTTIMEOUT, seconds);
 	if(res == CURLE_OK)
 	{
 		return true;	
@@ -748,15 +768,21 @@ int client::get(const std::string &_url,const std::string &_filename)
 		this->request->url.parse(_url);
 		std::string url = this->request->url.get();
 
-		std::cout << "scheme = " << this->request->url.scheme << std::endl;
-		std::cout << "host   = " << this->request->url.host << std::endl;
-		std::cout << "port   = " << this->request->url.port << std::endl;
-		std::cout << "path   = " << this->request->url.path << std::endl;
-		std::cout << "url    = " << url << std::endl;
+		// std::cout << "scheme = " << this->request->url.scheme << std::endl;
+		// std::cout << "host   = " << this->request->url.host << std::endl;
+		// std::cout << "port   = " << this->request->url.port << std::endl;
+		// std::cout << "path   = " << this->request->url.path << std::endl;
+		// std::cout << "url    = " << url << std::endl;
 
 		curl_easy_setopt(this->curl, CURLOPT_URL, url.c_str() );
 		curl_easy_setopt(this->curl, CURLOPT_CUSTOMREQUEST, "GET");
 		curl_easy_setopt(this->curl, CURLOPT_POSTFIELDS, "");
+
+		// HTTP/2:
+		curl_easy_setopt(this->curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2TLS);
+
+		// Автоматическая распаковка gzip/br:
+		curl_easy_setopt(this->curl, CURLOPT_ACCEPT_ENCODING, "");
 
 		if(_filename != "")
 		{
@@ -825,12 +851,13 @@ stream_client::stream_client()
 		this->request = new tegia::http::request();
 		this->response = new tegia::http::stream_response();
 
+		curl_easy_setopt(this->curl, CURLOPT_NOSIGNAL, 1L);
 		curl_easy_setopt(this->curl, CURLOPT_USERAGENT,this->request->useragent.c_str());
 
 		curl_easy_setopt(this->curl, CURLOPT_HEADERFUNCTION, tegia::http::stream_client::writeheader);
 		curl_easy_setopt(this->curl, CURLOPT_HEADERDATA, reinterpret_cast<void*>(this->response) );
 		curl_easy_setopt(this->curl, CURLOPT_WRITEFUNCTION, tegia::http::stream_client::writedata);
-		curl_easy_setopt(this->curl, CURLOPT_WRITEDATA, reinterpret_cast<void*>(this->response) );	
+			curl_easy_setopt(this->curl, CURLOPT_WRITEDATA, reinterpret_cast<void*>(this->response) );
 
 		curl_easy_setopt(this->curl, CURLOPT_FOLLOWLOCATION, 0L);
 
@@ -887,6 +914,25 @@ stream_client::~stream_client()
 bool stream_client::set_timeout(long seconds)
 {
 	CURLcode res = curl_easy_setopt(this->curl, CURLOPT_TIMEOUT, seconds);
+	if(res == CURLE_OK)
+	{
+		return true;
+	}
+	return false;
+};
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+
+
+*/
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+bool stream_client::set_connect_timeout(long seconds)
+{
+	CURLcode res = curl_easy_setopt(this->curl, CURLOPT_CONNECTTIMEOUT, seconds);
 	if(res == CURLE_OK)
 	{
 		return true;	
@@ -1297,5 +1343,3 @@ void stream_client::stop_streaming()
 
 }  // END namespace http
 }  // END namespace tegia	
-
-

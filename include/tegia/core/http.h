@@ -307,6 +307,7 @@ class client
 
 
 		bool set_timeout(long seconds);
+		bool set_connect_timeout(long seconds);
 		bool set_verbose(bool flag);
 		bool set_header(const std::string &header, const std::string &value);
 		bool set_ssl(const std::string &ssl_key_path,const std::string &ssl_sert_path,bool is_check);
@@ -429,6 +430,7 @@ class stream_client
 
 
 		bool set_timeout(long seconds);
+		bool set_connect_timeout(long seconds);
 		bool set_verbose(bool flag);
 		bool set_header(const std::string &header, const std::string &value);
 		bool set_ssl(const std::string &ssl_key_path,const std::string &ssl_sert_path,bool is_check);
