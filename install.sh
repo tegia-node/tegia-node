@@ -71,7 +71,6 @@ mkdir -p ${ROOT}/ui
 check_cmd cmake
 check_cmd make
 check_cmd mysql
-check_cmd searchd
 check_cmd flyway
 check_header /usr/include/mysql/mysql.h
 check_header /usr/include/libxml2
