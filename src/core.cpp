@@ -139,6 +139,17 @@ int unload(const std::string &actor)
 	return tegia::threads::thread->actor_map()->unload(actor);
 }
 
+mailbox_stats_t mailbox_stats(const std::string &actor)
+{
+	auto actor_map = tegia::threads::thread->actor_map();
+	if(actor_map == nullptr)
+	{
+		return {};
+	}
+
+	return actor_map->mailbox_stats(actor);
+}
+
 }  // namespace actors
 }  // namespace tegia
 

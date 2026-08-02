@@ -66,6 +66,7 @@ class type_base_t
 
 		std::string type;
 		std::unordered_map<std::string,action_t *> fmap;
+		std::unordered_map<std::string,action_t *> action_by_name;
 		std::unordered_map<std::string,route_t> route_by_key;
 		std::unordered_map<std::string,std::string> route_action_index;
 
@@ -108,6 +109,19 @@ class type_base_t
 			return this->execution == actor_execution_t::stateless;
 		}
 
+		// Ищет action внутри этого actor type по локальному имени action.
+		// Используется в горячем пути dispatch, чтобы не собирать ключ type + action на каждое сообщение.
+		action_t * find_action(const std::string &action) const
+		{
+			auto pos = this->action_by_name.find(action);
+			if(pos == this->action_by_name.end())
+			{
+				return nullptr;
+			}
+
+			return pos->second;
+		}
+
 		int add_action(const std::string &action, const std::string &filename, action_fn_ptr fn, unsigned long long int roles)
 		{
 			tegia::json::validator validator;
@@ -130,6 +144,7 @@ class type_base_t
 
 			action_t * _action = new action_t{this->type, action, validator, fn, roles};
 			this->fmap.insert({this->type + action,_action});
+			this->action_by_name.insert({action,_action});
 			return 0;			
 		};
 

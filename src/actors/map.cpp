@@ -159,12 +159,47 @@ const tegia::actors::type_base_t * map_t::get_type(const std::string &name) cons
 }
 
 
+tegia::actors::mailbox_stats_t map_t::mailbox_stats(const std::string &actor)
+{
+	tegia::actors::mailbox_stats_t stats;
+
+	std::shared_lock<std::shared_mutex> lock(this->shared_mtx);
+
+	auto pos = this->_actors.find(actor);
+	if(pos == this->_actors.end() || pos->second.valid() == false)
+	{
+		return stats;
+	}
+
+	stats.found = true;
+
+	auto mailbox = pos->second.mailbox();
+	if(mailbox == nullptr)
+	{
+		int active = pos->second._actor->messages.load();
+		stats.active = active > 0 ? static_cast<std::size_t>(active) : 0;
+		stats.running = stats.active;
+		return stats;
+	}
+
+	stats.has_mailbox = true;
+	stats.active = mailbox->active();
+	stats.queued = mailbox->queued();
+	stats.running = mailbox->running();
+	stats.max_inflight = mailbox->max_inflight();
+	stats.max_queue_size = mailbox->max_queue_size();
+
+	return stats;
+}
+
+
 
 void map_t::action_func(
 	tegia::actors::actor_t * _actor,
 	tegia::actors::action_t * _action,
 	const std::shared_ptr<message_t> &message,
-	std::shared_ptr<tegia::user> user)
+	std::shared_ptr<tegia::user> user,
+	int current_priority)
 {
 	//
 	// CHECK WS ROLES
@@ -237,7 +272,7 @@ void map_t::action_func(
 	auto callback = message->callback.get();
 	if(callback.is_addr == true)
 	{
-		tegia::message::send(callback.actor, callback.action, message);
+		tegia::message::send(callback.actor, callback.action, message, current_priority);
 	}
 };
 
@@ -256,7 +291,7 @@ int map_t::enqueue_actor_message(
 	if(mailbox == nullptr)
 	{
 		int code = this->pool->add_task(
-			std::bind(&map_t::action_func,this,actor,_action,message,user),
+			std::bind(&map_t::action_func,this,actor,_action,message,user,priority),
 			priority);
 
 		if(code != 0)
@@ -345,7 +380,20 @@ int map_t::send_message(
 		auto pos = this->_actors.find(name);
 		if(pos != this->_actors.end())
 		{
-			auto _action = this->_actions[pos->second._actor->type + action];
+			tegia::actors::action_t * _action = nullptr;
+			if(pos->second._type != nullptr)
+			{
+				_action = pos->second._type->find_action(action);
+			}
+
+			if(_action == nullptr)
+			{
+				std::cout << _ERR_TEXT_ << _RED_TEXT_ << "send message \n" 
+							<< "      [500] NOT FOUND ACTION\n" 
+							<< "      actor  = '" << name << "'\n" 
+							<< "      action = '" << action << "'" << _BASE_TEXT_ << std::endl;
+				return 500;
+			}
 
 			if(_action->validator.is_init() == true)
 			{
@@ -520,6 +568,17 @@ int map_t::send_message(
 					}
 					
 					auto actor_type = pos->second;
+					tegia::actors::action_t * _action = actor_type->find_action(action);
+					if(_action == nullptr)
+					{
+						std::cout << _ERR_TEXT_ << _RED_TEXT_ << "send message \n" 
+									<< "      [500] NOT FOUND ACTION\n" 
+									<< "      actor  = '" << name << "'\n" 
+									<< "      action = '" << action << "'\n"
+									<< "      domain = '" << domain->_name << "'" << _BASE_TEXT_ << std::endl;
+						return 500; //std::make_tuple(500,nullptr);
+					}
+
 					auto _actor = actor_type->create_actor(name);
 
 					/* -DEL-
@@ -579,7 +638,7 @@ int map_t::send_message(
 
 					auto dispatch_fn = [this](const tegia::actors::actor_mailbox_item_t &item) -> int
 					{
-						this->action_func(item.actor,item.action,item.message,item.user);
+						this->action_func(item.actor,item.action,item.message,item.user,item.priority);
 						return tegia::actors::actor_mailbox_t::OK;
 					};
 
@@ -594,30 +653,12 @@ int map_t::send_message(
 					auto [actor_pos, inserted] = this->_actors.try_emplace(
 						name,
 						_actor,
+						actor_type,
 						mailbox_mode,
 						this->pool,
 						std::move(dispatch_fn),
 						max_inflight);
 										
-					tegia::actors::action_t * _action = nullptr;
-
-					{
-						auto _pos = this->_actions.find(_actor->type + action);
-						if(_pos ==  this->_actions.end())
-						{
-							std::cout << _ERR_TEXT_ << _RED_TEXT_ << "send message \n" 
-										<< "      [500] NOT FOUND ACTION\n" 
-										<< "      actor  = '" << name << "'\n" 
-										<< "      action = '" << action << "'\n"
-										<< "      domain = '" << domain->_name << "'" << _BASE_TEXT_ << std::endl;
-							return 500; //std::make_tuple(500,nullptr);							
-						}
-
-						_action = _pos->second;
-					}
-
-					
-
 					//
 					// GENERATE TASK FUNCTION
 					//

@@ -2,6 +2,8 @@
 #define H_TEGIA_ACTORS_ACTOR_MAILBOX
 
 #include <atomic>
+#include <array>
+#include <bitset>
 #include <chrono>
 #include <cstddef>
 #include <functional>
@@ -45,8 +47,7 @@ struct actor_mailbox_item_t
 	// Worker thread должен восстановить этот контекст перед вызовом action.
 	std::shared_ptr<tegia::user> user;
 
-	// Приоритет постановки задачи в общий pool_t.
-	// FIFO-порядок mailbox сохраняется до передачи item в pool, а priority применяется уже к задаче pool_t.
+	// Приоритет сообщения внутри mailbox и при постановке задачи в общий pool_t.
 	int priority = 0;
 
 	// Время попадания сообщения в mailbox.
@@ -91,14 +92,15 @@ class actor_mailbox_t
 		// max_queue_size ограничивает число ожидающих item внутри mailbox.
 		actor_mailbox_t(
 			mode_t mode,
-			tegia::threads::pool_t * pool,
-			dispatch_fn_t dispatch_fn,
-			std::size_t max_inflight = 1,
-			std::size_t max_queue_size = 1024);
+				tegia::threads::pool_t * pool,
+				dispatch_fn_t dispatch_fn,
+				std::size_t max_inflight = 1,
+				std::size_t max_queue_size = 50000);
 
 		// Принимает сообщение в mailbox.
-		// Метод всегда сначала кладет item во внутреннюю FIFO-очередь, затем пытается передать
-		// в pool_t столько item, сколько разрешено лимитом max_inflight.
+		// Если внутренняя очередь пуста и есть свободный running-слот, item сразу передается в pool_t.
+		// Если actor instance уже достиг max_inflight или в очереди есть ожидающие item,
+		// сообщение добавляется во внутреннюю priority-очередь и затем mailbox пытается продвинуть очередь.
 		// Для stateful actor max_inflight равен 1, для stateless actor должен равняться числу worker threads pool_t.
 		// priority жестко нормализуется в диапазон [0, 63].
 		int enqueue(actor_mailbox_item_t item);
@@ -111,7 +113,7 @@ class actor_mailbox_t
 		// В счет входят item, ожидающие в очереди, и item, уже переданные в pool_t.
 		std::size_t active() const;
 
-		// Возвращает количество сообщений во внутренней FIFO-очереди mailbox.
+		// Возвращает количество сообщений во внутренней priority-очереди mailbox.
 		// Это item, которые еще не были переданы в pool_t.
 		std::size_t queued() const;
 
@@ -126,7 +128,7 @@ class actor_mailbox_t
 		// Для serial mailbox всегда возвращает 1, даже если при настройке было передано большее значение.
 		std::size_t max_inflight() const;
 
-		// Возвращает лимит внутренней FIFO-очереди mailbox.
+		// Возвращает лимит внутренних priority-очередей mailbox.
 		// Лимит применяется к item, которые ожидают передачи в pool_t.
 		std::size_t max_queue_size() const;
 
@@ -147,7 +149,19 @@ class actor_mailbox_t
 		// Mailbox готов, если задан общий pool_t и dispatch-функция.
 		bool ready() const;
 
-		// Пытается передать item из FIFO-очереди в pool_t до достижения max_inflight.
+		// Проверяет пустоту внутренней priority-очереди под уже захваченным mutex.
+		bool queue_empty_locked() const;
+
+		// Возвращает размер внутренней priority-очереди под уже захваченным mutex.
+		std::size_t queue_size_locked() const;
+
+		// Добавляет item во внутреннюю priority-очередь под уже захваченным mutex.
+		void queue_push_locked(actor_mailbox_item_t item);
+
+		// Извлекает следующий item из внутренней priority-очереди под уже захваченным mutex.
+		actor_mailbox_item_t queue_pop_locked();
+
+		// Пытается передать item из priority-очереди в pool_t до достижения max_inflight.
 		// Метод не выполняет action сам: он только создает задачи в pool_t.
 		int dispatch_available();
 
@@ -187,9 +201,11 @@ class actor_mailbox_t
 		// Также используется в const-методах чтения состояния.
 		mutable std::mutex _mutex;
 
-		// FIFO-очередь ожидающих сообщений.
-		// Очередь используется и для stateful, и для stateless actor; различается только max_inflight.
-		std::deque<actor_mailbox_item_t> _queue;
+		// Очереди ожидающих сообщений по priority.
+		// Внутри одного priority сохраняется FIFO.
+		std::array<std::deque<actor_mailbox_item_t>, 64> _priority_queues;
+		std::bitset<64> _priority_mask;
+		std::size_t _queued_messages = 0;
 
 		// Количество item, уже переданных в pool_t и еще не завершенных.
 		// Для stateful actor лимит равен 1, для stateless actor лимит равен числу worker threads pool_t.
@@ -199,10 +215,10 @@ class actor_mailbox_t
 		// Для serial mailbox значение нормализуется до 1.
 		std::size_t _max_inflight = 1;
 
-		// Максимальный размер FIFO-очереди mailbox.
-		// При превышении enqueue(...) возвращает QUEUE_OVERFLOW и не принимает сообщение.
-		std::size_t _max_queue_size = 1024;
-};
+			// Максимальный суммарный размер priority-очередей mailbox.
+			// При превышении enqueue(...) возвращает QUEUE_OVERFLOW и не принимает сообщение.
+			std::size_t _max_queue_size = 50000;
+	};
 
 } // namespace tegia::actors
 

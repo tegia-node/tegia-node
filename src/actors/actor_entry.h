@@ -11,26 +11,30 @@ namespace tegia::actors
 {
 
 class actor_t;
+class type_base_t;
 
 class actor_entry_t
 {
 	public:
-		// Создает runtime-запись actor instance.
-		// На текущем этапе это только обертка над actor_t: mailbox еще не создается и dispatch map_t не меняется.
-		explicit actor_entry_t(actor_t * actor)
-			: _actor(actor)
+		// Создает runtime-запись actor instance без mailbox.
+		// type хранит метаданные actor type для быстрого поиска action.
+		explicit actor_entry_t(actor_t * actor, type_base_t * type = nullptr)
+			: _actor(actor),
+			  _type(type)
 		{ }
 
 		// Создает runtime-запись actor instance с mailbox.
-		// Этот конструктор понадобится на следующем этапе, когда map_t начнет отдавать сообщения в mailbox.
+		// Используется map_t для dispatch сообщений через mailbox actor instance.
 		actor_entry_t(
 			actor_t * actor,
+			type_base_t * type,
 			actor_mailbox_t::mode_t mode,
-			tegia::threads::pool_t * pool,
-			actor_mailbox_t::dispatch_fn_t dispatch_fn,
-			std::size_t max_inflight = 1,
-			std::size_t max_queue_size = 1024)
+				tegia::threads::pool_t * pool,
+				actor_mailbox_t::dispatch_fn_t dispatch_fn,
+				std::size_t max_inflight = 1,
+				std::size_t max_queue_size = 50000)
 			: _actor(actor),
+			  _type(type),
 			  _mailbox(std::make_unique<actor_mailbox_t>(
 				  mode,
 				  pool,
@@ -79,11 +83,15 @@ class actor_entry_t
 		}
 
 		// Экземпляр актора.
-		// Сейчас actor_entry_t только хранит указатель; map_t продолжает работать с актором напрямую через _actor.
+		// map_t продолжает работать с актором напрямую через _actor.
 		actor_t * _actor = nullptr;
 
+		// Метаданные actor type.
+		// Нужны для быстрого поиска action без сборки строкового ключа type + action на каждое сообщение.
+		type_base_t * _type = nullptr;
+
 		// Mailbox этого actor instance.
-		// На текущем этапе может быть nullptr: map_t еще не использует mailbox для dispatch.
+		// Может быть nullptr только для промежуточных или тестовых runtime-записей без mailbox.
 		std::unique_ptr<actor_mailbox_t> _mailbox;
 };
 

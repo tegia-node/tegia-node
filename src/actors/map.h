@@ -6,6 +6,7 @@
 
 #include <tegia/core/json.h>
 #include <tegia/core/const.h>
+#include <tegia/actors/stats.h>
 #include <tegia/actors/type.h>
 #include <tegia/actors/actor.h>
 
@@ -98,6 +99,8 @@ class map_t
 			const std::shared_ptr<message_t> &message,
 			int priority);
 
+		tegia::actors::mailbox_stats_t mailbox_stats(const std::string &actor);
+
 
 		//
 		//
@@ -112,7 +115,8 @@ class map_t
 			tegia::actors::actor_t * _actor,
 			tegia::actors::action_t * _action,
 			const std::shared_ptr<message_t> &message,
-			std::shared_ptr<tegia::user> user);
+			std::shared_ptr<tegia::user> user,
+			int current_priority);
 
 		int enqueue_actor_message(
 			tegia::actors::actor_entry_t &entry,

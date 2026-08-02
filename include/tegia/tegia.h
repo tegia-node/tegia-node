@@ -12,6 +12,7 @@
 #include <tegia/actors/type.h>
 #include <tegia/actors/actor.h>
 #include <tegia/actors/addr.h>
+#include <tegia/actors/stats.h>
 
 #include <tegia/core/error.h>
 

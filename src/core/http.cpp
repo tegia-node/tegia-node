@@ -492,7 +492,7 @@ bool client::set_proxy(const std::string &_addr,const std::string &_port)
 {
 	std::string proxy = _addr + ":" + _port;
 
-	std::cout << "[" << proxy << "]" << std::endl;
+	// std::cout << "[" << proxy << "]" << std::endl;
 
 	curl_easy_setopt(this->curl, CURLOPT_PROXY, proxy.c_str());
 	return true;
@@ -655,7 +655,7 @@ int client::run()
 				if(this->verbose == true)
 				{
 					it->second.print();
-					std::cout << _OK_TEXT_ << "send cookie" << std::endl;
+					// std::cout << _OK_TEXT_ << "send cookie" << std::endl;
 				}
 			}
 			else
@@ -663,7 +663,7 @@ int client::run()
 				if(this->verbose == true)
 				{
 					it->second.print();
-					std::cout << _ERR_TEXT_ << "not send cookie" << std::endl;
+					// std::cout << _ERR_TEXT_ << "not send cookie" << std::endl;
 				}
 			}
 		}
@@ -819,11 +819,13 @@ int client::post(const std::string &_url, const std::string &_data)
 		this->request->url.parse(_url);
 		std::string url = this->request->url.get();
 
+		/*
 		std::cout << "scheme = " << this->request->url.scheme << std::endl;
 		std::cout << "host   = " << this->request->url.host << std::endl;
 		std::cout << "port   = " << this->request->url.port << std::endl;
 		std::cout << "path   = " << this->request->url.path << std::endl;
 		std::cout << "url    = " << url << std::endl;
+		*/
 
 		curl_easy_setopt(this->curl, CURLOPT_URL, url.c_str() );
 		curl_easy_setopt(this->curl, CURLOPT_CUSTOMREQUEST, "POST");
@@ -1090,7 +1092,7 @@ bool stream_client::set_proxy(const std::string &_addr,const std::string &_port)
 {
 	std::string proxy = _addr + ":" + _port;
 
-	std::cout << "[" << proxy << "]" << std::endl;
+	// std::cout << "[" << proxy << "]" << std::endl;
 
 	curl_easy_setopt(this->curl, CURLOPT_PROXY, proxy.c_str());
 	return true;

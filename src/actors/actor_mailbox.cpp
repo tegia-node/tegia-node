@@ -31,16 +31,38 @@ int actor_mailbox_t::enqueue(actor_mailbox_item_t item)
 	item.enqueued_at = std::chrono::steady_clock::now();
 	item.priority = actor_mailbox_t::normalize_priority(item.priority);
 
+	bool dispatch_now = false;
+
 	{
 		std::lock_guard<std::mutex> lock(this->_mutex);
 
-		if(this->_queue.size() >= this->_max_queue_size)
+		if(this->queue_empty_locked() == true && this->_running_messages < this->_max_inflight)
 		{
-			return actor_mailbox_t::QUEUE_OVERFLOW;
+			this->_active_messages.fetch_add(1);
+			this->_running_messages++;
+			dispatch_now = true;
+		}
+		else
+		{
+			if(this->queue_size_locked() >= this->_max_queue_size)
+			{
+				return actor_mailbox_t::QUEUE_OVERFLOW;
+			}
+
+			this->_active_messages.fetch_add(1);
+			this->queue_push_locked(std::move(item));
+		}
+	}
+
+	if(dispatch_now == true)
+	{
+		int code = this->dispatch(std::move(item));
+		if(code != actor_mailbox_t::OK)
+		{
+			this->rollback_dispatch();
 		}
 
-		this->_active_messages.fetch_add(1);
-		this->_queue.push_back(std::move(item));
+		return code;
 	}
 
 	return this->dispatch_available();
@@ -51,7 +73,7 @@ bool actor_mailbox_t::idle() const
 	std::lock_guard<std::mutex> lock(this->_mutex);
 
 	return this->_active_messages.load() == 0 &&
-		this->_queue.empty() == true &&
+		this->queue_empty_locked() == true &&
 		this->_running_messages == 0;
 }
 
@@ -63,7 +85,7 @@ std::size_t actor_mailbox_t::active() const
 std::size_t actor_mailbox_t::queued() const
 {
 	std::lock_guard<std::mutex> lock(this->_mutex);
-	return this->_queue.size();
+	return this->queue_size_locked();
 }
 
 std::size_t actor_mailbox_t::running() const
@@ -134,6 +156,48 @@ bool actor_mailbox_t::ready() const
 	return this->_pool != nullptr && static_cast<bool>(this->_dispatch_fn) == true;
 }
 
+bool actor_mailbox_t::queue_empty_locked() const
+{
+	return this->_queued_messages == 0;
+}
+
+std::size_t actor_mailbox_t::queue_size_locked() const
+{
+	return this->_queued_messages;
+}
+
+void actor_mailbox_t::queue_push_locked(actor_mailbox_item_t item)
+{
+	std::size_t priority = static_cast<std::size_t>(item.priority);
+	this->_priority_queues[priority].push_back(std::move(item));
+	this->_priority_mask.set(priority);
+	this->_queued_messages++;
+}
+
+actor_mailbox_item_t actor_mailbox_t::queue_pop_locked()
+{
+	for(std::size_t priority = 0; priority < this->_priority_queues.size(); ++priority)
+	{
+		if(this->_priority_mask.test(priority) == false)
+		{
+			continue;
+		}
+
+		auto item = std::move(this->_priority_queues[priority].front());
+		this->_priority_queues[priority].pop_front();
+		this->_queued_messages--;
+
+		if(this->_priority_queues[priority].empty() == true)
+		{
+			this->_priority_mask.reset(priority);
+		}
+
+		return item;
+	}
+
+	return {};
+}
+
 int actor_mailbox_t::dispatch_available()
 {
 	while(true)
@@ -143,7 +207,7 @@ int actor_mailbox_t::dispatch_available()
 		{
 			std::lock_guard<std::mutex> lock(this->_mutex);
 
-			if(this->_queue.empty() == true)
+			if(this->queue_empty_locked() == true)
 			{
 				return actor_mailbox_t::OK;
 			}
@@ -153,12 +217,11 @@ int actor_mailbox_t::dispatch_available()
 				return actor_mailbox_t::OK;
 			}
 
-			next = std::move(this->_queue.front());
-			this->_queue.pop_front();
+			next = this->queue_pop_locked();
 			this->_running_messages++;
 		}
 
-		int code = this->dispatch(next);
+		int code = this->dispatch(std::move(next));
 		if(code != actor_mailbox_t::OK)
 		{
 			this->rollback_dispatch();

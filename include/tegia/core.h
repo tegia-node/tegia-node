@@ -8,6 +8,7 @@
 #include <tegia/core/cast.h>
 #include <tegia/core/json.h>
 #include <tegia/actors/message_t.h>
+#include <tegia/actors/stats.h>
 #include <tegia/context/user.h>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -140,6 +141,7 @@ namespace tegia {
 namespace actors {
 
 int unload(const std::string &actor);
+mailbox_stats_t mailbox_stats(const std::string &actor);
 
 }  // namespace actors
 }  // namespace tegia
