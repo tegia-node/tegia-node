@@ -1,5 +1,4 @@
 #include <tegia/core/time.h>
-#include <tegia/core/const.h>
 
 #include <date/date.h>
 
@@ -13,6 +12,7 @@ namespace tegia {
 struct time_t::time_impl
 {
     date::sys_seconds value;
+    bool valid = false;
 };
 
 
@@ -28,93 +28,63 @@ time_t::~time_t()
 
 std::string time_t::format(const std::string &format)
 {
+	if(this->time->valid == false)
+	{
+		return "";
+	}
+
 	return date::format(format, this->time->value);
+};
+
+
+bool time_t::valid() const
+{
+	return this->time->valid;
 };
 
 
 int time_t::parse(const std::string& str)
 {
-	///////////////////////////////////////////////////////////////////////
-	/*
-		ISO 8601
-		2026-05-27T06:00:38Z или с offset
-	*/
-	///////////////////////////////////////////////////////////////////////
+	this->time->valid = false;
 
+	auto try_parse = [this, &str](const char *format) -> bool
+	{
+		std::istringstream input(str);
+		date::sys_seconds parsed_value;
 
-	if (str.find('T') != std::string::npos &&
-       (str.find('Z') != std::string::npos || 
-	    str.find('+') != std::string::npos))
-    {
-        std::istringstream in(str);
-        date::sys_seconds tp;
-
-        in >> date::parse("%FT%TZ", tp);
-
-        if (in.fail() == false)
+		input >> date::parse(format, parsed_value);
+		if(input.fail() == true)
 		{
-			this->time->value = tp;
-			return 0;
+			return false;
 		}
 
-        in.clear();
-        in.str(str);
-
-        in >> date::parse("%FT%T%z", tp);
-
-        if (in.fail() == false)
+		// После даты допустимы только пробельные символы.
+		char trailing = '\0';
+		if(input >> trailing)
 		{
-			this->time->value = tp;
-			return 0;
+			return false;
 		}
 
-        in.clear();
-        in.str(str);
+		this->time->value = parsed_value;
+		this->time->valid = true;
+		return true;
+	};
 
-        in >> date::parse("%FT%T%Ez", tp);
+	// RFC 3339 / ISO 8601 в UTC или с положительным/отрицательным offset.
+	if(try_parse("%FT%TZ") == true ||
+	   try_parse("%FT%T%Ez") == true ||
+	   try_parse("%FT%T%z") == true)
+	{
+		return 0;
+	}
 
-        if (in.fail() == false)
-		{
-			this->time->value = tp;
-			return 0;
-		}
-    }
+	// RFC 2822: Wed, 27 May 2026 06:00:38 +0000.
+	if(try_parse("%a, %d %b %Y %H:%M:%S %z") == true)
+	{
+		return 0;
+	}
 
-
-	///////////////////////////////////////////////////////////////////////
-	/*
-		RFC 2822
-		Wed, 27 May 2026 06:00:38 +0000
-	*/
-	///////////////////////////////////////////////////////////////////////
-
-
-    if (str.find(',') != std::string::npos &&
-        str.find(':') != std::string::npos)
-    {
-        std::istringstream in(str);
-        date::sys_seconds tp;
-
-        in >> date::parse("%a, %d %b %Y %H:%M:%S %z", tp);
-
-        if (in.fail() == false)
-		{
-			this->time->value = tp;
-			return 0;
-		}
-    }
-
-
-	///////////////////////////////////////////////////////////////////////
-	/*
-		ERROR
-		not found pattern
-	*/
-	///////////////////////////////////////////////////////////////////////
-
-
-	std::cout << _ERR_TEXT_ << "Failed to parse time string: " << str << std::endl;
-	exit(0);
+	return 400;
 };
 
 

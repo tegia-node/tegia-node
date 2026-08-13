@@ -32,6 +32,7 @@ class time_t
       ~time_t();
 
       int parse(const std::string& str);
+      bool valid() const;
       std::string format(const std::string &format = "%Y-%m-%d %H:%M:%S");
 
    private:
@@ -97,22 +98,25 @@ class time
          return false;
 		};
 
-	public:
+		public:
 
-		// Конструктор по умолчанию
-		time() 
+			// Конструктор по умолчанию
+			[[deprecated("Используйте tegia::time_t: tegia::time не хранит абсолютное время безопасно")]]
+			time()
 		{
 			init_now();
 		}
 
-		// Конструктор по time_t
-		explicit time(const std::time_t& _time) 
+			// Конструктор по time_t
+			[[deprecated("Используйте tegia::time_t: tegia::time не хранит абсолютное время безопасно")]]
+			explicit time(const std::time_t& _time)
 		{
 			std::tm* t = localtime_r(&_time, &this->tm);
 		}
 
-		// Конструктор по строке
-		time(const std::string& _time, const std::string& format = "%Y-%m-%d %H:%M:%S") 
+			// Конструктор по строке
+			[[deprecated("Используйте tegia::time_t: tegia::time не хранит абсолютное время безопасно")]]
+			time(const std::string& _time, const std::string& format = "%Y-%m-%d %H:%M:%S")
 		{
          std::string _format = format;
          if(format == "rfc2822")
