@@ -2,6 +2,71 @@
 
 #include <date/date.h>
 
+#include <cctype>
+#include <string_view>
+
+
+namespace {
+
+char ascii_lower(unsigned char ch)
+{
+	if(ch >= 'A' && ch <= 'Z')
+	{
+		return static_cast<char>(ch + ('a' - 'A'));
+	}
+
+	return static_cast<char>(ch);
+}
+
+
+bool ascii_iequals(std::string_view left, std::string_view right)
+{
+	if(left.size() != right.size())
+	{
+		return false;
+	}
+
+	for(std::size_t i = 0; i < left.size(); ++i)
+	{
+		if(ascii_lower(static_cast<unsigned char>(left[i])) !=
+		   ascii_lower(static_cast<unsigned char>(right[i])))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
+std::string normalize_rfc_utc_zone(const std::string &value)
+{
+	std::size_t end = value.size();
+	while(end > 0 && std::isspace(static_cast<unsigned char>(value[end - 1])) != 0)
+	{
+		end--;
+	}
+
+	std::size_t zone_begin = end;
+	while(zone_begin > 0 && std::isspace(static_cast<unsigned char>(value[zone_begin - 1])) == 0)
+	{
+		zone_begin--;
+	}
+
+	const std::string_view zone(value.data() + zone_begin, end - zone_begin);
+	if(ascii_iequals(zone, "GMT") == false &&
+	   ascii_iequals(zone, "UT") == false &&
+	   ascii_iequals(zone, "UTC") == false)
+	{
+		return value;
+	}
+
+	// GMT, UT и UTC обозначают одно и то же абсолютное смещение.
+	return value.substr(0, zone_begin) + "+0000";
+}
+
+}
+
 //
 //
 //
@@ -47,9 +112,9 @@ int time_t::parse(const std::string& str)
 {
 	this->time->valid = false;
 
-	auto try_parse = [this, &str](const char *format) -> bool
+	auto try_parse = [this](const std::string &value, const char *format) -> bool
 	{
-		std::istringstream input(str);
+		std::istringstream input(value);
 		date::sys_seconds parsed_value;
 
 		input >> date::parse(format, parsed_value);
@@ -71,15 +136,16 @@ int time_t::parse(const std::string& str)
 	};
 
 	// RFC 3339 / ISO 8601 в UTC или с положительным/отрицательным offset.
-	if(try_parse("%FT%TZ") == true ||
-	   try_parse("%FT%T%Ez") == true ||
-	   try_parse("%FT%T%z") == true)
+	if(try_parse(str, "%FT%TZ") == true ||
+	   try_parse(str, "%FT%T%Ez") == true ||
+	   try_parse(str, "%FT%T%z") == true)
 	{
 		return 0;
 	}
 
-	// RFC 2822: Wed, 27 May 2026 06:00:38 +0000.
-	if(try_parse("%a, %d %b %Y %H:%M:%S %z") == true)
+	// RFC 2822: Wed, 27 May 2026 06:00:38 +0000 или ... GMT.
+	const std::string rfc_value = normalize_rfc_utc_zone(str);
+	if(try_parse(rfc_value, "%a, %d %b %Y %H:%M:%S %z") == true)
 	{
 		return 0;
 	}
